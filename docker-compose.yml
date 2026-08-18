@@ -1,0 +1,26 @@
+services:
+  db:
+    build:
+      context: ./db
+    image: dronematrx/postgres-postgis:16
+    container_name: dronematrx_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: dronematrx
+      POSTGRES_PASSWORD: dronematrx
+      POSTGRES_DB: dronematrx
+    ports:
+      # Host port 5433 -> container 5432, to avoid clashing with any other
+      # local Postgres instance already bound to 5432.
+      - "5433:5432"
+    volumes:
+      - dronematrx_db_data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dronematrx -d dronematrx"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  dronematrx_db_data:
