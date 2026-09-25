@@ -8,6 +8,7 @@ records, 2 sample missions (one with a saved AOI), 2 geofences and 1 NFZ.
 Idempotent: safe to re-run, existing rows are left alone (matched by
 slug/email/uin).
 """
+import os
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -27,6 +28,7 @@ from app.models import (  # noqa: E402
     User,
 )
 
+SEED_PASSWORD = os.environ.get("SEED_PASSWORD", "DroneMatrx@2026")
 ORG_SLUG = "drone-matrx-hq"
 BASE_LAT, BASE_LON = 23.2156, 72.6369  # Gandhinagar, Gujarat -- project HQ / PoC site
 
@@ -51,7 +53,7 @@ def get_or_create_user(db, org: Organization, email: str, full_name: str, role: 
     user = User(
         organization_id=org.id,
         email=email,
-        password_hash=hash_password("DroneMatrx@2026"),
+        password_hash=hash_password(SEED_PASSWORD),
         full_name=full_name,
         role=role,
     )
@@ -237,7 +239,7 @@ def main() -> None:
         seed_geofences(db, org)
 
         print(f"Seed complete for organization '{org.name}' ({org.id}).")
-        print("Users (password for all: DroneMatrx@2026):")
+        print("Users (all share the SEED_PASSWORD value; default DroneMatrx@2026):")
         for u in db.query(User).filter_by(organization_id=org.id).all():
             print(f"  - {u.email:28s} role={u.role}")
         print(f"Drones: {db.query(Drone).filter_by(organization_id=org.id).count()}")
