@@ -16,7 +16,8 @@ def test_create_geofence(client, operator_user):
     assert resp.status_code == 201
     body = resp.json()
     assert body["name"] == "Test Fence"
-    assert body["type"] == "geofence"
+    # Sprint 3: the legacy "geofence" type is accepted and stored as "inclusion".
+    assert body["type"] == "inclusion"
     assert body["geometry"]["type"] == "Polygon"
 
 

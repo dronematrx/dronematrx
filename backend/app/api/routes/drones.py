@@ -63,6 +63,9 @@ def create_drone(
         ip_address=request.client.host if request.client else None,
         metadata={"name": drone.name},
     )
+    runtime = getattr(request.app.state, "runtime", None)
+    if runtime is not None and runtime.running and drone.location is not None:
+        runtime.add_drone(drone.id)  # starts streaming telemetry immediately
     return DroneOut.from_model(drone)
 
 
@@ -105,6 +108,10 @@ def deactivate_drone(
         DroneService(db).deactivate_drone(drone_id, current_user.organization_id)
     except DroneNotFoundError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Drone not found")
+
+    runtime = getattr(request.app.state, "runtime", None)
+    if runtime is not None and runtime.running:
+        runtime.remove_drone(drone_id)
 
     AuditRepository(db).record(
         user_id=current_user.id,

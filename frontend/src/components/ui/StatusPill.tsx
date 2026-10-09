@@ -1,4 +1,4 @@
-type Tone = 'active' | 'pending' | 'alert' | 'offline' | 'info'
+type Tone = 'active' | 'pending' | 'alert' | 'offline' | 'info' | 'armed'
 
 const TONE_COLOR: Record<Tone, string> = {
   active: 'var(--dm-status-active)',
@@ -6,6 +6,7 @@ const TONE_COLOR: Record<Tone, string> = {
   alert: 'var(--dm-status-alert)',
   offline: 'var(--dm-status-offline)',
   info: 'var(--dm-status-info)',
+  armed: 'var(--dm-status-armed)',
 }
 
 const STATUS_TONE: Record<string, Tone> = {
@@ -15,6 +16,14 @@ const STATUS_TONE: Record<string, Tone> = {
   completed: 'active',
   warning: 'pending',
   draft: 'pending',
+  planning: 'pending',
+  validating: 'info',
+  armed: 'armed',
+  assigned: 'active',
+  unassigned: 'alert',
+  inclusion: 'info',
+  exclusion: 'alert',
+  nfz: 'alert',
   maintenance: 'pending',
   calibrated: 'active',
   uncalibrated: 'pending',

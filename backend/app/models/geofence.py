@@ -8,7 +8,11 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 
-VALID_GEOFENCE_TYPES = ("geofence", "nfz")
+# inclusion: drones must stay inside; exclusion: drones must stay outside;
+# nfz: regulatory no-fly zone, always enforced and never optional.
+VALID_GEOFENCE_TYPES = ("inclusion", "exclusion", "nfz")
+# Sprint 2 called inclusion zones plain "geofence"; still accepted on input.
+LEGACY_TYPE_ALIASES = {"geofence": "inclusion"}
 
 
 class Geofence(Base):
@@ -18,7 +22,7 @@ class Geofence(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     organization_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("organizations.id", ondelete="CASCADE"))
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    type: Mapped[str] = mapped_column(String(20), nullable=False, default="geofence")
+    type: Mapped[str] = mapped_column(String(20), nullable=False, default="inclusion")
 
     geometry: Mapped[object] = mapped_column(Geography(geometry_type="POLYGON", srid=4326), nullable=False)
 

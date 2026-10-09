@@ -4,6 +4,10 @@ import { LandingPage } from './components/LandingPage'
 import { LoginPage } from './pages/LoginPage'
 import { FleetPage } from './pages/FleetPage'
 import { MapPage } from './pages/MapPage'
+import { AnalyticsPage } from './pages/AnalyticsPage'
+import { MissionsPage } from './pages/MissionsPage'
+import { MissionWizardPage } from './pages/MissionWizardPage'
+import { SettingsPage } from './pages/SettingsPage'
 import { StubPage } from './pages/StubPage'
 
 export function AppRouter() {
@@ -32,7 +36,15 @@ export function AppRouter() {
           path="/missions"
           element={
             <RequireAuth>
-              <StubPage title="Missions" />
+              <MissionsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/missions/:id/plan"
+          element={
+            <RequireAuth>
+              <MissionWizardPage />
             </RequireAuth>
           }
         />
@@ -40,7 +52,7 @@ export function AppRouter() {
           path="/analytics"
           element={
             <RequireAuth>
-              <StubPage title="Analyse" />
+              <AnalyticsPage />
             </RequireAuth>
           }
         />
@@ -56,7 +68,7 @@ export function AppRouter() {
           path="/settings"
           element={
             <RequireAuth>
-              <StubPage title="Settings" />
+              <SettingsPage />
             </RequireAuth>
           }
         />

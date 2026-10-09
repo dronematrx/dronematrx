@@ -1,11 +1,14 @@
 import { Plane } from 'lucide-react'
-import type { Drone } from '../../api/types'
+import type { Drone, DroneLinkState } from '../../api/types'
+import { LinkPill } from '../ops/FleetWall'
 import { StatusPill } from '../ui/StatusPill'
 
 interface FleetDataTableProps {
   drones: Drone[]
   selectedId: string | null
   onSelect: (drone: Drone) => void
+  /** Sprint 4: live link state per drone from the communication manager. */
+  links?: DroneLinkState[]
 }
 
 function formatRelative(iso: string | null): string {
@@ -17,7 +20,8 @@ function formatRelative(iso: string | null): string {
 }
 
 /** Spec 5.5/6.3: header in slate-700, alternating body rows, first column visual, last column ownership/traceability. */
-export function FleetDataTable({ drones, selectedId, onSelect }: FleetDataTableProps) {
+export function FleetDataTable({ drones, selectedId, onSelect, links = [] }: FleetDataTableProps) {
+  const linkOf = new Map(links.map((l) => [l.drone_id, l]))
   return (
     <div style={{ overflowX: 'auto', borderRadius: 'var(--dm-radius-md)' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.85rem' }}>
@@ -29,6 +33,7 @@ export function FleetDataTable({ drones, selectedId, onSelect }: FleetDataTableP
             <th style={{ padding: 'var(--dm-space-sm) var(--dm-space-md)', textAlign: 'left' }} scope="col">Status</th>
             <th style={{ padding: 'var(--dm-space-sm) var(--dm-space-md)', textAlign: 'left' }} scope="col">Battery</th>
             <th style={{ padding: 'var(--dm-space-sm) var(--dm-space-md)', textAlign: 'left' }} scope="col">Flight Mode</th>
+            <th style={{ padding: 'var(--dm-space-sm) var(--dm-space-md)', textAlign: 'left' }} scope="col">Link</th>
             <th style={{ padding: 'var(--dm-space-sm) var(--dm-space-md)', textAlign: 'left' }} scope="col">Last Update</th>
           </tr>
         </thead>
@@ -55,6 +60,16 @@ export function FleetDataTable({ drones, selectedId, onSelect }: FleetDataTableP
                 {drone.battery.toFixed(0)}%
               </td>
               <td style={{ padding: 'var(--dm-space-sm) var(--dm-space-md)' }}>{drone.flight_mode}</td>
+              <td style={{ padding: 'var(--dm-space-sm) var(--dm-space-md)' }} data-testid={`table-link-${drone.name}`}>
+                {linkOf.get(drone.id) ? (
+                  <span style={{ display: 'inline-flex', gap: '.4rem', alignItems: 'center' }}>
+                    <LinkPill link={linkOf.get(drone.id)!.active_link} />
+                    <span className="dm-mono" style={{ fontSize: '.75rem' }}>{linkOf.get(drone.id)!.rssi_dbm?.toFixed(0)} dBm</span>
+                  </span>
+                ) : (
+                  <span style={{ opacity: 0.5 }}>—</span>
+                )}
+              </td>
               <td className="dm-mono" style={{ padding: 'var(--dm-space-sm) var(--dm-space-md)', opacity: 0.8 }}>
                 {formatRelative(drone.last_telemetry_at)}
               </td>
@@ -62,7 +77,7 @@ export function FleetDataTable({ drones, selectedId, onSelect }: FleetDataTableP
           ))}
           {drones.length === 0 && (
             <tr>
-              <td colSpan={7} style={{ padding: 'var(--dm-space-lg)', textAlign: 'center', opacity: 0.6 }}>
+              <td colSpan={8} style={{ padding: 'var(--dm-space-lg)', textAlign: 'center', opacity: 0.6 }}>
                 No drones match the current filters.
               </td>
             </tr>

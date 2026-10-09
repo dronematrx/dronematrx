@@ -1,35 +1,24 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { LatLngTuple } from 'leaflet'
-import { MapContainer, Polygon, TileLayer, useMap } from 'react-leaflet'
+import { Polygon } from 'react-leaflet'
 import * as geofencesApi from '../api/geofences'
 import * as missionsApi from '../api/missions'
-import type { Drone, Geofence, Mission } from '../api/types'
+import type { Drone, Geofence, GeofenceType, Mission, MissionPlan } from '../api/types'
 import { AppShell } from '../components/layout/AppShell'
 import { AoiDrawLayer } from '../components/map/AoiDrawLayer'
-import { DroneMarker } from '../components/map/DroneMarker'
-import { InstrumentRail } from '../components/map/InstrumentRail'
+import { CbbaLanes } from '../components/map/CbbaLanes'
+import { GeofenceLayers } from '../components/map/GeofenceLayers'
+import { ringToLatLng } from '../lib/mapGeometry'
+import { MissionMap } from '../components/map/MissionMap'
+import { OrcaLayer } from '../components/map/OrcaLayer'
+import { DemoControls, OrcaStatsCard, OrcaTimeline, PredictionBanner, RthQueueCard } from '../components/ops/OrcaPanels'
+import { useOpsStore } from '../store/useOpsStore'
 import { TelemetryPanel } from '../components/fleet/TelemetryPanel'
 import { StatusPill } from '../components/ui/StatusPill'
+import { closedRing } from '../lib/format'
+import { cssVar } from '../lib/tokens'
 import { useAuthStore } from '../store/useAuthStore'
 import { useDroneStore } from '../store/useDroneStore'
-
-const HQ_CENTER: LatLngTuple = [23.2156, 72.6369]
-
-/** Leaflet snapshots container size at init and won't notice later layout
- * settling (fonts, flex resolution) unless nudged. */
-function MapResizeHandler() {
-  const map = useMap()
-  useEffect(() => {
-    const invalidate = () => map.invalidateSize()
-    const timer = window.setTimeout(invalidate, 150)
-    window.addEventListener('resize', invalidate)
-    return () => {
-      window.clearTimeout(timer)
-      window.removeEventListener('resize', invalidate)
-    }
-  }, [map])
-  return null
-}
 
 export function MapPage() {
   const drones = useDroneStore((s) => s.drones)
@@ -41,11 +30,31 @@ export function MapPage() {
   const [geofences, setGeofences] = useState<Geofence[]>([])
   const [missions, setMissions] = useState<Mission[]>([])
   const [selectedMissionId, setSelectedMissionId] = useState<string>('')
+  const [plan, setPlan] = useState<MissionPlan | null>(null)
   const [selectedDrone, setSelectedDrone] = useState<Drone | null>(null)
 
-  const [showGeofences, setShowGeofences] = useState(true)
-  const [showNfz, setShowNfz] = useState(true)
-  const [showDrones, setShowDrones] = useState(true)
+  const orca = useOpsStore((s) => s.orca)
+  const timeline = useOpsStore((s) => s.timeline)
+  const opsBusy = useOpsStore((s) => s.busy)
+  const opsError = useOpsStore((s) => s.error)
+  const refreshOps = useOpsStore((s) => s.refresh)
+  const startDemo = useOpsStore((s) => s.startDemo)
+  const stopDemo = useOpsStore((s) => s.stopDemo)
+  const [fitDemo, setFitDemo] = useState<string | null>(null)
+  const [fitArea, setFitArea] = useState<'conflict' | 'all'>('conflict')
+  const frame = (area: 'conflict' | 'all') => {
+    setFitArea(area)
+    setFitDemo(`${area}-${Date.now()}`)
+  }
+
+  const [layers, setLayers] = useState<Record<GeofenceType | 'drones' | 'lanes' | 'orca', boolean>>({
+    orca: true,
+    drones: true,
+    inclusion: true,
+    exclusion: true,
+    nfz: true,
+    lanes: true,
+  })
 
   const [drawing, setDrawing] = useState(false)
   const [draftPoints, setDraftPoints] = useState<LatLngTuple[]>([])
@@ -59,8 +68,15 @@ export function MapPage() {
     connectTelemetry()
     loadGeofences()
     loadMissions()
+    refreshOps()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const selectMission = (id: string) => {
+    setSelectedMissionId(id)
+    setPlan(null)
+    if (id) missionsApi.getPlan(id).then(setPlan).catch(() => setPlan(null))
+  }
 
   const selectedMission = useMemo(() => missions.find((m) => m.id === selectedMissionId) ?? null, [missions, selectedMissionId])
 
@@ -85,9 +101,8 @@ export function MapPage() {
       setAoiStatus('Need at least 3 points.')
       return
     }
-    const ring = [...draftPoints, draftPoints[0]].map(([lat, lng]) => [lng, lat])
     try {
-      await missionsApi.setMissionAoi(selectedMissionId, { type: 'Polygon', coordinates: [ring] })
+      await missionsApi.setMissionAoi(selectedMissionId, { type: 'Polygon', coordinates: [closedRing(draftPoints as [number, number][])] })
       setAoiStatus('AOI saved.')
       setDrawing(false)
       loadMissions()
@@ -96,18 +111,16 @@ export function MapPage() {
     }
   }
 
+  const toggle = (key: keyof typeof layers) => (v: boolean) => setLayers((prev) => ({ ...prev, [key]: v }))
+
   return (
     <AppShell title="Flight Plan" fullBleed>
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(260px, 320px) 1fr', height: '100%', minHeight: 0 }}>
+      <div className="dm-two-col" style={{ display: 'grid', gridTemplateColumns: 'minmax(260px, 320px) 1fr', height: '100%', minHeight: 0 }}>
         {/* LEFT CONTROL RAIL */}
         <aside style={{ background: 'var(--dm-navy-900)', padding: 'var(--dm-space-md)', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 'var(--dm-space-md)' }}>
           <div>
             <label style={{ fontSize: '.75rem', textTransform: 'uppercase', opacity: 0.7 }}>Mission</label>
-            <select
-              value={selectedMissionId}
-              onChange={(e) => setSelectedMissionId(e.target.value)}
-              style={{ width: '100%', marginTop: '.35rem', border: 0, borderRadius: 'var(--dm-radius-sm)', padding: '.55rem .7rem', background: 'var(--dm-surface-inset)', color: 'var(--dm-text-on-dark)' }}
-            >
+            <select value={selectedMissionId} onChange={(e) => selectMission(e.target.value)} className="dm-input" style={{ width: '100%', marginTop: '.35rem' }}>
               <option value="">Select mission…</option>
               {missions.map((m) => (
                 <option key={m.id} value={m.id}>
@@ -116,33 +129,38 @@ export function MapPage() {
               ))}
             </select>
             {selectedMission && (
-              <div style={{ marginTop: '.5rem' }}>
+              <div style={{ marginTop: '.5rem', display: 'flex', gap: '.5rem', alignItems: 'center' }}>
                 <StatusPill label={selectedMission.status} />
+                {plan && (
+                  <span className="dm-mono" style={{ fontSize: '.75rem', opacity: 0.8 }}>
+                    {plan.bundles.length} lanes · {plan.coverage_pct.toFixed(0)}% cov
+                  </span>
+                )}
               </div>
             )}
           </div>
 
           {canWrite && (
-            <div style={{ background: 'var(--dm-slate-700)', borderRadius: 'var(--dm-radius-md)', padding: 'var(--dm-space-md)' }}>
-              <div style={{ textTransform: 'uppercase', fontSize: '.85rem', marginBottom: '.5rem' }}>AOI Boundary&hellip;</div>
+            <div className="dm-card">
+              <div className="dm-card-title">AOI Boundary&hellip;</div>
               <p style={{ fontSize: '.75rem', opacity: 0.75, margin: '0 0 .75rem' }}>
                 Click the map to place vertices, then lock and save to the selected mission.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '.4rem' }}>
                 {!drawing ? (
-                  <button type="button" onClick={startDrawing} style={buttonStyle}>
+                  <button type="button" onClick={startDrawing} className="dm-btn dm-btn--primary">
                     Draw Area (AOI)
                   </button>
                 ) : (
-                  <button type="button" onClick={() => setDrawing(false)} style={{ ...buttonStyle, background: 'var(--dm-status-pending)' }}>
+                  <button type="button" onClick={() => setDrawing(false)} className="dm-btn">
                     Stop Drawing
                   </button>
                 )}
                 <div style={{ display: 'flex', gap: '.4rem' }}>
-                  <button type="button" disabled={draftPoints.length < 3} onClick={saveAoi} style={{ ...buttonStyle, flex: 1, opacity: draftPoints.length < 3 ? 0.4 : 1 }}>
+                  <button type="button" disabled={draftPoints.length < 3} onClick={saveAoi} className="dm-btn dm-btn--primary" style={{ flex: 1 }}>
                     Save AOI
                   </button>
-                  <button type="button" disabled={draftPoints.length === 0} onClick={clearDrawing} style={{ ...buttonStyle, flex: 1, background: 'var(--dm-status-alert)', opacity: draftPoints.length === 0 ? 0.4 : 1 }}>
+                  <button type="button" disabled={draftPoints.length === 0} onClick={clearDrawing} className="dm-btn dm-btn--danger" style={{ flex: 1 }}>
                     Clear
                   </button>
                 </div>
@@ -156,11 +174,38 @@ export function MapPage() {
             </div>
           )}
 
-          <div style={{ background: 'var(--dm-slate-700)', borderRadius: 'var(--dm-radius-md)', padding: 'var(--dm-space-md)' }}>
-            <div style={{ textTransform: 'uppercase', fontSize: '.85rem', marginBottom: '.5rem' }}>Layers&hellip;</div>
-            <LayerToggle label="Drones" checked={showDrones} onChange={setShowDrones} />
-            <LayerToggle label="Geofences" checked={showGeofences} onChange={setShowGeofences} />
-            <LayerToggle label="No-Fly Zones" checked={showNfz} onChange={setShowNfz} />
+          {layers.orca && orca && <PredictionBanner view={orca} />}
+          <DemoControls
+            view={orca}
+            canWrite={canWrite}
+            busy={opsBusy}
+            onStart={() => {
+              startDemo()
+              frame('conflict')
+            }}
+            onStop={stopDemo}
+          />
+          <div style={{ display: 'flex', gap: '.4rem' }}>
+            <button type="button" className="dm-btn" style={{ flex: 1 }} onClick={() => frame('conflict')} data-testid="fit-conflict">
+              Conflict zone
+            </button>
+            <button type="button" className="dm-btn" style={{ flex: 1 }} onClick={() => frame('all')} data-testid="fit-all">
+              All drones
+            </button>
+          </div>
+          {opsError && <p className="dm-error">{opsError}</p>}
+          {orca && <OrcaStatsCard view={orca} />}
+          {orca && <RthQueueCard view={orca} />}
+          <OrcaTimeline events={timeline} view={orca} />
+
+          <div className="dm-card">
+            <div className="dm-card-title">Layers&hellip;</div>
+            <LayerToggle label="ORCA Deconfliction" checked={layers.orca} onChange={toggle('orca')} />
+            <LayerToggle label="Drones" checked={layers.drones} onChange={toggle('drones')} />
+            <LayerToggle label="Inclusion Geofences" checked={layers.inclusion} onChange={toggle('inclusion')} />
+            <LayerToggle label="Exclusion Zones" checked={layers.exclusion} onChange={toggle('exclusion')} />
+            <LayerToggle label="No-Fly Zones" checked={layers.nfz} onChange={toggle('nfz')} />
+            <LayerToggle label="CBBA Lanes" checked={layers.lanes} onChange={toggle('lanes')} />
           </div>
 
           {selectedDrone && (
@@ -180,55 +225,39 @@ export function MapPage() {
           )}
 
           <div style={{ marginTop: 'auto', fontSize: '.7rem', opacity: 0.5, textTransform: 'uppercase' }}>
-            Live Tiles<br />
+            Live Tiles
+            <br />
             <span className="dm-mono">Operation: {selectedMission?.name ?? 'None Selected'}</span>
           </div>
         </aside>
 
         {/* CENTER MAP VIEWPORT */}
-        <div style={{ position: 'relative' }}>
-          <MapContainer center={HQ_CENTER} zoom={14} style={{ height: '100%', width: '100%' }} zoomControl={false}>
-            <TileLayer
-              attribution='&copy; OpenStreetMap contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-
-            {showGeofences &&
-              geofences
-                .filter((g) => g.type === 'geofence')
-                .map((g) => (
-                  <Polygon
-                    key={g.id}
-                    positions={g.geometry.coordinates[0].map(([lng, lat]) => [lat, lng] as LatLngTuple)}
-                    pathOptions={{ color: '#4A5149', fillColor: '#4A5149', fillOpacity: 0.15, weight: 2 }}
-                  />
-                ))}
-
-            {showNfz &&
-              geofences
-                .filter((g) => g.type === 'nfz')
-                .map((g) => (
-                  <Polygon
-                    key={g.id}
-                    positions={g.geometry.coordinates[0].map(([lng, lat]) => [lat, lng] as LatLngTuple)}
-                    pathOptions={{ color: '#7A3B3B', fillColor: '#7A3B3B', fillOpacity: 0.2, weight: 2, dashArray: '6 4' }}
-                  />
-                ))}
-
+        <div style={{ position: 'relative', minHeight: '60vh' }}>
+          <MissionMap
+            drones={drones}
+            showDrones={layers.drones && !(layers.orca && orca)}
+            onDroneSelect={setSelectedDrone}
+            fitTo={
+              !fitDemo
+                ? null
+                : fitArea === 'conflict'
+                  ? [[23.2156 - 0.0003, 72.6369 - 0.0013], [23.2156 + 0.0011, 72.6369 + 0.0017]]
+                  : [[23.2156 - 0.0017, 72.6369 - 0.0018], [23.2156 + 0.0024, 72.6369 + 0.0019]]
+            }
+            fitKey={fitDemo}
+            fitMaxZoom={18}
+          >
+            {layers.orca && orca && <OrcaLayer view={orca} timeline={timeline} />}
+            <GeofenceLayers geofences={geofences} visible={{ inclusion: layers.inclusion, exclusion: layers.exclusion, nfz: layers.nfz }} />
             {selectedMission?.aoi_geometry && (
               <Polygon
-                positions={selectedMission.aoi_geometry.coordinates[0].map(([lng, lat]) => [lat, lng] as LatLngTuple)}
-                pathOptions={{ color: '#9C9FAB', fillColor: '#273046', fillOpacity: 0.25, weight: 2 }}
+                positions={ringToLatLng(selectedMission.aoi_geometry.coordinates[0])}
+                pathOptions={{ color: cssVar('--dm-aoi-stroke'), fillColor: cssVar('--dm-navy-900'), fillOpacity: 0.25, weight: 2 }}
               />
             )}
-
+            {layers.lanes && plan && <CbbaLanes bundles={plan.bundles} tasks={plan.tasks} />}
             <AoiDrawLayer active={drawing} points={draftPoints} onAddPoint={(p) => setDraftPoints((prev) => [...prev, p])} />
-
-            {showDrones && drones.map((d) => <DroneMarker key={d.id} drone={d} onSelect={setSelectedDrone} />)}
-
-            <InstrumentRail />
-            <MapResizeHandler />
-          </MapContainer>
+          </MissionMap>
 
           {/* TELEMETRY FOOTER BAR - spec 6.7 */}
           <div
@@ -237,7 +266,7 @@ export function MapPage() {
               left: 0,
               right: 0,
               bottom: 0,
-              zIndex: 20,
+              zIndex: 1000,
               background: 'color-mix(in srgb, var(--dm-slate-500) 92%, transparent)',
               color: 'var(--dm-text-on-dark)',
               padding: '.5rem var(--dm-space-md)',
@@ -264,14 +293,4 @@ function LayerToggle({ label, checked, onChange }: { label: string; checked: boo
       {label}
     </label>
   )
-}
-
-const buttonStyle: React.CSSProperties = {
-  border: 0,
-  borderRadius: 'var(--dm-radius-sm)',
-  padding: '.55rem',
-  background: 'var(--dm-status-active)',
-  color: 'white',
-  textTransform: 'uppercase',
-  fontSize: '.75rem',
 }

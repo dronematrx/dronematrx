@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.models.drone import Drone
 
@@ -13,7 +13,7 @@ class DroneRepository:
         self.db = db
 
     def list(self, organization_id: uuid.UUID, include_inactive: bool = False) -> list[Drone]:
-        stmt = select(Drone).where(Drone.organization_id == organization_id)
+        stmt = select(Drone).options(selectinload(Drone.payloads)).where(Drone.organization_id == organization_id)
         if not include_inactive:
             stmt = stmt.where(Drone.active.is_(True))
         stmt = stmt.order_by(Drone.name)

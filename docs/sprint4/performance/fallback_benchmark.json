@@ -1,0 +1,263 @@
+{
+  "generated_at": "2026-10-06T13:15:45.405448+00:00",
+  "thresholds": {
+    "wifi": {
+      "breach_rssi_dbm": -75.0,
+      "recover_rssi_dbm": -67.0,
+      "breach_loss_pct": 10.0,
+      "recover_loss_pct": 3.0,
+      "breach_latency_ms": 150.0,
+      "recover_latency_ms": 80.0
+    },
+    "lte": {
+      "breach_rssi_dbm": -105.0,
+      "recover_rssi_dbm": -95.0,
+      "breach_loss_pct": 15.0,
+      "recover_loss_pct": 5.0,
+      "breach_latency_ms": 300.0,
+      "recover_latency_ms": 150.0
+    },
+    "lora": {
+      "breach_rssi_dbm": -125.0,
+      "recover_rssi_dbm": -118.0,
+      "breach_loss_pct": 30.0,
+      "recover_loss_pct": 10.0,
+      "breach_latency_ms": 2000.0,
+      "recover_latency_ms": 1200.0
+    }
+  },
+  "policy": {
+    "poll_hz": 2.0,
+    "recovery_hold_s": 3.0,
+    "min_dwell_s": 2.0
+  },
+  "wifi_to_lte_total_ms": {
+    "n": 10,
+    "avg": 205.9,
+    "p50": 170.1,
+    "p95": 436.7,
+    "p99": 436.7,
+    "max": 436.7,
+    "min": 0.0
+  },
+  "lte_to_lora_total_ms": {
+    "n": 10,
+    "avg": 208.96,
+    "p50": 157.3,
+    "p95": 470.1,
+    "p99": 470.1,
+    "max": 470.1,
+    "min": 31.4
+  },
+  "detect_ms": {
+    "n": 20,
+    "avg": 207.39,
+    "p50": 170.1,
+    "p95": 436.3,
+    "p99": 470.1,
+    "max": 470.1,
+    "min": 0.0
+  },
+  "decision_ms": {
+    "n": 20,
+    "avg": 0.037,
+    "p50": 0.0,
+    "p95": 0.369,
+    "p99": 0.371,
+    "max": 0.371,
+    "min": 0.0
+  },
+  "activation_ms": {
+    "n": 20,
+    "avg": 0.0,
+    "p50": 0.0,
+    "p95": 0.0,
+    "p99": 0.0,
+    "max": 0.0,
+    "min": 0.0
+  },
+  "recovery_to_wifi_ms": {
+    "n": 10,
+    "avg": 3476.03,
+    "p50": 3487.9,
+    "p95": 3837.8,
+    "p99": 3837.8,
+    "max": 3837.8,
+    "min": 3047.5
+  },
+  "trials": [
+    {
+      "trial": 0,
+      "wifi_to_lte": {
+        "detect_ms": 0.0,
+        "decision_ms": 0.0,
+        "activation_ms": 0.0,
+        "total_ms": 0.0
+      },
+      "lte_to_lora": {
+        "detect_ms": 157.3,
+        "decision_ms": 0.0,
+        "activation_ms": 0.0,
+        "total_ms": 157.3
+      },
+      "recovery_to_wifi_ms": 3684.7,
+      "poll_hz": 2.001
+    },
+    {
+      "trial": 1,
+      "wifi_to_lte": {
+        "detect_ms": 436.3,
+        "decision_ms": 0.371,
+        "activation_ms": 0.0,
+        "total_ms": 436.7
+      },
+      "lte_to_lora": {
+        "detect_ms": 110.1,
+        "decision_ms": 0.0,
+        "activation_ms": 0.0,
+        "total_ms": 110.1
+      },
+      "recovery_to_wifi_ms": 3620.2,
+      "poll_hz": 2.0
+    },
+    {
+      "trial": 2,
+      "wifi_to_lte": {
+        "detect_ms": 374.2,
+        "decision_ms": 0.0,
+        "activation_ms": 0.0,
+        "total_ms": 374.2
+      },
+      "lte_to_lora": {
+        "detect_ms": 31.4,
+        "decision_ms": 0.0,
+        "activation_ms": 0.0,
+        "total_ms": 31.4
+      },
+      "recovery_to_wifi_ms": 3047.5,
+      "poll_hz": 2.007
+    },
+    {
+      "trial": 3,
+      "wifi_to_lte": {
+        "detect_ms": 328.7,
+        "decision_ms": 0.0,
+        "activation_ms": 0.0,
+        "total_ms": 328.7
+      },
+      "lte_to_lora": {
+        "detect_ms": 470.1,
+        "decision_ms": 0.0,
+        "activation_ms": 0.0,
+        "total_ms": 470.1
+      },
+      "recovery_to_wifi_ms": 3487.9,
+      "poll_hz": 2.004
+    },
+    {
+      "trial": 4,
+      "wifi_to_lte": {
+        "detect_ms": 282.2,
+        "decision_ms": 0.0,
+        "activation_ms": 0.0,
+        "total_ms": 282.2
+      },
+      "lte_to_lora": {
+        "detect_ms": 397.7,
+        "decision_ms": 0.0,
+        "activation_ms": 0.0,
+        "total_ms": 397.7
+      },
+      "recovery_to_wifi_ms": 3406.9,
+      "poll_hz": 2.003
+    },
+    {
+      "trial": 5,
+      "wifi_to_lte": {
+        "detect_ms": 217.4,
+        "decision_ms": 0.0,
+        "activation_ms": 0.0,
+        "total_ms": 217.4
+      },
+      "lte_to_lora": {
+        "detect_ms": 332.1,
+        "decision_ms": 0.0,
+        "activation_ms": 0.0,
+        "total_ms": 332.1
+      },
+      "recovery_to_wifi_ms": 3837.8,
+      "poll_hz": 2.006
+    },
+    {
+      "trial": 6,
+      "wifi_to_lte": {
+        "detect_ms": 170.1,
+        "decision_ms": 0.0,
+        "activation_ms": 0.0,
+        "total_ms": 170.1
+      },
+      "lte_to_lora": {
+        "detect_ms": 249.3,
+        "decision_ms": 0.0,
+        "activation_ms": 0.0,
+        "total_ms": 249.3
+      },
+      "recovery_to_wifi_ms": 3277.0,
+      "poll_hz": 2.003
+    },
+    {
+      "trial": 7,
+      "wifi_to_lte": {
+        "detect_ms": 126.3,
+        "decision_ms": 0.0,
+        "activation_ms": 0.0,
+        "total_ms": 126.3
+      },
+      "lte_to_lora": {
+        "detect_ms": 186.2,
+        "decision_ms": 0.0,
+        "activation_ms": 0.0,
+        "total_ms": 186.2
+      },
+      "recovery_to_wifi_ms": 3203.3,
+      "poll_hz": 2.008
+    },
+    {
+      "trial": 8,
+      "wifi_to_lte": {
+        "detect_ms": 93.0,
+        "decision_ms": 0.0,
+        "activation_ms": 0.0,
+        "total_ms": 93.0
+      },
+      "lte_to_lora": {
+        "detect_ms": 106.8,
+        "decision_ms": 0.0,
+        "activation_ms": 0.0,
+        "total_ms": 106.8
+      },
+      "recovery_to_wifi_ms": 3625.0,
+      "poll_hz": 2.003
+    },
+    {
+      "trial": 9,
+      "wifi_to_lte": {
+        "detect_ms": 30.4,
+        "decision_ms": 0.0,
+        "activation_ms": 0.0,
+        "total_ms": 30.4
+      },
+      "lte_to_lora": {
+        "detect_ms": 48.2,
+        "decision_ms": 0.369,
+        "activation_ms": 0.0,
+        "total_ms": 48.6
+      },
+      "recovery_to_wifi_ms": 3570.0,
+      "poll_hz": 2.003
+    }
+  ],
+  "acceptance": {
+    "fallback_under_1s": true
+  }
+}

@@ -42,6 +42,10 @@ class Drone(Base):
     armed: Mapped[bool] = mapped_column(Boolean, default=False)
     link_quality: Mapped[float] = mapped_column(Float, default=0)
 
+    # Airframe performance used by mission planning (CBBA feasibility).
+    max_speed: Mapped[float] = mapped_column(Float, default=15.0, server_default="15")
+    endurance_minutes: Mapped[float] = mapped_column(Float, default=30.0, server_default="30")
+
     total_flight_hours: Mapped[float] = mapped_column(Float, default=0)
     battery_cycles: Mapped[int] = mapped_column(Integer, default=0)
 

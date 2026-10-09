@@ -1,0 +1,13 @@
+{
+  "generated_at": "2026-10-06T13:13:40.543554+00:00",
+  "os": "Windows 11 (10.0.26200)",
+  "machine": "AMD64",
+  "cpu": "AMD Ryzen 5 5600H with Radeon Graphics (12 logical CPUs)",
+  "python": "3.10.11",
+  "node": "v22.17.0",
+  "postgresql": "PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+  "timescaledb": "2.30.2",
+  "postgis": "3.6.4",
+  "nats_server": "2.10.29",
+  "docker": "Docker version 29.5.3, build d1c06ef"
+}

@@ -19,12 +19,13 @@ async def telemetry_ws(websocket: WebSocket, token: str | None = None) -> None:
         return
 
     try:
-        decode_token(token)
+        claims = decode_token(token)
     except jwt.PyJWTError:
         await websocket.close(code=4401, reason="Invalid or expired token")
         return
 
-    await connection_manager.connect(websocket)
+    # Same socket also carries tenant-scoped mission events ({"type": "mission"}).
+    await connection_manager.connect(websocket, claims.get("org_id"))
     try:
         while True:
             # Clients don't need to send anything; we just keep the socket

@@ -627,7 +627,7 @@ export const useSwarmStore = create<SwarmStore>((set, get) => ({
 
             // Trigger AI detection events based on mission type and some probability
             if (Math.random() < 0.15) {
-              let aiMsg = '';
+              let aiMsg: string;
               if (state.missionType === 'SAR') {
                 aiMsg = `AI detection: Person spotted at grid sector coordinates (${Math.round(drone.x)}, ${Math.round(drone.y)}) with 94% confidence.`;
               } else if (state.missionType === 'AGRI') {
@@ -720,7 +720,7 @@ export const useSwarmStore = create<SwarmStore>((set, get) => ({
     // Dynamic Swarm Health Score calculation
     let offlineCount = 0;
     let criticalBatteryCount = 0;
-    let totalDronesCount = updatedDrones.length;
+    const totalDronesCount = updatedDrones.length;
     
     updatedDrones.forEach(d => {
       if (d.comsLost) offlineCount++;

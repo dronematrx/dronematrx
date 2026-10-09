@@ -14,6 +14,7 @@ class TelemetryUpdate(BaseModel):
 
     drone_id: str
     name: str | None = None
+    uin: str | None = None
     latitude: float
     longitude: float
     altitude: float
@@ -26,6 +27,9 @@ class TelemetryUpdate(BaseModel):
     link_quality: float
     status: str
     timestamp: datetime
+    # Sprint 4: link the message actually travelled over (set by the comms layer).
+    link_type: str | None = None
+    rssi: float | None = None
 
 
 class TelemetryHistoryPoint(BaseModel):

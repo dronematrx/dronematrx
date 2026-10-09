@@ -27,7 +27,8 @@ def test_set_and_get_aoi(client, operator_user):
 
     set_resp = client.post(f"/missions/{mission['id']}/aoi", headers=headers, json={"geometry": AOI})
     assert set_resp.status_code == 200
-    assert set_resp.json()["area_sq_meters"] > 0
+    # ~2.2 km x 2.2 km square: area must be in m², not square degrees.
+    assert 4.0e6 < set_resp.json()["area_sq_meters"] < 5.5e6
     assert set_resp.json()["vertex_count"] == 5
 
     get_resp = client.get(f"/missions/{mission['id']}/aoi", headers=headers)
@@ -35,19 +36,31 @@ def test_set_and_get_aoi(client, operator_user):
     assert get_resp.json()["geometry"]["type"] == "Polygon"
 
 
-def test_update_mission_status_lifecycle(client, operator_user):
+def test_patch_status_goes_through_state_machine(client, operator_user):
+    """Sprint 3: PATCH can no longer write arbitrary statuses. DRAFT -> ACTIVE
+    is rejected; legal transitions (e.g. DRAFT -> ABORTED) still work and set
+    end_time. The full lifecycle is covered in test_mission_state_machine.py."""
     headers = auth_headers(client, operator_user.email)
     mission = client.post("/missions", headers=headers, json={"name": "Lifecycle", "mission_type": "SURVEY"}).json()
 
-    started = client.patch(f"/missions/{mission['id']}", headers=headers, json={"status": "active"})
-    assert started.status_code == 200
-    assert started.json()["status"] == "active"
-    assert started.json()["start_time"] is not None
+    skipped = client.patch(f"/missions/{mission['id']}", headers=headers, json={"status": "active"})
+    assert skipped.status_code == 409
+    assert skipped.json()["code"] == "INVALID_TRANSITION"
+    assert client.get(f"/missions/{mission['id']}", headers=headers).json()["status"] == "draft"
 
-    stopped = client.patch(f"/missions/{mission['id']}", headers=headers, json={"status": "completed"})
-    assert stopped.status_code == 200
-    assert stopped.json()["status"] == "completed"
-    assert stopped.json()["end_time"] is not None
+    aborted = client.patch(f"/missions/{mission['id']}", headers=headers, json={"status": "aborted"})
+    assert aborted.status_code == 200
+    assert aborted.json()["status"] == "aborted"
+    assert aborted.json()["end_time"] is not None
+
+    renamed = client.patch(f"/missions/{mission['id']}", headers=headers, json={"name": "Renamed"})
+    assert renamed.status_code == 200 and renamed.json()["name"] == "Renamed"
+
+
+def test_create_mission_only_in_draft(client, operator_user):
+    headers = auth_headers(client, operator_user.email)
+    resp = client.post("/missions", headers=headers, json={"name": "Sneaky", "mission_type": "SURVEY", "status": "active"})
+    assert resp.status_code == 422
 
 
 def test_delete_mission(client, operator_user):

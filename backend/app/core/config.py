@@ -33,6 +33,25 @@ class Settings(BaseSettings):
     TELEMETRY_PROVIDER: str = "simulator"  # simulator | mavlink | nats (future)
     TELEMETRY_TICK_SECONDS: float = 1.0
 
+    # Sprint 4: NATS JetStream message bus (drone telemetry/state/alert/command).
+    # Credentials, if any, belong in the URL via .env -- never in code.
+    NATS_ENABLED: bool = True
+    NATS_URL: str = "nats://localhost:4222"
+    NATS_STREAM: str = "DRONES"
+    NATS_SUBJECT_PREFIX: str = ""  # tests use an isolated prefix + stream
+    NATS_MAX_AGE_HOURS: float = 24.0  # JetStream retention = replay window
+    NATS_CONNECT_TIMEOUT_S: float = 2.0
+    NATS_MONITOR_URL: str = "http://localhost:8222"
+
+    # Sprint 4: ORCA collision avoidance (10 Hz) + communication manager (2 Hz).
+    ORCA_ENABLED: bool = True
+    ORCA_RATE_HZ: float = 10.0
+    COMMS_POLL_HZ: float = 2.0
+
+    # Mission planning (Sprint 3)
+    CBBA_TIME_LIMIT_SECONDS: float = 5.0  # hard cap; acceptance target is < 2 s for 8 drones
+    MISSION_TELEMETRY_MAX_AGE_SECONDS: float = 120.0  # ARMED -> ACTIVE requires fresher telemetry
+
 
 @lru_cache
 def get_settings() -> Settings:

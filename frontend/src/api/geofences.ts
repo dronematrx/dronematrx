@@ -1,7 +1,7 @@
 import { apiFetch } from './client'
-import type { Geofence, GeofenceCreateInput } from './types'
+import type { Geofence, GeofenceCreateInput, GeofenceImportResult, GeofenceType } from './types'
 
-export function listGeofences(type?: 'geofence' | 'nfz'): Promise<Geofence[]> {
+export function listGeofences(type?: GeofenceType): Promise<Geofence[]> {
   const query = type ? `?type=${type}` : ''
   return apiFetch<Geofence[]>(`/geofences${query}`)
 }
@@ -16,4 +16,12 @@ export function updateGeofence(id: string, input: Partial<GeofenceCreateInput> &
 
 export function deleteGeofence(id: string): Promise<void> {
   return apiFetch<void>(`/geofences/${id}`, { method: 'DELETE' })
+}
+
+export function importGeofences(format: 'geojson' | 'kml', content: string, defaultType: GeofenceType = 'inclusion'): Promise<GeofenceImportResult> {
+  return apiFetch<GeofenceImportResult>('/geofences/import', { method: 'POST', body: { format, content, default_type: defaultType } })
+}
+
+export function exportGeofences(format: 'geojson' | 'kml'): Promise<string> {
+  return apiFetch<string>(`/geofences/export?format=${format}`, { raw: true })
 }

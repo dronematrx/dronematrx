@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, field_validator
 
@@ -13,7 +13,9 @@ class MissionBase(BaseModel):
 
 
 class MissionCreate(MissionBase):
-    status: str = "draft"
+    # New missions always start in DRAFT; every later state goes through
+    # POST /missions/{id}/transition (the state machine).
+    status: Literal["draft"] = "draft"
     aoi_geometry: dict[str, Any] | None = None
 
     @field_validator("aoi_geometry")
@@ -41,6 +43,10 @@ class MissionOut(MissionBase):
     aoi_area_sq_meters: float | None = None
     start_time: datetime | None
     end_time: datetime | None
+    template: str | None = None
+    wizard_step: int = 1
+    completed_steps: list[int] = []
+    validation_passed: bool | None = None
     created_by: uuid.UUID | None
     created_at: datetime
     updated_at: datetime
@@ -59,6 +65,10 @@ class MissionOut(MissionBase):
             aoi_area_sq_meters=area_sq_meters,
             start_time=mission.start_time,
             end_time=mission.end_time,
+            template=mission.template,
+            wizard_step=mission.wizard_step or 1,
+            completed_steps=sorted((mission.config or {}).get("completed_steps", [])),
+            validation_passed=(mission.validation_report or {}).get("passed") if mission.validation_report else None,
             created_by=mission.created_by,
             created_at=mission.created_at,
             updated_at=mission.updated_at,

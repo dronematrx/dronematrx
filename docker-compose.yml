@@ -2,9 +2,12 @@ services:
   db:
     build:
       context: ./db
-    image: dronematrx/postgres-postgis:16
+    image: dronematrx/postgres-postgis-timescale:16
     container_name: dronematrx_db
     restart: unless-stopped
+    # TimescaleDB must be preloaded; telemetry lives in a hypertable inside
+    # this same database (Sprint 4).
+    command: ["postgres", "-c", "shared_preload_libraries=timescaledb", "-c", "timescaledb.telemetry_level=off"]
     environment:
       POSTGRES_USER: dronematrx
       POSTGRES_PASSWORD: dronematrx
@@ -22,5 +25,24 @@ services:
       timeout: 5s
       retries: 10
 
+  # Sprint 4: NATS with JetStream -- drone telemetry/state/alert/command bus.
+  # 4222 = client protocol, 8222 = HTTP monitoring (/varz, /jsz, /connz).
+  nats:
+    image: nats:2.10-alpine
+    container_name: dronematrx_nats
+    restart: unless-stopped
+    command: ["--jetstream", "--store_dir", "/data", "--http_port", "8222", "--server_name", "dronematrx-edge"]
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    volumes:
+      - dronematrx_nats_data:/data
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8222/healthz?js-enabled-only=true"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
 volumes:
   dronematrx_db_data:
+  dronematrx_nats_data:

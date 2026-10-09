@@ -273,7 +273,7 @@ export const MissionControl: React.FC<MissionControlProps> = ({ onBackToLanding 
                       <button
                         key={opt.type}
                         disabled={missionStatus !== 'IDLE' && missionStatus !== 'COMPLETED'}
-                        onClick={() => setMissionType(opt.type as any)}
+                        onClick={() => setMissionType(opt.type as Parameters<typeof setMissionType>[0])}
                         className={`w-full text-left p-2.5 rounded border transition-all ${
                           missionType === opt.type 
                             ? 'border-cyber-blue bg-cyber-blue/10 text-white shadow-cyber-blue' 

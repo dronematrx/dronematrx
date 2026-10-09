@@ -1,5 +1,4 @@
 import uuid
-from datetime import datetime, timezone
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -40,19 +39,24 @@ class MissionService:
         )
         return self.repo.create(mission)
 
-    def update_mission(self, mission_id: uuid.UUID, organization_id: uuid.UUID, payload: MissionUpdate) -> Mission:
+    def update_mission(
+        self, mission_id: uuid.UUID, organization_id: uuid.UUID, payload: MissionUpdate, user=None, ip_address: str | None = None
+    ) -> Mission:
+        """Edit metadata. A `status` change is routed through the mission state
+        machine (validated transition + guards + history + audit) -- arbitrary
+        status writes are no longer possible."""
+        from app.services.mission_state_service import MissionStateService
+
         mission = self.get_mission(mission_id, organization_id)
         updates = payload.model_dump(exclude_unset=True)
-
-        new_status = updates.get("status")
-        if new_status == "active" and mission.status != "active" and "start_time" not in updates:
-            updates["start_time"] = datetime.now(timezone.utc)
-        elif new_status in ("completed", "aborted") and "end_time" not in updates:
-            updates["end_time"] = datetime.now(timezone.utc)
+        new_status = updates.pop("status", None)
 
         for field, value in updates.items():
             setattr(mission, field, value)
-        return self.repo.update(mission)
+        mission = self.repo.update(mission)
+        if new_status is not None and new_status != mission.status:
+            mission = MissionStateService(self.db).transition(mission, new_status, user, "Status changed via PATCH", ip_address)
+        return mission
 
     def delete_mission(self, mission_id: uuid.UUID, organization_id: uuid.UUID) -> None:
         mission = self.get_mission(mission_id, organization_id)

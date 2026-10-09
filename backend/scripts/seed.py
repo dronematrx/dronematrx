@@ -4,9 +4,16 @@ Run with:  python scripts/seed.py   (from backend/, inside the venv)
 
 Creates one organization, one user per RBAC role, 8 realistic drones around
 the Gandhinagar/Ahmedabad AgriTech pilot area, their payload + maintenance
-records, 2 sample missions (one with a saved AOI), 2 geofences and 1 NFZ.
+records, 2 sample missions (one with a saved AOI), 2 inclusion geofences,
+1 exclusion zone and 1 NFZ.
+
+Sprint 3 additions (planned with the real CBBA planning service):
+  * "Solar Farm Survey"          -- converges, passes validation (ready to arm)
+  * "Lidar Corridor Inspection"  -- contains an infeasible lidar task (unassigned)
+  * "Airport Approach Survey"    -- AOI crosses the airport NFZ (blocked)
+
 Idempotent: safe to re-run, existing rows are left alone (matched by
-slug/email/uin).
+slug/email/uin/name). Drone performance profiles are always re-applied.
 """
 import os
 import sys
@@ -30,7 +37,7 @@ from app.models import (  # noqa: E402
 
 SEED_PASSWORD = os.environ.get("SEED_PASSWORD", "DroneMatrx@2026")
 ORG_SLUG = "drone-matrx-hq"
-BASE_LAT, BASE_LON = 23.2156, 72.6369  # Gandhinagar, Gujarat -- project HQ / PoC site
+from app.services.demo_fleet import BASE_LAT, BASE_LON, DRONE_SPECS, PERFORMANCE, reset_drone  # noqa: E402
 
 now = datetime.now(timezone.utc)
 
@@ -63,41 +70,6 @@ def get_or_create_user(db, org: Organization, email: str, full_name: str, role: 
     return user
 
 
-DRONE_SPECS = [
-    dict(name="DMX-001", model="M30", firmware="PX4 v1.14.2", vehicle_type="quadrotor",
-         status="online", battery=87, lat=BASE_LAT + 0.0021, lon=BASE_LON + 0.0032, alt=42, heading=118,
-         flight_mode="LOITER", gps_status="3D_FIX", armed=False, link_quality=94,
-         payloads=[("camera", "M30 Wide Camera", "calibrated")]),
-    dict(name="DMX-002", model="M30T", firmware="PX4 v1.14.2", vehicle_type="quadrotor",
-         status="active", battery=72, lat=BASE_LAT - 0.0015, lon=BASE_LON + 0.0011, alt=55, heading=260,
-         flight_mode="MISSION", gps_status="3D_FIX", armed=True, link_quality=88,
-         payloads=[("thermal", "M30T Thermal", "calibrated"), ("camera", "M30T Zoom Camera", "calibrated")]),
-    dict(name="DMX-003", model="Matrice 350", firmware="PX4 v1.13.3", vehicle_type="hexarotor",
-         status="warning", battery=34, lat=BASE_LAT + 0.0008, lon=BASE_LON - 0.0027, alt=38, heading=15,
-         flight_mode="HOLD", gps_status="2D_FIX", armed=True, link_quality=51,
-         payloads=[("multispectral", "RedEdge-MX", "due")]),
-    dict(name="DMX-004", model="ArduCopter X8", firmware="ArduPilot 4.5.1", vehicle_type="octorotor",
-         status="offline", battery=0, lat=None, lon=None, alt=0, heading=0,
-         flight_mode="STANDBY", gps_status="NO_FIX", armed=False, link_quality=0,
-         payloads=[("lidar", "Livox Avia", "uncalibrated")]),
-    dict(name="DMX-005", model="M30", firmware="PX4 v1.14.2", vehicle_type="quadrotor",
-         status="online", battery=95, lat=BASE_LAT + 0.0044, lon=BASE_LON - 0.0009, alt=0, heading=200,
-         flight_mode="STANDBY", gps_status="3D_FIX", armed=False, link_quality=97,
-         payloads=[("camera", "M30 Wide Camera", "calibrated")]),
-    dict(name="DMX-006", model="Agras T40", firmware="ArduPilot 4.4.4", vehicle_type="octorotor",
-         status="active", battery=61, lat=BASE_LAT - 0.0032, lon=BASE_LON - 0.0018, alt=6, heading=88,
-         flight_mode="MISSION", gps_status="3D_FIX", armed=True, link_quality=79,
-         payloads=[("sprayer", "T40 Spray Tank", "calibrated")]),
-    dict(name="DMX-007", model="Matrice 350", firmware="PX4 v1.13.3", vehicle_type="hexarotor",
-         status="critical", battery=11, lat=BASE_LAT + 0.0002, lon=BASE_LON + 0.0055, alt=61, heading=330,
-         flight_mode="RTL", gps_status="3D_FIX", armed=True, link_quality=42,
-         payloads=[("camera", "H20T Camera", "fault")]),
-    dict(name="DMX-008", model="M30T", firmware="PX4 v1.14.0", vehicle_type="quadrotor",
-         status="maintenance", battery=100, lat=BASE_LAT - 0.0005, lon=BASE_LON + 0.0041, alt=0, heading=0,
-         flight_mode="STANDBY", gps_status="NO_FIX", armed=False, link_quality=0,
-         payloads=[("thermal", "M30T Thermal", "uncalibrated")]),
-]
-
 MAINTENANCE_LOG = [
     ("routine", "A. Mehta", "40-hour rotor and ESC inspection, all nominal."),
     ("repair", "R. Patel", "Replaced cracked front-left propeller after hard landing."),
@@ -111,6 +83,9 @@ def seed_drones(db, org: Organization) -> list[Drone]:
     for i, spec in enumerate(DRONE_SPECS):
         existing = db.query(Drone).filter_by(name=spec["name"], organization_id=org.id).one_or_none()
         if existing:
+            # Deterministic demo state: undo whatever a previous simulator run did.
+            reset_drone(existing, spec, i, now)
+            db.commit()
             drones.append(existing)
             continue
 
@@ -139,6 +114,8 @@ def seed_drones(db, org: Organization) -> list[Drone]:
             battery_cycles=40 + i * 7,
             last_telemetry_at=now - timedelta(minutes=i),
             active=True,
+            max_speed=PERFORMANCE[spec["model"]][0],
+            endurance_minutes=PERFORMANCE[spec["model"]][1],
         )
         db.add(drone)
         db.commit()
@@ -205,9 +182,10 @@ def seed_missions(db, org: Organization, commander) -> None:
 
 def seed_geofences(db, org: Organization) -> None:
     specs = [
-        ("Warehouse Perimeter", "geofence", BASE_LAT, BASE_LON, 0.003, 0, 120),
-        ("South Field Boundary", "geofence", BASE_LAT - 0.006, BASE_LON - 0.004, 0.004, 0, 90),
+        ("Warehouse Perimeter", "inclusion", BASE_LAT, BASE_LON, 0.003, 0, 120),
+        ("South Field Boundary", "inclusion", BASE_LAT - 0.006, BASE_LON - 0.004, 0.004, 0, 90),
         ("Airport Approach NFZ", "nfz", BASE_LAT + 0.012, BASE_LON + 0.009, 0.007, 0, 500),
+        ("Village Market Crowd Area", "exclusion", BASE_LAT + 0.004, BASE_LON - 0.012, 0.0015, 0, 120),
     ]
     for name, gtype, lat, lon, half, alt_min, alt_max in specs:
         if db.query(Geofence).filter_by(organization_id=org.id, name=name).one_or_none() is not None:
@@ -224,6 +202,55 @@ def seed_geofences(db, org: Organization) -> None:
     db.commit()
 
 
+def _square(center_lat: float, center_lon: float, half: float) -> dict:
+    return _polygon(center_lat, center_lon, half)
+
+
+PLANNED_MISSIONS = [
+    # name, AOI (lat, lon, half-size deg), template, required sensors, inspection points
+    ("Solar Farm Survey", (BASE_LAT - 0.008, BASE_LON - 0.006, 0.002), "survey", ["camera"], []),
+    (
+        "Lidar Corridor Inspection",
+        (BASE_LAT - 0.004, BASE_LON + 0.006, 0.0015),
+        "inspection",
+        ["camera"],
+        [{"latitude": BASE_LAT - 0.004, "longitude": BASE_LON + 0.0065, "required_sensor": "lidar", "priority": 4,
+          "hover_time_s": 90, "label": "Pylon 14 lidar scan"}],
+    ),
+    ("Airport Approach Survey", (BASE_LAT + 0.010, BASE_LON + 0.004, 0.002), "survey", ["camera"], []),
+]
+
+
+def seed_planned_missions(db, org: Organization, operator: User) -> None:
+    """Drive the real wizard + CBBA + validation path for the demo missions."""
+    from app.services.mission_planning_service import MissionPlanningService, PlanningError
+
+    planning = MissionPlanningService(db)
+    drone_ids = [str(d.id) for d in db.query(Drone).filter_by(organization_id=org.id).order_by(Drone.name).all()]
+    for name, (lat, lon, half), template, sensors, points in PLANNED_MISSIONS:
+        if db.query(Mission).filter_by(organization_id=org.id, name=name).one_or_none() is not None:
+            continue
+        mission = Mission(organization_id=org.id, name=name, mission_type="SURVEY", status="draft", created_by=operator.id)
+        db.add(mission)
+        db.commit()
+        db.refresh(mission)
+        try:
+            planning.save_step(mission, 1, {"template": template, "name": name}, operator)
+            planning.save_step(mission, 2, {"source": "drawn", "geometry": _square(lat, lon, half)}, operator)
+            planning.save_step(mission, 3, {**mission.config["flight"], "altitude_m": 70, "overlap_pct": 60, "rth_battery_pct": 20}, operator)
+            planning.save_step(mission, 4, {"required_sensors": sensors, "drone_ids": drone_ids}, operator)
+            planning.save_step(mission, 5, {"min_battery_pct": 30, "max_tasks_per_drone": 25, "inspection_points": points}, operator)
+            report = planning.validate(mission, operator)
+            plan = planning.current_plan(mission)
+            print(
+                f"  - {name}: {plan.task_count if plan else 0} tasks, {plan.assigned_count if plan else 0} assigned, "
+                f"converged={plan.converged if plan else False}, validation passed={report['passed']}"
+                + (" (NFZ conflict)" if report["nfz_conflict"] else "")
+            )
+        except PlanningError as exc:
+            print(f"  - {name}: planning skipped ({exc.code}: {exc.message})")
+
+
 def main() -> None:
     db = SessionLocal()
     try:
@@ -237,6 +264,8 @@ def main() -> None:
         seed_drones(db, org)
         seed_missions(db, org, operator)
         seed_geofences(db, org)
+        print("Planned missions (CBBA):")
+        seed_planned_missions(db, org, operator)
 
         print(f"Seed complete for organization '{org.name}' ({org.id}).")
         print("Users (all share the SEED_PASSWORD value; default DroneMatrx@2026):")

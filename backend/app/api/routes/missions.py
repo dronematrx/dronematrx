@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, require_mission_write
@@ -8,6 +8,7 @@ from app.db.session import get_db
 from app.models.user import User
 from app.repositories.audit_repository import AuditRepository
 from app.schemas.mission import AOIOut, AOIUpsert, MissionCreate, MissionOut, MissionUpdate
+from app.services import mission_events
 from app.services.mission_service import MissionNotFoundError, MissionService
 
 router = APIRouter(prefix="/missions", tags=["missions"])
@@ -66,12 +67,15 @@ def update_mission(
     mission_id: uuid.UUID,
     payload: MissionUpdate,
     request: Request,
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(require_mission_write),
     db: Session = Depends(get_db),
 ) -> MissionOut:
     service = MissionService(db)
     try:
-        mission = service.update_mission(mission_id, current_user.organization_id, payload)
+        mission = service.update_mission(
+            mission_id, current_user.organization_id, payload, current_user, request.client.host if request.client else None
+        )
     except MissionNotFoundError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Mission not found")
 
@@ -80,6 +84,8 @@ def update_mission(
         action = "mission_started"
     elif payload.status in ("completed", "aborted"):
         action = "mission_stopped"
+    if payload.status is not None:
+        mission_events.publish(background_tasks, mission.organization_id, "mission.state_changed", mission.id, {"status": mission.status})
 
     AuditRepository(db).record(
         user_id=current_user.id,

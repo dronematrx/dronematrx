@@ -51,6 +51,42 @@ class GeofenceService:
         geofence = self.get_geofence(geofence_id, organization_id)
         self.repo.delete(geofence)
 
+    def import_zones(self, organization_id: uuid.UUID, zones, default_type: str):
+        """Create a geofence per parsed zone. Returns (created, skipped[(index, name, reason)])."""
+        from app.schemas.geofence import normalize_geofence_type
+
+        created: list[Geofence] = []
+        skipped: list[tuple[int, str | None, str]] = []
+        for index, zone in enumerate(zones):
+            if zone.error or zone.geometry is None:
+                skipped.append((index, zone.name, zone.error or "missing geometry"))
+                continue
+            try:
+                zone_type = normalize_geofence_type(zone.type) if zone.type else default_type
+                ring = zone.geometry["coordinates"][0]
+                if len(ring) < 4:
+                    raise ValueError("Polygon needs at least 3 vertices")
+                geometry = geojson_to_geography(zone.geometry)
+            except (ValueError, KeyError, TypeError) as exc:
+                skipped.append((index, zone.name, str(exc)))
+                continue
+            altitude_max = zone.altitude_max if zone.altitude_max and zone.altitude_max > 0 else 120
+            geofence = Geofence(
+                organization_id=organization_id,
+                name=(zone.name or f"Imported zone {index + 1}")[:255],
+                type=zone_type,
+                geometry=geometry,
+                altitude_min=max(zone.altitude_min or 0, 0),
+                altitude_max=altitude_max,
+                active=True,
+            )
+            self.db.add(geofence)
+            created.append(geofence)
+        self.db.commit()
+        for geofence in created:
+            self.db.refresh(geofence)
+        return created, skipped
+
     def find_intersecting(self, organization_id: uuid.UUID, lat: float, lon: float) -> list[Geofence]:
         from app.core.geo import point_to_geojson
 

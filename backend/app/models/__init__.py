@@ -8,6 +8,8 @@ from app.models.mission import Mission  # noqa: F401
 from app.models.geofence import Geofence  # noqa: F401
 from app.models.task_bundle import TaskBundle  # noqa: F401
 from app.models.audit_log import AuditLog  # noqa: F401
+from app.models.telemetry import DroneTelemetry  # noqa: F401
+from app.models.mission_planning import MissionPlan, MissionStateHistory, MissionTask, TaskAssignment  # noqa: F401
 
 __all__ = [
     "Organization",
@@ -19,4 +21,9 @@ __all__ = [
     "Geofence",
     "TaskBundle",
     "AuditLog",
+    "MissionTask",
+    "MissionPlan",
+    "TaskAssignment",
+    "MissionStateHistory",
+    "DroneTelemetry",
 ]

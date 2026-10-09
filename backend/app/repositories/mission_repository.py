@@ -40,4 +40,8 @@ class MissionRepository:
             return None
         from sqlalchemy import func
 
-        return self.db.scalar(select(func.ST_Area(mission.aoi_geometry)))
+        # Measure the stored geography column (square metres on the spheroid).
+        # Binding the in-memory element instead would be read as planar
+        # geometry and return square *degrees*.
+        self.db.flush()
+        return self.db.scalar(select(func.ST_Area(Mission.aoi_geometry)).where(Mission.id == mission.id))

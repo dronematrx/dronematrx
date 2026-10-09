@@ -21,7 +21,7 @@ export function PageTitleBar({ title, actions }: PageTitleBarProps) {
       }}
     >
       <span>{title}&hellip;</span>
-      {actions && <div style={{ display: 'flex', gap: '.75rem', textTransform: 'none', letterSpacing: 'normal' }}>{actions}</div>}
+      {actions && <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', textTransform: 'none', letterSpacing: 'normal' }}>{actions}</div>}
     </div>
   )
 }

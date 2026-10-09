@@ -1,0 +1,86 @@
+{
+  "recorded_at": "2026-10-06T13:45:00Z",
+  "note": "Results of the final verification runs, executed on the machine described in environment.json. Copied from the command output, not estimated.",
+  "backend_pytest": {
+    "command": "cd backend && pytest -q",
+    "collected": 277,
+    "passed": 277,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 166.11,
+    "sprint4_tests": {
+      "tests/test_orca_engine.py": 29,
+      "tests/test_orca_acceptance.py": 1,
+      "tests/test_nats_messaging.py": 21,
+      "tests/test_comms_fallback.py": 7,
+      "tests/test_timescale_telemetry.py": 20,
+      "tests/test_sprint4_api.py": 12,
+      "tests/test_fleet_runtime_integration.py": 1,
+      "tests/test_log_redaction.py": 4
+    },
+    "pre_sprint4_tests": 182
+  },
+  "frontend": {
+    "lint": {
+      "command": "npm run lint",
+      "result": "pass",
+      "errors": 0
+    },
+    "typecheck": {
+      "command": "npm run typecheck",
+      "result": "pass",
+      "errors": 0
+    },
+    "unit": {
+      "command": "npm test",
+      "passed": 8,
+      "failed": 0
+    },
+    "build": {
+      "command": "npm run build",
+      "result": "pass",
+      "warnings": [
+        "main chunk > 500 kB after minification (pre-existing; advisory only)"
+      ]
+    }
+  },
+  "playwright": {
+    "command": "cd frontend && npx playwright test",
+    "total": 15,
+    "passed": 14,
+    "failed": 0,
+    "skipped": 1,
+    "skipped_reason": "e2e/screenshots.spec.ts is the Sprint 3 opt-in screen capture (runs only with SCREENSHOTS=1); it is not an acceptance test",
+    "duration": "2.1m",
+    "sprint4_spec": {
+      "file": "e2e/sprint4.spec.ts",
+      "tests": 9,
+      "passed": 9
+    },
+    "sprint3_specs": {
+      "files": [
+        "e2e/mission-wizard.spec.ts",
+        "e2e/offline.spec.ts"
+      ],
+      "tests": 5,
+      "passed": 5
+    },
+    "server_log_check": {
+      "jwt_occurrences": 0,
+      "redacted_handshake_lines": 24
+    }
+  },
+  "benchmarks": {
+    "sprint4": {
+      "command": "python scripts/benchmark_sprint4.py",
+      "failed_acceptance": []
+    },
+    "cbba": {
+      "command": "python scripts/benchmark_cbba.py",
+      "scenarios": 9,
+      "passed": 9,
+      "worst_max_ms": 105.9,
+      "target_ms": 2000
+    }
+  }
+}

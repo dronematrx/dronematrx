@@ -1,0 +1,80 @@
+{
+  "generated_at": "2026-10-06T13:16:53.560322+00:00",
+  "timescaledb_version": "2.30.2",
+  "hypertable": {
+    "name": "drone_telemetry",
+    "time_column": "timestamp",
+    "chunk_interval": "1 day",
+    "chunks": 1
+  },
+  "ingestion_16_drones_1hz": {
+    "received": 960,
+    "inserted": 960,
+    "duplicates": 0,
+    "rejected": 0,
+    "write_errors": 0,
+    "buffered": 0,
+    "ingest_latency_ms_avg": 136.68,
+    "ingest_latency_ms_p95": 222.15,
+    "ingest_latency_ms_max": 231.54,
+    "expected_rows": 960,
+    "actual_rows": 960,
+    "missing_rows": 0,
+    "latencies_ms": {
+      "n": 960,
+      "avg": 136.683,
+      "p50": 132.7653,
+      "p95": 222.1452,
+      "p99": 227.6368,
+      "max": 231.5405,
+      "min": 6.117
+    }
+  },
+  "query_1h_single_drone": {
+    "rows": 3600,
+    "ms": {
+      "n": 20,
+      "avg": 22.1831,
+      "p50": 18.4757,
+      "p95": 48.2798,
+      "p99": 51.8203,
+      "max": 51.8203,
+      "min": 16.9497
+    },
+    "sql": "SELECT ... FROM drone_telemetry WHERE drone_id=:id AND timestamp>=:start AND timestamp<:end ORDER BY timestamp"
+  },
+  "query_1h_fleet_16_drones": {
+    "rows": 57600,
+    "ms": {
+      "n": 10,
+      "avg": 204.5973,
+      "p50": 200.7349,
+      "p95": 237.9572,
+      "p99": 237.9572,
+      "max": 237.9572,
+      "min": 194.6039
+    },
+    "sql": "SELECT epoch_ms, drone_id::text, ... WHERE timestamp>=:start AND timestamp<:end AND drone_id=ANY(:ids) ORDER BY timestamp, drone_id"
+  },
+  "query_plan_single_drone": [
+    "Sort  (cost=1500.40..1509.60 rows=3677 width=72) (actual time=1.017..1.343 rows=3600 loops=1)",
+    "  Sort Key: _hyper_2_1_chunk.\"timestamp\"",
+    "  Sort Method: quicksort  Memory: 462kB",
+    "  Buffers: shared hit=83",
+    "  ->  Bitmap Heap Scan on _hyper_2_1_chunk  (cost=179.30..1282.65 rows=3677 width=72) (actual time=0.312..0.675 rows=3600 loops=1)",
+    "        Recheck Cond: ((drone_id = '2b7215d0-f869-43ac-82e6-5f2df7250d93'::uuid) AND (\"timestamp\" >= '2026-10-06 12:15:44+00'::timestamp with time zone) AND (\"timestamp\" < '2026-10-06 13:15:45+00'::timestamp with time zone))",
+    "        Heap Blocks: exact=49",
+    "        Buffers: shared hit=83",
+    "        ->  Bitmap Index Scan on _hyper_2_1_chunk_ix_drone_telemetry_drone_time  (cost=0.00..178.38 rows=3677 width=0) (actual time=0.303..0.304 rows=3600 loops=1)",
+    "              Index Cond: ((drone_id = '2b7215d0-f869-43ac-82e6-5f2df7250d93'::uuid) AND (\"timestamp\" >= '2026-10-06 12:15:44+00'::timestamp with time zone) AND (\"timestamp\" < '2026-10-06 13:15:45+00'::timestamp with time zone))",
+    "              Buffers: shared hit=34",
+    "Planning:",
+    "  Buffers: shared hit=23",
+    "Planning Time: 0.482 ms",
+    "Execution Time: 1.473 ms"
+  ],
+  "acceptance": {
+    "no_data_loss": true,
+    "query_under_500ms": true
+  }
+}

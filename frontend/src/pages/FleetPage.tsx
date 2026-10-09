@@ -6,6 +6,8 @@ import { DroneDetailPanel } from '../components/fleet/DroneDetailPanel'
 import { DroneFormModal } from '../components/fleet/DroneFormModal'
 import { useAuthStore } from '../store/useAuthStore'
 import { useDroneStore } from '../store/useDroneStore'
+import { FleetWall } from '../components/ops/FleetWall'
+import { useOpsStore } from '../store/useOpsStore'
 
 export function FleetPage() {
   const drones = useDroneStore((s) => s.drones)
@@ -20,11 +22,17 @@ export function FleetPage() {
   const [statusFilter, setStatusFilter] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [showCreate, setShowCreate] = useState(false)
+  const comms = useOpsStore((s) => s.comms)
+  const opsBusy = useOpsStore((s) => s.busy)
+  const refreshOps = useOpsStore((s) => s.refresh)
+  const degrade = useOpsStore((s) => s.degrade)
+  const restore = useOpsStore((s) => s.restore)
 
   useEffect(() => {
     fetchDrones()
     connectTelemetry()
-  }, [fetchDrones, connectTelemetry])
+    refreshOps()
+  }, [fetchDrones, connectTelemetry, refreshOps])
 
   const filtered = useMemo(() => {
     return drones.filter((d) => {
@@ -63,6 +71,7 @@ export function FleetPage() {
         </div>
 
         <div>
+          <FleetWall comms={comms} canWrite={canWrite} busy={opsBusy} onDegrade={degrade} onRestore={restore} />
           <FilterBar>
             <FilterField label="Search" value={search} onChange={setSearch} placeholder="Search name or model..." />
             <FilterField label="Status" value={statusFilter} onChange={setStatusFilter} options={statusOptions} />
@@ -72,7 +81,7 @@ export function FleetPage() {
           {loading && drones.length === 0 ? (
             <p style={{ opacity: 0.7 }}>Loading fleet…</p>
           ) : (
-            <FleetDataTable drones={filtered} selectedId={selectedId} onSelect={(d) => setSelectedId(d.id)} />
+            <FleetDataTable drones={filtered} selectedId={selectedId} onSelect={(d) => setSelectedId(d.id)} links={comms?.drones} />
           )}
         </div>
       </div>

@@ -217,8 +217,8 @@ export function calculateORCAVelocity(
 
   // Max Speed limits
   const maxSpeed = currentDrone.speed;
-  let prefVx = (dx / distToTarget) * maxSpeed;
-  let prefVy = (dy / distToTarget) * maxSpeed;
+  const prefVx = (dx / distToTarget) * maxSpeed;
+  const prefVy = (dy / distToTarget) * maxSpeed;
 
   let avoidVx = 0;
   let avoidVy = 0;

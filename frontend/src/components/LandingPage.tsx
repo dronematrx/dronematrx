@@ -30,8 +30,8 @@ export function LandingPage() {
     const navBarHeight = 7.2 * 16 // approximate command bar height (7.2rem)
 
     // Initial default positions (right/center of hero)
-    let targetX = window.innerWidth * 0.65
-    let targetY = (window.innerHeight - navBarHeight) * 0.45
+    const targetX = window.innerWidth * 0.65
+    const targetY = (window.innerHeight - navBarHeight) * 0.45
 
     let mouseX = targetX
     let mouseY = targetY
@@ -55,8 +55,8 @@ export function LandingPage() {
       const windY = Math.cos(time * 1.3) * Math.sin(time * 0.5) * 0.5
 
       // Force calculations (F = stiffness * displacement + turbulence)
-      let fx = (mouseX - currentX) * stiffness + windX
-      let fy = (mouseY - currentY) * stiffness + windY
+      const fx = (mouseX - currentX) * stiffness + windX
+      const fy = (mouseY - currentY) * stiffness + windY
 
       // Acceleration (a = F/m)
       const ax = fx / mass

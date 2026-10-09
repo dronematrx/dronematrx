@@ -46,6 +46,12 @@ class DroneUpdate(BaseModel):
     active: bool | None = None
 
 
+class PayloadSummary(BaseModel):
+    type: str
+    name: str
+    status: str
+
+
 class DroneOut(DroneBase):
     id: uuid.UUID
     organization_id: uuid.UUID
@@ -64,6 +70,11 @@ class DroneOut(DroneBase):
     battery_cycles: int
     last_telemetry_at: datetime | None
     active: bool
+    max_speed: float = 15.0
+    endurance_minutes: float = 30.0
+    # Lightweight payload list so fleet/mission UIs can check sensor
+    # compatibility without one request per drone.
+    payload_summary: list[PayloadSummary] = []
     created_at: datetime
     updated_at: datetime
 
@@ -99,6 +110,9 @@ class DroneOut(DroneBase):
             battery_cycles=drone.battery_cycles,
             last_telemetry_at=drone.last_telemetry_at,
             active=drone.active,
+            max_speed=drone.max_speed,
+            endurance_minutes=drone.endurance_minutes,
+            payload_summary=[PayloadSummary(type=p.type, name=p.name, status=p.status) for p in drone.payloads],
             created_at=drone.created_at,
             updated_at=drone.updated_at,
         )

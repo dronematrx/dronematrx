@@ -46,8 +46,14 @@ def engine():
     with eng.connect() as conn:
         conn.execute(text("CREATE EXTENSION IF NOT EXISTS postgis"))
         conn.execute(text("CREATE EXTENSION IF NOT EXISTS pgcrypto"))
+        conn.execute(text("CREATE EXTENSION IF NOT EXISTS timescaledb"))
         conn.commit()
     Base.metadata.create_all(eng)
+    with eng.connect() as conn:
+        # Same hypertable layout as migration b7d3c1e9a402.
+        conn.execute(text("SELECT create_hypertable('drone_telemetry', by_range('timestamp', INTERVAL '1 day'), if_not_exists => TRUE)"))
+        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_drone_telemetry_drone_time ON drone_telemetry (drone_id, timestamp DESC)"))
+        conn.commit()
     yield eng
     Base.metadata.drop_all(eng)
     eng.dispose()

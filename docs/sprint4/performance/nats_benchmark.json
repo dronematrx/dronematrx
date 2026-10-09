@@ -1,0 +1,55 @@
+{
+  "generated_at": "2026-10-06T13:14:41.361442+00:00",
+  "server": "nats://localhost:4222",
+  "stream_config": {
+    "max_age_hours": 24.0,
+    "retention": "limits",
+    "storage": "file",
+    "duplicate_window_s": 120.0,
+    "subjects": [
+      "bench9cfdcfaa.drone.*.telemetry",
+      "bench9cfdcfaa.drone.*.state",
+      "bench9cfdcfaa.drone.*.alert",
+      "bench9cfdcfaa.drone.*.command"
+    ]
+  },
+  "delivery": {
+    "pattern": "16 drones x 10 msg/s (telemetry/state/alert), publisher and consumer on separate connections",
+    "messages_sent": 3200,
+    "messages_received": 3200,
+    "lost": 0,
+    "duplicates_delivered": 0,
+    "latency_ms": {
+      "n": 3200,
+      "avg": 0.9965,
+      "p50": 1.0055,
+      "p95": 1.6886,
+      "p99": 2.0398,
+      "max": 3.0926,
+      "min": 0.0
+    },
+    "over_50ms": 0
+  },
+  "replay": {
+    "published_before_stop": 100,
+    "consumed_before_stop": 100,
+    "published_while_stopped": 50,
+    "replayed": 150,
+    "replay_ms": 1015.43,
+    "ordered": true,
+    "first_payload": {
+      "phase": "before_stop",
+      "i": 0
+    },
+    "last_payload": {
+      "phase": "while_stopped",
+      "i": 49
+    },
+    "resumed_durable_received": 50,
+    "how": "bus.replay(kind='telemetry', uin=..., start_time=now-1s) -> ephemeral consumer DeliverPolicy.BY_START_TIME"
+  },
+  "acceptance": {
+    "under_50ms": true,
+    "replay_complete": true
+  }
+}

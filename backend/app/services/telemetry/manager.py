@@ -6,6 +6,7 @@ persistence, without either side knowing about the other.
             -> ConnectionManager.broadcast_json  (-> Zustand -> Fleet UI + Map)
             -> DroneService.apply_telemetry      (-> PostgreSQL)
 """
+import asyncio
 import logging
 import uuid
 
@@ -42,7 +43,9 @@ class TelemetryManager:
         await self.connection_manager.broadcast_json({"type": "telemetry", "data": update.model_dump(mode="json")})
 
         try:
-            self._persist(update)
+            # Blocking SQLAlchemy write (~9 ms): run it off the event loop so the
+            # 10 Hz control loop and NATS consumers are never stalled by it.
+            await asyncio.to_thread(self._persist, update)
         except Exception:  # pragma: no cover - persistence must never kill the sim loop
             logger.exception("Failed to persist telemetry for drone %s", update.drone_id)
 

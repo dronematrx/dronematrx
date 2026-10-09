@@ -2,8 +2,8 @@ import uuid
 from datetime import datetime
 
 from geoalchemy2 import Geography
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, String, func
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Integer, String, func
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -18,6 +18,7 @@ VALID_MISSION_STATUS = (
     "completed",
     "aborted",
 )
+VALID_TEMPLATES = ("survey", "search", "inspection", "mapping", "custom")
 
 
 class Mission(Base):
@@ -38,6 +39,16 @@ class Mission(Base):
         Geography(geometry_type="POLYGON", srid=4326), nullable=True
     )
 
+    # Mission planning wizard state (Sprint 3). `config` holds the validated
+    # per-step sections (template, flight, sensors, constraints) so a draft
+    # can be resumed from any browser; `wizard_step` is the furthest step the
+    # operator reached.
+    template: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    wizard_step: Mapped[int] = mapped_column(Integer, default=1, server_default="1")
+    config: Mapped[dict] = mapped_column(JSONB, default=dict, server_default="{}")
+    validation_report: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    validated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
     start_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     end_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
@@ -46,4 +57,9 @@ class Mission(Base):
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now())
 
     organization: Mapped["Organization"] = relationship(back_populates="missions")  # noqa: F821
-    task_bundles: Mapped[list["TaskBundle"]] = relationship(back_populates="mission", cascade="all, delete-orphan")  # noqa: F821
+    task_bundles: Mapped[list["TaskBundle"]] = relationship(back_populates="mission", cascade="all, delete-orphan", passive_deletes=True)  # noqa: F821
+    tasks: Mapped[list["MissionTask"]] = relationship(back_populates="mission", cascade="all, delete-orphan", passive_deletes=True)  # noqa: F821
+    plans: Mapped[list["MissionPlan"]] = relationship(back_populates="mission", cascade="all, delete-orphan", passive_deletes=True)  # noqa: F821
+    state_history: Mapped[list["MissionStateHistory"]] = relationship(  # noqa: F821
+        back_populates="mission", cascade="all, delete-orphan", passive_deletes=True
+    )

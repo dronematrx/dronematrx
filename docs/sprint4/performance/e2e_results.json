@@ -1,0 +1,168 @@
+{
+  "generated_at": "2026-10-06T13:26:26.420Z",
+  "test1_two_drone": {
+    "steps": 160,
+    "sim_time_s": 16,
+    "agents": 2,
+    "min_separation_m": 6.006,
+    "collision_violations": 0,
+    "envelope_breaches": 0,
+    "predicted_conflicts": 1,
+    "avoidance_events": 2,
+    "infeasible_solves": 0,
+    "arrived": 2,
+    "step_ms_avg": 0.0523,
+    "step_ms_p95": 0.0808,
+    "step_ms_max": 0.2242,
+    "resolution_ms_avg": 0.2242,
+    "resolution_ms_p95": 0.2242,
+    "resolution_ms_max": 0.2242,
+    "resolution_sim_delay_s_max": 2.8
+  },
+  "test3_fifty_runs": {
+    "runs": 50,
+    "drone_runs": 400,
+    "collision_violations": 0,
+    "min_separation_m": 5.998,
+    "max_resolution_ms": 3.2945,
+    "arrived": 400
+  },
+  "test2_test4_orca_demo": {
+    "alert_first_seen_ttc_s": 10,
+    "alert_seen_at_demo_t_s": 9.127,
+    "predictions": [
+      9.96,
+      9.95
+    ],
+    "cleared_min_separation_m": [
+      6,
+      6.03
+    ],
+    "orca_timing": {
+      "target_hz": 10,
+      "measured_hz": 10,
+      "cycles": 685,
+      "missed_cycles": 1,
+      "interval_ms_avg": 99.96,
+      "interval_ms_max": 156,
+      "compute_ms_avg": 0.328,
+      "compute_ms_p95": 0.6,
+      "compute_ms_max": 0.994,
+      "resolution_ms_avg": 0.963,
+      "resolution_ms_max": 1.129
+    }
+  },
+  "test7_fallback": {
+    "wifi->lte": {
+      "drone_id": "4de257bd-7203-4f81-9108-adab1b0e368e",
+      "name": "DMX-003",
+      "from": "wifi",
+      "to": "lte",
+      "reason": "wifi below threshold",
+      "breach_injected_at": 1791293130.9330204,
+      "detected_at": 1791293131.1263638,
+      "decision_at": 1791293131.1263638,
+      "activated_at": 1791293131.1263638,
+      "detect_ms": 193.3,
+      "decision_ms": 0,
+      "activation_ms": 0,
+      "total_ms": 193.3
+    },
+    "lte->lora": {
+      "drone_id": "4de257bd-7203-4f81-9108-adab1b0e368e",
+      "name": "DMX-003",
+      "from": "lte",
+      "to": "lora",
+      "reason": "lte below threshold",
+      "breach_injected_at": 1791293140.9183826,
+      "detected_at": 1791293141.129227,
+      "decision_at": 1791293141.129227,
+      "activated_at": 1791293141.129227,
+      "detect_ms": 210.8,
+      "decision_ms": 0,
+      "activation_ms": 0,
+      "total_ms": 210.8
+    },
+    "lora->wifi": {
+      "drone_id": "4de257bd-7203-4f81-9108-adab1b0e368e",
+      "name": "DMX-003",
+      "from": "lora",
+      "to": "wifi",
+      "reason": "wifi healthy for 3s",
+      "breach_injected_at": 1791293150.9153593,
+      "detected_at": 1791293154.6350827,
+      "decision_at": 1791293154.6350827,
+      "activated_at": 1791293154.6350827,
+      "detect_ms": 3719.7,
+      "decision_ms": 0,
+      "activation_ms": 0,
+      "total_ms": 3719.7
+    }
+  },
+  "test5_test6_nats": {
+    "stream_messages": 121233,
+    "delivery": {
+      "by_kind": {
+        "state": 3185,
+        "alert": 38,
+        "telemetry": 648
+      },
+      "latency_ms_avg": 1.413,
+      "latency_ms_p95": 2.542,
+      "latency_ms_max": 6.253,
+      "over_50ms": 0,
+      "samples": 2000
+    },
+    "replayed": 648
+  },
+  "test9_query": {
+    "drone_query_ms": 24.52,
+    "fleet_query_ms": 72.67
+  },
+  "test8_sixteen_drones": {
+    "drones_reporting": 16,
+    "per_drone_rows_last_minute": {
+      "DMX-001": 60,
+      "DMX-002": 60,
+      "DMX-003": 60,
+      "DMX-004": 60,
+      "DMX-005": 60,
+      "DMX-006": 60,
+      "DMX-007": 60,
+      "DMX-008": 60,
+      "E2E16-01": 22,
+      "E2E16-02": 22,
+      "E2E16-03": 22,
+      "E2E16-04": 22,
+      "E2E16-05": 22,
+      "E2E16-06": 22,
+      "E2E16-07": 22,
+      "E2E16-08": 22
+    },
+    "ingestor": {
+      "received": 1048,
+      "inserted": 1048,
+      "duplicates": 0,
+      "rejected": 0,
+      "write_errors": 0,
+      "buffered": 0,
+      "ingest_latency_ms_avg": 131.15,
+      "ingest_latency_ms_p95": 201.31,
+      "ingest_latency_ms_max": 401.91
+    }
+  },
+  "test10_end_to_end": {
+    "dmx003_links_seen": [
+      "wifi",
+      "lte",
+      "lora"
+    ],
+    "max_gap_ms": 1033,
+    "rows_since_demo_start": 76,
+    "message_kinds": {
+      "state": 5282,
+      "alert": 40,
+      "telemetry": 1064
+    }
+  }
+}
