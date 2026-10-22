@@ -7,6 +7,7 @@ import { MapPage } from './pages/MapPage'
 import { AnalyticsPage } from './pages/AnalyticsPage'
 import { MissionsPage } from './pages/MissionsPage'
 import { MissionWizardPage } from './pages/MissionWizardPage'
+import { SimulationPage } from './pages/SimulationPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { StubPage } from './pages/StubPage'
 
@@ -45,6 +46,14 @@ export function AppRouter() {
           element={
             <RequireAuth>
               <MissionWizardPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/missions/:id/simulate"
+          element={
+            <RequireAuth>
+              <SimulationPage />
             </RequireAuth>
           }
         />

@@ -40,7 +40,7 @@ interface MissionState {
 
   fetchMissions: () => Promise<void>
   fetchTemplates: () => Promise<void>
-  createMission: (name: string) => Promise<Mission>
+  createMission: (name: string, executionMode?: 'live' | 'simulation') => Promise<Mission>
   openMission: (id: string) => Promise<void>
   closeMission: () => void
   refresh: () => Promise<void>
@@ -120,8 +120,8 @@ export const useMissionStore = create<MissionState>((set, get) => {
       }
     },
 
-    createMission: async (name) => {
-      const mission = await missionsApi.createMission({ name, mission_type: 'OTHER' })
+    createMission: async (name, executionMode = 'live') => {
+      const mission = await missionsApi.createMission({ name, mission_type: 'OTHER', execution_mode: executionMode })
       set({ missions: [mission, ...get().missions] })
       return mission
     },

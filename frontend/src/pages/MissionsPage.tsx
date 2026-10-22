@@ -4,6 +4,7 @@ import type { Mission } from '../api/types'
 import { AppShell } from '../components/layout/AppShell'
 import { FilterBar, FilterField } from '../components/ui/FilterBar'
 import { StatusPill } from '../components/ui/StatusPill'
+import { SimulationBadge } from '../components/simulation/SimRunPanels'
 import { formatArea } from '../lib/format'
 import { useAuthStore } from '../store/useAuthStore'
 import { useMissionStore } from '../store/useMissionStore'
@@ -42,11 +43,12 @@ function MissionCard({ mission, onOpen, canWrite }: { mission: Mission; onOpen: 
         <strong style={{ textTransform: 'uppercase', letterSpacing: '.05em' }}>{mission.name}</strong>
         <StatusPill label={mission.status} />
       </div>
+      {mission.execution_mode === 'simulation' && <SimulationBadge />}
       <div className="dm-mono" style={{ fontSize: '.75rem', opacity: 0.75 }}>
         STEP {Math.min(mission.wizard_step, 6)}/6 · {formatArea(mission.aoi_area_sq_meters)}
       </div>
       <button type="button" className="dm-btn dm-btn--primary" onClick={onOpen} data-testid="open-mission">
-        {resumable && canWrite ? 'Resume Planning' : 'Open Mission'}
+        {mission.execution_mode === 'simulation' ? 'Open Simulation' : resumable && canWrite ? 'Resume Planning' : 'Open Mission'}
       </button>
     </div>
   )
@@ -84,13 +86,15 @@ export function MissionsPage() {
   )
   const selected = missions.find((m) => m.id === selectedId) ?? filtered[0] ?? null
 
-  const submit = async (e: FormEvent) => {
+  const openPath = (m: Mission) => (m.execution_mode === 'simulation' ? `/missions/${m.id}/simulate` : `/missions/${m.id}/plan`)
+
+  const submit = async (e: FormEvent, mode: 'live' | 'simulation' = 'live') => {
     e.preventDefault()
     if (!newName.trim()) return
     setCreateError(null)
     try {
-      const mission = await createMission(newName.trim())
-      navigate(`/missions/${mission.id}/plan`)
+      const mission = await createMission(newName.trim(), mode)
+      navigate(openPath(mission))
     } catch (err) {
       setCreateError(err instanceof Error ? err.message : 'Failed to create mission')
     }
@@ -110,10 +114,13 @@ export function MissionsPage() {
               <button type="submit" className="dm-btn dm-btn--primary" disabled={!newName.trim()} data-testid="create-mission">
                 Start Planning
               </button>
+              <button type="button" className="dm-btn" disabled={!newName.trim()} onClick={(e) => submit(e, 'simulation')} data-testid="create-simulation">
+                New Simulation (Gazebo + PX4 SITL)
+              </button>
               {createError && <p className="dm-error">{createError}</p>}
             </form>
           )}
-          {selected && <MissionCard mission={selected} canWrite={canWrite} onOpen={() => navigate(`/missions/${selected.id}/plan`)} />}
+          {selected && <MissionCard mission={selected} canWrite={canWrite} onOpen={() => navigate(openPath(selected))} />}
         </div>
 
         <div>
@@ -145,7 +152,7 @@ export function MissionsPage() {
                     <tr
                       key={m.id}
                       onClick={() => setSelectedId(m.id)}
-                      onDoubleClick={() => navigate(`/missions/${m.id}/plan`)}
+                      onDoubleClick={() => navigate(openPath(m))}
                       style={{ cursor: 'pointer', outline: m.id === selected?.id ? '2px solid var(--dm-slate-400)' : undefined }}
                       data-testid="mission-row"
                     >

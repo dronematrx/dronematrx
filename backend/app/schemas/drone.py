@@ -70,6 +70,7 @@ class DroneOut(DroneBase):
     battery_cycles: int
     last_telemetry_at: datetime | None
     active: bool
+    simulated: bool = False
     max_speed: float = 15.0
     endurance_minutes: float = 30.0
     # Lightweight payload list so fleet/mission UIs can check sensor
@@ -110,6 +111,7 @@ class DroneOut(DroneBase):
             battery_cycles=drone.battery_cycles,
             last_telemetry_at=drone.last_telemetry_at,
             active=drone.active,
+            simulated=bool(drone.simulated),
             max_speed=drone.max_speed,
             endurance_minutes=drone.endurance_minutes,
             payload_summary=[PayloadSummary(type=p.type, name=p.name, status=p.status) for p in drone.payloads],

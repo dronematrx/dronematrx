@@ -50,6 +50,8 @@ class CoverageSpec:
     max_tasks: int = 120
     priority: int = 1
     required_capability: str | None = None
+    # Explicit lane spacing (agriculture rows); overrides swath * (1 - overlap).
+    spacing_m: float | None = None
 
 
 @dataclass
@@ -140,7 +142,7 @@ def generate_coverage_tasks(aoi: Polygon, spec: CoverageSpec, id_prefix: str = "
         raise CoverageError("Altitude must be positive")
 
     swath = swath_width(spec.sensor, spec.altitude_m)
-    spacing = max(MIN_SPACING_M, swath * (1 - spec.overlap_pct / 100))
+    spacing = max(MIN_SPACING_M, spec.spacing_m if spec.spacing_m else swath * (1 - spec.overlap_pct / 100))
 
     if spec.heading_deg is None:
         base_angle = _long_axis_angle(aoi)
@@ -198,3 +200,67 @@ def coverage_fraction(aoi: Polygon, segments: list[LineString], swath_m: float) 
         return 0.0
     footprint = unary_union([seg.buffer(swath_m / 2, cap_style="flat") for seg in segments])
     return min(1.0, footprint.intersection(aoi).area / aoi.area)
+
+
+def generate_search_cells(aoi: Polygon, spec: CoverageSpec, cell_size_m: float | None = None, id_prefix: str = "S") -> GeneratedTasks:
+    """Search and rescue: divide the AOI into square cells (aligned with its
+    long axis); each cell is one task, searched with a creeping-line sweep
+    clipped to the cell. Completing a task means that cell has been searched.
+    """
+    if aoi.is_empty or aoi.area <= 0:
+        raise CoverageError("AOI polygon is empty")
+    swath = swath_width(spec.sensor, spec.altitude_m)
+    spacing = max(MIN_SPACING_M, spec.spacing_m if spec.spacing_m else swath * (1 - spec.overlap_pct / 100))
+    cell = cell_size_m or min(400.0, max(60.0, math.sqrt(aoi.area / 12.0)))
+    cell = max(cell, 2 * spacing)
+    angle = _long_axis_angle(aoi) if spec.heading_deg is None else (90.0 - spec.heading_deg) % 180.0
+    origin = aoi.centroid
+    rotated = affinity.rotate(aoi, -angle, origin=origin)
+    minx, miny, maxx, maxy = rotated.bounds
+    nx, ny = max(1, math.ceil((maxx - minx) / cell)), max(1, math.ceil((maxy - miny) / cell))
+    if nx * ny > spec.max_tasks * 4:
+        raise CoverageError(f"AOI needs {nx * ny} search cells of {cell:.0f} m; increase the cell size")
+    tasks: list[Task] = []
+    segments: dict[str, LineString] = {}
+    for row in range(ny):
+        cols = range(nx) if row % 2 == 0 else range(nx - 1, -1, -1)  # serpentine cell order hint
+        for col in cols:
+            box = Polygon([(minx + col * cell, miny + row * cell), (minx + (col + 1) * cell, miny + row * cell),
+                           (minx + (col + 1) * cell, miny + (row + 1) * cell), (minx + col * cell, miny + (row + 1) * cell)])
+            piece = rotated.intersection(box)
+            if piece.is_empty or piece.area < (spacing * spacing):
+                continue
+            polys = list(piece.geoms) if hasattr(piece, "geoms") else [piece]
+            for poly in polys:
+                if not isinstance(poly, Polygon) or poly.area < spacing * spacing:
+                    continue
+                lanes, _ = _lane_pieces(poly, 0.0, spacing)
+                if not lanes:
+                    continue
+                coords: list[tuple[float, float]] = []
+                for k, lane in enumerate(lanes):
+                    a, b = lane.coords[0], lane.coords[-1]
+                    if (k % 2 == 0) != (a[0] <= b[0]):
+                        a, b = b, a
+                    coords.extend([a, b])
+                path = affinity.rotate(LineString(coords), angle, origin=origin) if len(coords) >= 2 else None
+                if path is None or path.length < 1e-6:
+                    continue
+                task_id = f"{id_prefix}{len(tasks) + 1:03d}"
+                p0, p1 = path.coords[0], path.coords[-1]
+                tasks.append(
+                    Task(
+                        id=task_id,
+                        endpoints=((p0[0], p0[1]), (p1[0], p1[1])),
+                        priority=spec.priority,
+                        required_capability=spec.required_capability,
+                        task_type="search_cell",
+                        path_length_m=path.length,
+                    )
+                )
+                segments[task_id] = path
+    if not tasks:
+        raise CoverageError("No search cells fit inside the AOI")
+    if len(tasks) > spec.max_tasks:
+        raise CoverageError(f"AOI needs {len(tasks)} search cells, above the {spec.max_tasks}-task limit; increase the cell size")
+    return GeneratedTasks(tasks=tasks, segments=segments, swath_m=swath, spacing_m=spacing, lane_bearing_deg=(90.0 - angle) % 360.0)

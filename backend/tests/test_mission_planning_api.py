@@ -208,4 +208,4 @@ def test_allocate_in_draft_is_locked_and_unknown_mission_404(client, operator_us
 def test_templates_endpoint(client, observer_user):
     resp = client.get("/missions/templates", headers=headers_for(client, observer_user))
     assert resp.status_code == 200
-    assert {t["key"] for t in resp.json()} == {"survey", "search", "inspection", "mapping", "custom"}
+    assert {t["key"] for t in resp.json()} == {"survey", "search", "inspection", "mapping", "agriculture", "custom"}

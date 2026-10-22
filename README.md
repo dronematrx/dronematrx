@@ -1,9 +1,9 @@
 # Drone MatrX
 
 Fleet management, live map/AOI planning, real-time telemetry, CBBA-based
-multi-drone mission planning, and ORCA collision avoidance with a
-NATS JetStream / TimescaleDB communication stack for a drone operations
-platform. This repo contains a FastAPI + PostGIS backend and a React +
+multi-drone mission planning, ORCA collision avoidance with a
+NATS JetStream / TimescaleDB communication stack, and Gazebo + PX4 SITL
+mission simulation for a drone operations platform. This repo contains a FastAPI + PostGIS backend and a React +
 Leaflet frontend.
 
 - Sprint 3 (CBBA engine & mission wizard):
@@ -12,6 +12,10 @@ Leaflet frontend.
   [`docs/sprint4/SPRINT4_ORCA_COMMS.md`](docs/sprint4/SPRINT4_ORCA_COMMS.md);
   test report with measured results and screenshots:
   [`docs/sprint4/SPRINT_4_TEST_REPORT.md`](docs/sprint4/SPRINT_4_TEST_REPORT.md)
+- Sprint 5 (Gazebo + PX4 SITL mission simulation):
+  [`docs/sprint5/SIMULATION.md`](docs/sprint5/SIMULATION.md); test report:
+  [`docs/sprint5/SPRINT_5_TEST_REPORT.md`](docs/sprint5/SPRINT_5_TEST_REPORT.md);
+  screenshots and recordings: [`documents/sprint5/`](documents/sprint5/)
 
 ## Stack
 
@@ -115,7 +119,31 @@ npm run build
 npx playwright install chromium   # once
 npm run test:e2e      # Playwright E2E; needs the DB migrated + seeded; starts backend + vite if not running
 npx playwright test e2e/sprint4.spec.ts   # Sprint 4 TEST 1-10; screenshots -> docs/sprint4/evidence/
+npx playwright test e2e/sprint5.spec.ts   # Sprint 5 AOI -> Gazebo -> map -> report; needs simhost (below)
 ```
+
+## 4. Simulation host (Sprint 5)
+
+Gazebo Harmonic + PX4 SITL v1.15.4 run in a Linux container, so this works
+on Windows without WSL. The first build compiles PX4 (20–40 min):
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.sim.yml up -d --build simhost
+curl http://localhost:8100/health      # versions + capacity (SIM_MAX_INSTANCES, default 8)
+```
+
+The backend reaches it at `SIMHOST_URL` (default `http://localhost:8100`).
+Then go to **Mission → New Simulation**, draw the AOI, pick the drone count,
+task type and flight parameters, and run. The CBBA plan is flown by real PX4
+SITL drones over a Gazebo world generated from the AOI's DEM. Tests:
+
+```bash
+cd backend
+pytest -q -m gazebo -s tests/test_sim_gazebo_integration.py   # real Gazebo + PX4
+python scripts/generate_sprint5_report.py                     # rebuild docs/sprint5/SPRINT_5_TEST_REPORT.md
+```
+
+Details, architecture and limitations: [`docs/sprint5/SIMULATION.md`](docs/sprint5/SIMULATION.md).
 
 ## What's implemented
 
@@ -169,6 +197,9 @@ frontend/   React app (Vite)
 db/         PostGIS + TimescaleDB Docker image build context
 documents/  Product/design reference docs + Sprint 3 technical reference
 docs/sprint4/  Sprint 4 technical reference, test report, evidence/ screenshots, performance/ JSON
+docs/sprint5/  Sprint 5 simulation reference, test report, performance/ JSON + JUnit
+documents/sprint5/  Sprint 5 screenshots/ and recordings/
+sim/        simulation host image: Gazebo + PX4 SITL, simhost service (FastAPI + pymavlink), PX4 patch
 ```
 
 Mission planning code map:
@@ -192,6 +223,15 @@ backend/app/services/telemetry/   simulator, TimescaleDB store + NATS ingestor
 backend/app/services/runtime.py   FleetRuntime: wires simulator, ORCA, comms, NATS, consumers, WebSocket
 frontend/src/components/map/OrcaLayer.tsx, components/ops/   ORCA map layer, panels, fleet wall
 frontend/src/pages/AnalyticsPage.tsx                         Telemetry + Message bus tabs
+```
+
+Sprint 5 code map:
+
+```
+backend/app/services/simulation/   ENU frames, DEM, world generator, sim fleet, adapters, mission builder, orchestrator, reports
+backend/app/api/routes/simulations.py   simulation REST API
+sim/simhost/                       SITL process manager, Gazebo control, MAVLink bridge, session, HTTP server
+frontend/src/pages/SimulationPage.tsx, components/simulation/   setup, map layers, controls, failures, report + diff
 ```
 
 ## Design system

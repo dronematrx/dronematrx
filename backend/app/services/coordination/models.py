@@ -48,9 +48,14 @@ class Task:
     hover_time_s: float = 0.0
     reward: float = 1.0  # relative weight; the utility model scales it
     task_type: str = "coverage"
+    # Flown path length when the task is not a straight line between its
+    # endpoints (e.g. a search-and-rescue cell swept with a creeping line).
+    path_length_m: float | None = None
 
     @property
     def service_distance_m(self) -> float:
+        if self.path_length_m is not None:
+            return self.path_length_m
         (x0, y0), (x1, y1) = self.endpoints
         return ((x1 - x0) ** 2 + (y1 - y0) ** 2) ** 0.5
 

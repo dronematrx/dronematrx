@@ -15,6 +15,7 @@ from app.db.session import SessionLocal
 from app.services.mission_planning_service import MissionLockedError, PlanningError
 from app.services.mission_state_service import InvalidTransitionError, TransitionBlockedError
 from app.services.runtime import FleetRuntime
+from app.services.simulation.orchestrator import SimulationError, SimulationOrchestrator
 from app.services.telemetry.manager import TelemetryManager
 from app.services.telemetry.simulator import SimulationTelemetryProvider
 from app.websocket.connection_manager import connection_manager
@@ -26,11 +27,12 @@ settings = get_settings()
 
 telemetry_manager: TelemetryManager | None = None
 fleet_runtime: FleetRuntime | None = None
+sim_orchestrator: SimulationOrchestrator | None = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global telemetry_manager, fleet_runtime
+    global telemetry_manager, fleet_runtime, sim_orchestrator
     if settings.TELEMETRY_SIMULATOR_ENABLED and settings.TELEMETRY_PROVIDER == "simulator":
         # Sprint 4: simulator -> ORCA (10 Hz) -> comms link -> NATS JetStream ->
         # consumers (WebSocket/Drone table, TimescaleDB, orchestrator).
@@ -46,9 +48,14 @@ async def lifespan(app: FastAPI):
             SessionLocal,
         )
     app.state.runtime = fleet_runtime
+    # Sprint 5: Gazebo/PX4 SITL simulation sessions (telemetry via the runtime's NATS `ui` stream).
+    sim_orchestrator = SimulationOrchestrator(SessionLocal, connection_manager, fleet_runtime)
+    await sim_orchestrator.start()
+    app.state.sim = sim_orchestrator
 
     yield
 
+    await sim_orchestrator.stop()
     if fleet_runtime is not None:
         await fleet_runtime.stop()
 
@@ -107,6 +114,11 @@ async def transition_blocked_handler(request: Request, exc: TransitionBlockedErr
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={"detail": str(exc), "code": "TRANSITION_BLOCKED", "checks": exc.checks, "report": exc.report},
     )
+
+
+@app.exception_handler(SimulationError)
+async def simulation_error_handler(request: Request, exc: SimulationError) -> JSONResponse:
+    return JSONResponse(status_code=exc.status, content={"detail": exc.message, "code": exc.code})
 
 
 @app.exception_handler(SQLAlchemyError)

@@ -1,0 +1,26 @@
+<testsuites id="" name="" tests="2" failures="0" skipped="0" errors="0" time="379.52583599999997">
+<testsuite name="sprint5.spec.ts" timestamp="2026-10-22T03:56:32.118Z" hostname="chromium" tests="2" failures="0" skipped="0" time="373.035" errors="0">
+<testcase name="AOI selected on Leaflet -&gt; Gazebo SITL simulation -&gt; live map -&gt; report" classname="sprint5.spec.ts" time="289.806">
+<properties>
+<property name="serial" value="">
+</property>
+</properties>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|..\..\..\frontend\test-results\sprint5-AOI-selected-on-Le-44c05-ulation---live-map---report-chromium\video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="report comparison against a re-run of the same mission" classname="sprint5.spec.ts" time="83.229">
+<properties>
+<property name="serial" value="">
+</property>
+</properties>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|..\..\..\frontend\test-results\sprint5-report-comparison--16648--re-run-of-the-same-mission-chromium\video.webm]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+</testsuites>

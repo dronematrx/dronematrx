@@ -97,6 +97,8 @@ class FleetRuntime:
         self.outbox_dropped = 0
         self.running = False
         self.started_ns = time.time_ns()
+        # Sprint 5: extra consumers of the `ui` stream (simulation orchestrator).
+        self.message_listeners: list = []
 
     # ---------------------------------------------------------------- life
 
@@ -270,6 +272,11 @@ class FleetRuntime:
 
     async def _on_ui_message(self, msg: DroneMessage) -> None:
         try:
+            for listener in self.message_listeners:
+                try:
+                    await listener(msg)
+                except Exception:  # never let a listener stall the UI stream
+                    logger.exception("ui message listener failed")
             if msg.kind == "telemetry":
                 previous = self.telemetry_manager.latest.get(str(msg.payload.get("drone_id")))
                 update = telemetry_from_payload(msg.payload, previous)

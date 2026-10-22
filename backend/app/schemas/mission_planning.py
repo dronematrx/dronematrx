@@ -12,7 +12,7 @@ from app.models.mission import VALID_TEMPLATES
 from app.models.payload import VALID_PAYLOAD_TYPES
 from app.schemas.common import GeoJSONPolygon
 
-TemplateName = Literal["survey", "search", "inspection", "mapping", "custom"]
+TemplateName = Literal["survey", "search", "inspection", "mapping", "agriculture", "custom"]
 SensorType = Literal["camera", "thermal", "lidar", "multispectral", "sprayer", "custom"]
 WIZARD_STEPS = {1: "template", 2: "aoi", 3: "flight", 4: "sensors", 5: "constraints", 6: "validate"}
 REQUIRED_STEPS = (1, 2, 3, 4, 5)
@@ -53,11 +53,15 @@ class FlightParams(BaseModel):
     altitude_ref: Literal["AGL", "MSL"] = "AGL"
     speed_mps: float = Field(10, ge=1, le=25)
     overlap_pct: float = Field(70, ge=0, le=90)
-    pattern: Literal["lawnmower", "crosshatch"] = "lawnmower"
+    pattern: Literal["lawnmower", "crosshatch", "sar_cells"] = "lawnmower"
     heading_deg: float | None = Field(None, ge=0, lt=360, description="Lane bearing lock; null = AOI long axis")
     rth_on_complete: bool = True
     rth_battery_pct: float = Field(25, ge=10, le=60, description="Battery reserve that triggers return-to-home")
     priority: int = Field(2, ge=1, le=5)
+    # Sprint 5 task-type parameters.
+    lane_spacing_m: float | None = Field(None, ge=5, le=200, description="Explicit lane spacing (agriculture rows); overrides overlap")
+    sar_cell_size_m: float | None = Field(None, ge=40, le=800, description="Search-and-rescue cell size; null = auto")
+    turn_behaviour: Literal["coordinated_turn", "stop_and_turn"] = "coordinated_turn"
 
 
 class SensorsStep(BaseModel):
@@ -87,6 +91,12 @@ class InspectionPoint(BaseModel):
     label: str | None = Field(None, max_length=60)
 
 
+class CustomWaypoint(BaseModel):
+    latitude: float = Field(..., ge=-90, le=90)
+    longitude: float = Field(..., ge=-180, le=180)
+    label: str | None = Field(None, max_length=60)
+
+
 class ConstraintsStep(BaseModel):
     min_battery_pct: float = Field(40, ge=10, le=100, description="Minimum battery to launch")
     max_flight_time_min: float | None = Field(None, ge=1, le=180)
@@ -96,6 +106,7 @@ class ConstraintsStep(BaseModel):
     link_loss_policy: Literal["RTH", "HOLD", "CONTINUE", "LAND"] = "RTH"
     accept_unassigned: bool = False
     inspection_points: list[InspectionPoint] = Field(default_factory=list, max_length=20)
+    custom_waypoints: list[CustomWaypoint] = Field(default_factory=list, max_length=60)
     algorithm: str = "cbba"
 
 

@@ -61,6 +61,7 @@ from app.services.coordination.task_generation import (
     CoverageSpec,
     coverage_fraction,
     generate_coverage_tasks,
+    generate_search_cells,
     swath_width,
 )
 from app.services.mission_state_service import EDITABLE_STATES, MissionStateService
@@ -75,6 +76,8 @@ AOI_MAX_AREA_M2 = 25_000_000.0  # 25 km^2
 INSPECTION_POINT_MAX_DISTANCE_M = 10_000.0
 ELIGIBLE_DRONE_STATUSES = ("online", "active", "warning")
 BATTERY_MARGIN_PCT = 5.0
+# Task types that image area (count towards coverage %).
+AREA_TASK_TYPES = ("coverage", "search_cell")
 # Rough usable pack energy by airframe, for the Wh estimate only.
 BATTERY_CAPACITY_WH = {"quadrotor": 250.0, "multirotor": 250.0, "hexarotor": 450.0, "octorotor": 700.0, "fixed_wing": 200.0}
 
@@ -409,10 +412,17 @@ class MissionPlanningService:
         geometry: dict[str, Any] = {}
         swaths: dict[str, float] = {}
         warnings: list[str] = []
-        meta: dict[str, Any] = {"passes": []}
+        meta: dict[str, Any] = {"passes": [], "template": mission.template}
         n_sensors = len(sensors.required_sensors)
         prefixes = "TUVWX"
-        for idx, sensor in enumerate(sensors.required_sensors):
+        # Sprint 5 task types: inspection = route through the picked targets;
+        # custom = ordered custom waypoints. Without targets/waypoints both
+        # fall back to a coverage pass, as before.
+        point_mission = (mission.template == "inspection" and bool(constraints.inspection_points)) or (
+            mission.template == "custom" and bool(constraints.custom_waypoints)
+        )
+        meta["mode"] = "points" if point_mission else ("search_cells" if flight.pattern == "sar_cells" else "coverage")
+        for idx, sensor in enumerate([] if point_mission else sensors.required_sensors):
             spec = CoverageSpec(
                 altitude_m=flight.altitude_m,
                 overlap_pct=flight.overlap_pct,
@@ -422,9 +432,13 @@ class MissionPlanningService:
                 priority=flight.priority,
                 required_capability=sensor,
                 max_tasks=max(10, 120 // n_sensors),
+                spacing_m=flight.lane_spacing_m,
             )
             try:
-                generated = generate_coverage_tasks(aoi_local, spec, id_prefix=prefixes[idx])
+                if flight.pattern == "sar_cells":
+                    generated = generate_search_cells(aoi_local, spec, flight.sar_cell_size_m, id_prefix="S" if idx == 0 else prefixes[idx])
+                else:
+                    generated = generate_coverage_tasks(aoi_local, spec, id_prefix=prefixes[idx])
             except CoverageError as exc:
                 raise PlanningError("AOI_COVERAGE", str(exc)) from exc
             for task in generated.tasks:
@@ -456,6 +470,13 @@ class MissionPlanningService:
             )
             geometry[key] = ShapelyPoint(x, y)
             swaths[key] = swath_width(point.required_sensor, flight.altitude_m)
+        if mission.template == "custom":
+            for n, wp in enumerate(constraints.custom_waypoints, start=1):
+                x, y = projection.to_local(wp.longitude, wp.latitude)
+                key = f"W{n:03d}"
+                tasks.append(Task(id=key, endpoints=((x, y), (x, y)), priority=flight.priority, task_type="waypoint"))
+                geometry[key] = ShapelyPoint(x, y)
+                swaths[key] = swath_width(None, flight.altitude_m)
 
         drones = self._org_drones(mission, sensors.drone_ids)
         payloads = self._functional_payloads(sensors.drone_ids)
@@ -509,11 +530,15 @@ class MissionPlanningService:
     def _ineligibility(drone: Drone, constraints: ConstraintsStep) -> str | None:
         if not drone.active:
             return "inactive"
-        if drone.status not in ELIGIBLE_DRONE_STATUSES:
+        # Sprint 5: a simulation drone staged on its launch pad (SITL not yet
+        # spawned) can be planned; ARMED -> ACTIVE readiness still requires
+        # live telemetry from the running SITL instance.
+        staged = drone.simulated and drone.flight_mode == "SIM_STAGED" and drone.status == "offline"
+        if drone.status not in ELIGIBLE_DRONE_STATUSES and not staged:
             return f"status_{drone.status}"
         if drone.location is None:
             return "no_position"
-        if drone.gps_status in ("NO_FIX", "GPS_LOST"):
+        if drone.gps_status in ("NO_FIX", "GPS_LOST") and not staged:
             return "no_gps_fix"
         if drone.battery < constraints.min_battery_pct:
             return f"battery_below_{constraints.min_battery_pct:g}"
@@ -613,7 +638,7 @@ class MissionPlanningService:
             self.db.add(row)
             task_rows[task.id] = row
 
-        coverage_tasks = [t for t in ctx.tasks if t.task_type == "coverage"]
+        coverage_tasks = [t for t in ctx.tasks if t.task_type in AREA_TASK_TYPES]
 
         def coverage(task_ids: list[str]) -> float:
             # Coverage per sensor pass, averaged: every required sensor must image the AOI.

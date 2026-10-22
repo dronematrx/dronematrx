@@ -52,6 +52,15 @@ class Settings(BaseSettings):
     CBBA_TIME_LIMIT_SECONDS: float = 5.0  # hard cap; acceptance target is < 2 s for 8 drones
     MISSION_TELEMETRY_MAX_AGE_SECONDS: float = 120.0  # ARMED -> ACTIVE requires fresher telemetry
 
+    # Sprint 5: Gazebo + PX4 SITL simulation (docker-compose.sim.yml).
+    SIMHOST_URL: str = "http://localhost:8100"
+    SIM_WORKSPACE_DIR: str = "sim_workspace"  # host path (relative to backend/), bind-mounted into simhost
+    SIM_WORKSPACE_URI: str = "/workspace"  # the same directory as the simulator sees it
+    SIM_DEM_CACHE_DIR: str = "sim_cache/dem"
+    SIM_DEM_SOURCE: str = "terrarium"  # terrarium | flat
+    SIM_ALLOW_FLAT_FALLBACK: bool = True  # labelled fallback when no DEM data can be fetched
+    SIM_COMM_LOSS_S: float = 3.0  # telemetry silence that marks a simulated drone comm_lost
+
 
 @lru_cache
 def get_settings() -> Settings:

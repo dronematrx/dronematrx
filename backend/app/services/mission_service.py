@@ -35,6 +35,7 @@ class MissionService:
             mission_type=payload.mission_type,
             status=payload.status,
             aoi_geometry=aoi,
+            execution_mode=payload.execution_mode,
             created_by=created_by,
         )
         return self.repo.create(mission)

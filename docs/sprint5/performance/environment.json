@@ -1,0 +1,20 @@
+{
+  "os": "Microsoft Windows 11 Home Single Language 10.0.26200",
+  "cpu": "AMD Ryzen 5 5600H with Radeon Graphics",
+  "ram": "15.3 GB",
+  "docker": "29.5.3",
+  "docker_vm": "12 vCPU / 8.0 GB",
+  "simulator_container": "Ubuntu 22.04 (dronematrx/simhost:dev)",
+  "gazebo": "gz-sim 8.15.0",
+  "sitl": "PX4 v1.15.4 (gz_x500, + Drone MatrX GPS-drift patch)",
+  "mavlink": "pymavlink 2.4.42 (MAVSDK not used: simhost speaks MAVLink directly)",
+  "ros2": "not used (no ROS 2 in this stack)",
+  "simhost_max_instances": 8,
+  "python_backend": "Python 3.10.11",
+  "python_simhost": "Python 3.10.12",
+  "node": "v22.17.0",
+  "database": "PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2) + PostGIS + TimescaleDB",
+  "nats": "nats-server: v2.10.29",
+  "browser": "Chromium (Version 1.63.0)",
+  "test_frameworks": "pytest 8.3.4, Vitest, Playwright"
+}

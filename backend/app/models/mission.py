@@ -18,7 +18,8 @@ VALID_MISSION_STATUS = (
     "completed",
     "aborted",
 )
-VALID_TEMPLATES = ("survey", "search", "inspection", "mapping", "custom")
+VALID_TEMPLATES = ("survey", "search", "inspection", "mapping", "agriculture", "custom")
+VALID_EXECUTION_MODES = ("live", "simulation")
 
 
 class Mission(Base):
@@ -26,6 +27,7 @@ class Mission(Base):
     __table_args__ = (
         CheckConstraint(f"mission_type IN {VALID_MISSION_TYPES}", name="ck_missions_type"),
         CheckConstraint(f"status IN {VALID_MISSION_STATUS}", name="ck_missions_status"),
+        CheckConstraint(f"execution_mode IN {VALID_EXECUTION_MODES}", name="ck_missions_execution_mode"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -46,6 +48,8 @@ class Mission(Base):
     template: Mapped[str | None] = mapped_column(String(30), nullable=True)
     wizard_step: Mapped[int] = mapped_column(Integer, default=1, server_default="1")
     config: Mapped[dict] = mapped_column(JSONB, default=dict, server_default="{}")
+    # Sprint 5: "simulation" missions run only against Gazebo/PX4 SITL drones.
+    execution_mode: Mapped[str] = mapped_column(String(20), nullable=False, default="live", server_default="live")
     validation_report: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     validated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 

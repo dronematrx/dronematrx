@@ -33,3 +33,7 @@ Thumbs.db
 
 # Scratch / working files
 .tmp/
+
+# Sprint 5 simulation workspaces and DEM cache (generated)
+backend/sim_workspace/
+backend/sim_cache/

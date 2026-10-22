@@ -10,6 +10,13 @@ from app.models.task_bundle import TaskBundle  # noqa: F401
 from app.models.audit_log import AuditLog  # noqa: F401
 from app.models.telemetry import DroneTelemetry  # noqa: F401
 from app.models.mission_planning import MissionPlan, MissionStateHistory, MissionTask, TaskAssignment  # noqa: F401
+from app.models.simulation import (  # noqa: F401
+    SimulationDroneInstance,
+    SimulationEvent,
+    SimulationReport,
+    SimulationReportComparison,
+    SimulationSession,
+)
 
 __all__ = [
     "Organization",
@@ -26,4 +33,9 @@ __all__ = [
     "TaskAssignment",
     "MissionStateHistory",
     "DroneTelemetry",
+    "SimulationSession",
+    "SimulationDroneInstance",
+    "SimulationEvent",
+    "SimulationReport",
+    "SimulationReportComparison",
 ]

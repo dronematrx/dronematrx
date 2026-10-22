@@ -1,0 +1,457 @@
+{
+  "simhost": {
+    "status": "ok",
+    "versions": {
+      "gazebo": "gz-sim 8.15.0",
+      "px4": "v1.15.4"
+    },
+    "nats": {
+      "url": "nats://nats:4222",
+      "connected": true,
+      "error": null,
+      "published": 0,
+      "publish_errors": 0
+    },
+    "capacity": {
+      "max_instances": 8,
+      "running_instances": 0,
+      "cpus": 12,
+      "memory_gb": 8,
+      "memory_available_gb": 6.9
+    },
+    "speed_levels": [
+      1,
+      2,
+      5,
+      10
+    ],
+    "sessions": {
+      "itest598dcf21": "stopped",
+      "itestb892fe3f": "stopped",
+      "itest9385e2c2": "stopped",
+      "itestd4392bba": "stopped",
+      "itestca0f6b2f": "failed",
+      "itesteb45af92": "stopped",
+      "itestd95fe07b": "stopped",
+      "itest94747536": "stopped",
+      "itest1d216324": "stopped",
+      "itestfad99198": "stopped",
+      "itest0099eab2": "stopped",
+      "itest030b1f8d": "stopped",
+      "itest8b54a05c": "stopped"
+    }
+  },
+  "aoi": {
+    "geojson": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            72.64881134033205,
+            23.238874087913818
+          ],
+          [
+            72.65121459960939,
+            23.238874087913818
+          ],
+          [
+            72.65121459960939,
+            23.24123894714565
+          ],
+          [
+            72.64881134033205,
+            23.24123894714565
+          ],
+          [
+            72.64881134033205,
+            23.238874087913818
+          ]
+        ]
+      ]
+    },
+    "area_km2": 0.06441488555550576
+  },
+  "cbba": {
+    "tasks": 16,
+    "assigned": 16,
+    "drones": 3,
+    "iterations": 10,
+    "convergence_ms": 25.18
+  },
+  "world": {
+    "ui_wait_s": 0.534,
+    "frame": {
+      "axes": {
+        "x": "east",
+        "y": "north",
+        "z": "up"
+      },
+      "type": "ENU",
+      "datum": "WGS84",
+      "units": "metres",
+      "origin": {
+        "height_m": 85.9666836330674,
+        "latitude": 23.240056518739035,
+        "longitude": 72.65001296996977
+      }
+    },
+    "gazebo": "Gazebo Harmonic (gz-sim 8)",
+    "sdf_uri": "/workspace/f3645051-3e11-4dd5-9922-40769548b0f8/world.sdf",
+    "terrain": {
+      "row0": "north",
+      "source": "terrarium",
+      "details": {
+        "zoom": 14,
+        "tiles": 2,
+        "downloads": 0,
+        "cache_hits": 2,
+        "download_s": 0
+      },
+      "is_fallback": false,
+      "heightmap_px": [
+        129,
+        129
+      ],
+      "source_label": "AWS Terrain Tiles (Terrarium; SRTM 30 m / NED / ETOPO1 blend)",
+      "relative_z_range_m": [
+        -14.87,
+        5.26
+      ],
+      "elevation_msl_max_m": 91.22,
+      "elevation_msl_min_m": 71.1,
+      "heightmap_spacing_m": 4.531,
+      "native_resolution_m": 8.78,
+      "origin_elevation_msl_m": 85.97
+    },
+    "extent_m": {
+      "x": [
+        -290,
+        290
+      ],
+      "y": [
+        -290,
+        290
+      ],
+      "half": 290,
+      "side": 580
+    },
+    "timings_s": {
+      "dem_s": 0.0744,
+      "grid_s": 0.0451,
+      "total_s": 0.1927,
+      "raster_s": 0.072
+    },
+    "world_name": "dm_f36450513e11",
+    "aoi_area_km2": 0.0644
+  },
+  "startup_s": 52.85,
+  "sitl": {
+    "pids": [
+      8183,
+      8274,
+      8448
+    ],
+    "instances": [
+      {
+        "uin": "SIM-32e36882-01",
+        "port": 14540,
+        "model": "x500_0"
+      },
+      {
+        "uin": "SIM-32e36882-02",
+        "port": 14541,
+        "model": "x500_1"
+      },
+      {
+        "uin": "SIM-32e36882-03",
+        "port": 14542,
+        "model": "x500_2"
+      }
+    ]
+  },
+  "initial_marker_vs_spawn_m": [
+    0.009906116675138748,
+    0.060525527944064336,
+    0.027043810645259535
+  ],
+  "marker_vs_backend_telemetry_m": [
+    0,
+    0,
+    0
+  ],
+  "reported_vs_gazebo_truth_m": [
+    0.57,
+    0.27,
+    0.05
+  ],
+  "pause": {
+    "before": 98.624,
+    "after_3s": 98.624,
+    "after_resume": 101.492
+  },
+  "failure": {
+    "realloc": "CBBA re-allocated SIM-03's 5 unfinished tasks across 2 drones (11 assignments changed, 0 infeasible)",
+    "details": {
+      "moved": {
+        "T001": "SIM-32e36882-02",
+        "T002": "SIM-32e36882-02",
+        "T004": "SIM-32e36882-01",
+        "T006": "SIM-32e36882-02",
+        "T008": "SIM-32e36882-01",
+        "T010": "SIM-32e36882-02",
+        "T011": "SIM-32e36882-02",
+        "T012": "SIM-32e36882-01",
+        "T014": "SIM-32e36882-01",
+        "T015": "SIM-32e36882-01",
+        "T016": "SIM-32e36882-02"
+      },
+      "reason": "sitl_crash",
+      "converged": true,
+      "iterations": 11,
+      "unassigned": []
+    }
+  },
+  "final": {
+    "state": "completed",
+    "progress": {
+      "cleanup": {
+        "state": "stopped",
+        "sitl_stopped": 2,
+        "leftover_processes": []
+      },
+      "guardrail": {
+        "fps": 28.6,
+        "active": false,
+        "events": [],
+        "sim_fps": 28.93242935008767,
+        "low_samples": 0,
+        "achieved_rtf": 1.928828623339178
+      },
+      "preflight": {
+        "at": "2026-10-22T03:56:43.881506+00:00",
+        "checks": [
+          {
+            "code": "AOI_VALID",
+            "passed": true,
+            "details": {},
+            "message": "AOI polygon is valid"
+          },
+          {
+            "code": "TASKS_GENERATED",
+            "passed": true,
+            "details": {},
+            "message": "16 tasks generated"
+          },
+          {
+            "code": "CBBA_ALLOCATION",
+            "passed": true,
+            "details": {},
+            "message": "CBBA converged: 16/16 assigned"
+          },
+          {
+            "code": "SIMHOST",
+            "passed": true,
+            "details": {},
+            "message": "Simulation host reachable"
+          },
+          {
+            "code": "GAZEBO",
+            "passed": true,
+            "details": {},
+            "message": "Gazebo: gz-sim 8.15.0"
+          },
+          {
+            "code": "SITL",
+            "passed": true,
+            "details": {},
+            "message": "PX4 SITL: v1.15.4"
+          },
+          {
+            "code": "DRONE_COUNT",
+            "passed": true,
+            "details": {},
+            "message": "3 drones requested, 8 SITL slots free (limit 8)"
+          },
+          {
+            "code": "PORTS",
+            "passed": true,
+            "details": {},
+            "message": "MAVLink ports 14540+i available"
+          },
+          {
+            "code": "NATS",
+            "passed": true,
+            "details": {},
+            "message": "Simulator connected to the NATS telemetry bus"
+          },
+          {
+            "code": "TELEMETRY_PIPELINE",
+            "passed": true,
+            "details": {},
+            "message": "Backend consumes simulator telemetry over NATS"
+          },
+          {
+            "code": "WORLD_GENERATED",
+            "passed": true,
+            "details": {},
+            "message": "World dm_f36450513e11 ready"
+          },
+          {
+            "code": "SPAWN_POSITIONS",
+            "passed": true,
+            "details": {},
+            "message": "3 spawn poses inside AOI, min separation 6.0 m, 0 in NFZ"
+          }
+        ],
+        "passed": true
+      },
+      "task_status": {
+        "T001": {
+          "drone": "SIM-32e36882-02",
+          "status": "completed"
+        },
+        "T002": {
+          "drone": "SIM-32e36882-02",
+          "status": "completed"
+        },
+        "T003": {
+          "drone": "SIM-32e36882-01",
+          "status": "completed"
+        },
+        "T004": {
+          "drone": "SIM-32e36882-01",
+          "status": "completed"
+        },
+        "T005": {
+          "drone": "SIM-32e36882-02",
+          "status": "completed"
+        },
+        "T006": {
+          "drone": "SIM-32e36882-02",
+          "status": "completed"
+        },
+        "T007": {
+          "drone": "SIM-32e36882-01",
+          "status": "completed"
+        },
+        "T008": {
+          "drone": "SIM-32e36882-01",
+          "status": "completed"
+        },
+        "T009": {
+          "drone": "SIM-32e36882-02",
+          "status": "completed"
+        },
+        "T010": {
+          "drone": "SIM-32e36882-02",
+          "status": "completed"
+        },
+        "T011": {
+          "drone": "SIM-32e36882-02",
+          "status": "completed"
+        },
+        "T012": {
+          "drone": "SIM-32e36882-01",
+          "status": "completed"
+        },
+        "T013": {
+          "drone": "SIM-32e36882-02",
+          "status": "completed"
+        },
+        "T014": {
+          "drone": "SIM-32e36882-01",
+          "status": "completed"
+        },
+        "T015": {
+          "drone": "SIM-32e36882-01",
+          "status": "completed"
+        },
+        "T016": {
+          "drone": "SIM-32e36882-02",
+          "status": "completed"
+        }
+      },
+      "tasks_total": 16,
+      "coverage_pct": 100,
+      "tasks_failed": 0,
+      "tasks_assigned": 16,
+      "tasks_completed": 16,
+      "tasks_unassigned": 0
+    },
+    "sim_time_s": 402.656
+  },
+  "report": {
+    "generation_ms": 13.42,
+    "task_summary": {
+      "total": 16,
+      "failed": 0,
+      "assigned": 16,
+      "completed": 16,
+      "incomplete": 0,
+      "unassigned": 0,
+      "coverage_pct": 100,
+      "per_drone_completed": {
+        "SIM-01": 7,
+        "SIM-02": 9,
+        "SIM-03": 0
+      },
+      "planned_coverage_pct": 100
+    },
+    "battery": {
+      "mean_used_pct": 13.67,
+      "estimate_basis": "250 Wh pack (estimate)",
+      "total_used_pct": 41,
+      "energy_wh_estimate": 102.5
+    }
+  },
+  "leftover_processes": 0,
+  "total_s": 278.67,
+  "comparison": {
+    "id": "f98fbe5e-ec8a-4523-bba4-084fd036a00f",
+    "compatible": true,
+    "diff": {
+      "coverage_pct": {
+        "delta": -66.01,
+        "current": 33.99,
+        "baseline": 100
+      },
+      "tasks_failed": {
+        "delta": 0,
+        "current": 0,
+        "baseline": 0
+      },
+      "drone_failures": {
+        "delta": -1,
+        "current": 0,
+        "baseline": 1
+      },
+      "tasks_completed": {
+        "delta": -13,
+        "current": 3,
+        "baseline": 16
+      },
+      "simulated_duration_s": {
+        "delta": -297.8,
+        "current": 104.9,
+        "baseline": 402.7
+      },
+      "battery_used_mean_pct": {
+        "delta": -10.67,
+        "current": 3,
+        "baseline": 13.67
+      },
+      "battery_used_total_pct": {
+        "delta": -32,
+        "current": 9,
+        "baseline": 41
+      }
+    },
+    "warnings": [
+      "Different injected conditions (none vs drone_failures, reallocation_events)",
+      "Different outcome (stopped vs completed); totals are not over the same part of the mission"
+    ],
+    "aoi_overlap": 1,
+    "current_session": "0af211b1-9622-49e5-b8ea-42da1135e23c",
+    "baseline_session": "f3645051-3e11-4dd5-9922-40769548b0f8"
+  }
+}

@@ -17,6 +17,8 @@ class MissionCreate(MissionBase):
     # POST /missions/{id}/transition (the state machine).
     status: Literal["draft"] = "draft"
     aoi_geometry: dict[str, Any] | None = None
+    # Sprint 5: simulation missions fly only simulated (SITL) drones.
+    execution_mode: Literal["live", "simulation"] = "live"
 
     @field_validator("aoi_geometry")
     @classmethod
@@ -47,6 +49,7 @@ class MissionOut(MissionBase):
     wizard_step: int = 1
     completed_steps: list[int] = []
     validation_passed: bool | None = None
+    execution_mode: str = "live"
     created_by: uuid.UUID | None
     created_at: datetime
     updated_at: datetime
@@ -69,6 +72,7 @@ class MissionOut(MissionBase):
             wizard_step=mission.wizard_step or 1,
             completed_steps=sorted((mission.config or {}).get("completed_steps", [])),
             validation_passed=(mission.validation_report or {}).get("passed") if mission.validation_report else None,
+            execution_mode=mission.execution_mode or "live",
             created_by=mission.created_by,
             created_at=mission.created_at,
             updated_at=mission.updated_at,

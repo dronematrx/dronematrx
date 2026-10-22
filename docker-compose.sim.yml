@@ -1,0 +1,41 @@
+# Sprint 5 simulation host (Gazebo Harmonic + PX4 SITL + simhost API).
+#
+#   docker compose -f docker-compose.yml -f docker-compose.sim.yml up -d --build simhost
+#
+# The backend generates worlds into ./backend/sim_workspace, which the
+# simulator sees as /workspace. Telemetry goes to the `nats` service on the
+# same compose network. simhost listens on http://localhost:8100.
+services:
+  simhost:
+    build:
+      context: ./sim
+    image: dronematrx/simhost:dev
+    container_name: dronematrx_simhost
+    restart: unless-stopped
+    init: true  # reap orphaned PX4 helper processes (no zombies)
+    depends_on:
+      nats:
+        condition: service_healthy
+    environment:
+      NATS_URL: nats://nats:4222
+      NATS_STREAM: DRONES
+      SIM_WORKSPACE: /workspace
+      # Capacity limit for this machine (Docker VM: 8 GB RAM). The Sprint 5
+      # 16-instance target needs the NUC i7 / 64 GB reference machine.
+      SIM_MAX_INSTANCES: ${SIM_MAX_INSTANCES:-8}
+      GZ_IP: 127.0.0.1
+      PYTHONPATH: /opt/shared:/opt/simhost
+    ports:
+      - "8100:8100"
+    shm_size: "2gb"
+    volumes:
+      - ./sim/simhost:/opt/simhost/simhost:ro
+      - ./sim/tests:/opt/simhost/tests:ro
+      # Single source of truth for the geographic <-> Gazebo transform.
+      - ./backend/app/services/simulation/geo.py:/opt/shared/enu.py:ro
+      - ./backend/sim_workspace:/workspace
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8100/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 30

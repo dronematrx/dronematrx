@@ -51,6 +51,9 @@ class Drone(Base):
 
     last_telemetry_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
+    # Sprint 5: a simulation-only drone (PX4 SITL in Gazebo). Its telemetry is
+    # always shown with a SIMULATION badge and never mixed with real hardware.
+    simulated: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
 
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now())

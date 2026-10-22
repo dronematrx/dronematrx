@@ -45,6 +45,8 @@ export interface Drone {
   battery_cycles: number
   last_telemetry_at: string | null
   active: boolean
+  /** Sprint 5: PX4 SITL drone; always shown with a SIMULATION badge. */
+  simulated?: boolean
   max_speed: number
   endurance_minutes: number
   payload_summary: { type: string; name: string; status: string }[]
@@ -98,7 +100,7 @@ export interface DroneCreateInput {
 export type DroneUpdateInput = Partial<DroneCreateInput> & { status?: DroneStatus }
 
 export type MissionStatus = 'draft' | 'planning' | 'validating' | 'armed' | 'active' | 'completed' | 'aborted'
-export type MissionTemplate = 'survey' | 'search' | 'inspection' | 'mapping' | 'custom'
+export type MissionTemplate = 'survey' | 'search' | 'inspection' | 'mapping' | 'agriculture' | 'custom'
 
 export interface GeoJSONPolygon {
   type: 'Polygon'
@@ -119,6 +121,7 @@ export interface Mission {
   wizard_step: number
   completed_steps: number[]
   validation_passed: boolean | null
+  execution_mode?: 'live' | 'simulation'
   created_by: string | null
   created_at: string
   updated_at: string
@@ -128,6 +131,7 @@ export interface MissionCreateInput {
   name: string
   mission_type: string
   aoi_geometry?: GeoJSONPolygon | null
+  execution_mode?: 'live' | 'simulation'
 }
 
 export interface MissionUpdateInput {
@@ -181,11 +185,14 @@ export interface FlightParams {
   altitude_ref: 'AGL' | 'MSL'
   speed_mps: number
   overlap_pct: number
-  pattern: 'lawnmower' | 'crosshatch'
+  pattern: 'lawnmower' | 'crosshatch' | 'sar_cells'
   heading_deg: number | null
   rth_on_complete: boolean
   rth_battery_pct: number
   priority: number
+  lane_spacing_m?: number | null
+  sar_cell_size_m?: number | null
+  turn_behaviour?: 'coordinated_turn' | 'stop_and_turn'
 }
 
 export interface SensorsConfig {
@@ -212,6 +219,7 @@ export interface ConstraintsConfig {
   link_loss_policy: 'RTH' | 'HOLD' | 'CONTINUE' | 'LAND'
   accept_unassigned: boolean
   inspection_points: InspectionPoint[]
+  custom_waypoints?: { latitude: number; longitude: number; label?: string | null }[]
   algorithm: string
 }
 

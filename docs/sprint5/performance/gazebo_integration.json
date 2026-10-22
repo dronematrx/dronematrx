@@ -1,0 +1,119 @@
+{
+  "world_terrain_spawn": {
+    "startup_s": 30.83,
+    "terrain_dz_m": 9.691,
+    "reported_vs_truth_m": [
+      0.25,
+      0.05
+    ],
+    "heightmap_px": [
+      129,
+      129
+    ],
+    "at": "2026-10-22T09:53:50"
+  },
+  "wind_gust": {
+    "displacement_east_m": 8.614,
+    "displacement_north_m": -0.133,
+    "at": "2026-10-22T10:00:18"
+  },
+  "mission_execution": {
+    "startup_s": 33.32,
+    "waypoints": 4,
+    "flight_wall_s": 59.8,
+    "at": "2026-10-22T09:56:17"
+  },
+  "crash_cleanup": {
+    "crash_returncode": -9,
+    "leftover": 0,
+    "at": "2026-10-22T09:56:49"
+  },
+  "speed_rtf": {
+    "requested_vs_achieved_rtf": {
+      "1x": 1.0,
+      "2x": 2.01,
+      "5x": 4.96,
+      "10x": 5.61
+    },
+    "at": "2026-10-22T09:58:58"
+  },
+  "obstacle": {
+    "position_error_m": 0.0004,
+    "at": "2026-10-22T09:59:25"
+  },
+  "link_loss_failsafe": {
+    "px4_mode_after_loss": "LAND",
+    "at": "2026-10-22T10:01:18"
+  },
+  "gps_drift": {
+    "baseline_error_m": 0.3,
+    "error_after_injection_m": 29.42,
+    "px4_reaction_sim_s": 14.3,
+    "inject": {
+      "type": "gps_drift",
+      "uin": "ITEST-01",
+      "params": {
+        "enabled": true
+      },
+      "wall": 1792643505.1830814,
+      "sim_time_s": 23.656,
+      "result": {
+        "enabled": true,
+        "SIM_GPS_DRIFT_N": 25.0,
+        "SIM_GPS_DRIFT_E": 15.0
+      }
+    },
+    "at": "2026-10-22T10:01:59"
+  },
+  "speed_equivalence": {
+    "1x": {
+      "speed": 1.0,
+      "reached_all": true,
+      "flight_sim_s": 127.268,
+      "landing_error_m": 0.07,
+      "achieved_rtf": 0.9983785491468762,
+      "wall_s": 127.5
+    },
+    "10x": {
+      "speed": 10.0,
+      "reached_all": true,
+      "flight_sim_s": 129.184,
+      "landing_error_m": 0.08,
+      "achieved_rtf": 5.851076244938149,
+      "wall_s": 21.2
+    },
+    "flight_time_rel_diff": 0.0151,
+    "at": "2026-10-22T10:05:25"
+  },
+  "battery_low": {
+    "px4_mode": "LAND",
+    "params": {
+      "SIM_BAT_MIN_PCT": 4.0,
+      "SIM_BAT_DRAIN": 15.0
+    },
+    "modes_seen": [
+      "HOLD",
+      "LAND",
+      "TAKEOFF"
+    ],
+    "battery_samples": [
+      100.0,
+      73.0,
+      38.0,
+      7.0,
+      5.0,
+      5.0
+    ],
+    "at": "2026-10-22T10:06:30"
+  },
+  "airborne_crash": {
+    "ground_z": 0.05,
+    "rest": {
+      "x": 0.027,
+      "y": -0.126,
+      "z": 0.037
+    },
+    "sim_time_advanced_s": 10.1,
+    "at": "2026-10-22T09:57:44"
+  }
+}
