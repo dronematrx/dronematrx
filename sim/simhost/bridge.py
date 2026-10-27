@@ -35,7 +35,8 @@ PX4_MODES = {
 }
 MODE_TO_PX4 = {"MISSION": (4, 4), "HOLD": (4, 3), "RTL": (4, 5), "LAND": (4, 6), "TAKEOFF": (4, 2), "POSCTL": (3, 0)}
 INT_PARAMS = {"NAV_DLL_ACT", "COM_RC_IN_MODE", "COM_DL_LOSS_T", "COM_LOW_BAT_ACT", "SIM_BAT_ENABLE", "COM_DLL_EXCEPT",
-              "COM_ARM_WO_GPS", "NAV_RCL_ACT", "MAV_SYS_ID", "COM_RCL_EXCEPT", "SIM_GPS_USED", "COM_OBL_RC_ACT", "COM_DISARM_LAND_DUMMY"}
+              "COM_ARM_WO_GPS", "NAV_RCL_ACT", "MAV_SYS_ID", "COM_RCL_EXCEPT", "SIM_GPS_USED", "COM_OBL_RC_ACT", "COM_DISARM_LAND_DUMMY",
+              "GF_ACTION"}
 
 
 class BridgeError(Exception):
@@ -124,6 +125,11 @@ class DroneState:
     last_rx: float = 0.0
     last_heartbeat: float = 0.0
     statustext: deque = field(default_factory=lambda: deque(maxlen=30))
+    # Sprint 6: SYS_STATUS sensor bitmasks (MAV_SYS_STATUS_SENSOR) and firmware.
+    sensors_present: int | None = None
+    sensors_enabled: int | None = None
+    sensors_health: int | None = None
+    firmware: str | None = None
 
 
 def _px4_mode(custom_mode: int) -> str:
@@ -165,6 +171,11 @@ class DroneLink:
         self._param_evt = threading.Event()
         self.closed = False
         self.gps_drift: dict | None = None
+        # Sprint 6 bench: an unbound flight controller publishes nothing; binding
+        # routes its telemetry to a Drone MatrX drone record (pub_uin/drone_id).
+        self.publish_enabled = True
+        self.pub_uin = uin
+        self.last_command_timing: dict = {}
 
     # ------------------------------------------------------------ lifecycle
 
@@ -248,6 +259,12 @@ class DroneLink:
             # request); both carry the battery simulator's state of charge.
             if msg.battery_remaining >= 0:
                 s.battery_pct = float(msg.battery_remaining)
+            s.sensors_present = msg.onboard_control_sensors_present
+            s.sensors_enabled = msg.onboard_control_sensors_enabled
+            s.sensors_health = msg.onboard_control_sensors_health
+        elif t == "AUTOPILOT_VERSION":
+            v = msg.flight_sw_version
+            s.firmware = f"PX4 v{(v >> 24) & 0xFF}.{(v >> 16) & 0xFF}.{(v >> 8) & 0xFF}"
         elif t == "GPS_RAW_INT":
             s.gps_fix, s.satellites = msg.fix_type, msg.satellites_visible
         elif t == "EXTENDED_SYS_STATE":
@@ -289,14 +306,30 @@ class DroneLink:
         p = (params + [0.0] * 7)[:7]
         while not self._acks.empty():
             self._acks.get_nowait()
+        sent = time.perf_counter()
         self.conn.mav.command_long_send(self.sysid, 1, command, 0, *p)
+        return self._await_ack(command, sent, timeout_s)
+
+    def command_int(self, command: int, frame: int, params: list[float], x: int, y: int, z: float, timeout_s: float = 5.0) -> int:
+        self._link_ok()
+        p = (params + [0.0] * 4)[:4]
+        while not self._acks.empty():
+            self._acks.get_nowait()
+        sent = time.perf_counter()
+        self.conn.mav.command_int_send(self.sysid, 1, frame, command, 0, 0, *p, x, y, z)
+        return self._await_ack(command, sent, timeout_s)
+
+    def _await_ack(self, command: int, sent: float, timeout_s: float) -> int:
+        """Wait for PX4's COMMAND_ACK; record send/ack times (perf_counter, s)."""
+        self.last_command_timing = {"command": command, "sent": sent, "ack": None}
         deadline = time.time() + timeout_s
         while time.time() < deadline:
             try:
-                ack = self._acks.get(timeout=0.2)
+                ack = self._acks.get(timeout=0.05)
             except queue.Empty:
                 continue
             if ack.command == command:
+                self.last_command_timing["ack"] = time.perf_counter()
                 return ack.result
         raise BridgeError(f"No COMMAND_ACK for command {command}")
 
@@ -316,9 +349,27 @@ class DroneLink:
 
     def goto(self, lat: float, lon: float, rel_alt: float) -> int:
         home_alt = self.state.home[2] if self.state.home else (self.state.alt_msl or 0.0)
-        self._link_ok()
-        self.conn.mav.command_int_send(self.sysid, 1, 0, 192, 0, 0, -1, 1, 0, float("nan"), int(lat * 1e7), int(lon * 1e7), home_alt + rel_alt)  # DO_REPOSITION, GLOBAL frame
-        return 0
+        # MAV_CMD_DO_REPOSITION (192), GLOBAL frame; PX4 acknowledges it.
+        return self.command_int(192, 0, [-1, 1, 0, float("nan")], int(lat * 1e7), int(lon * 1e7), home_alt + rel_alt)
+
+    def request_firmware(self) -> None:
+        try:  # MAV_CMD_REQUEST_MESSAGE(AUTOPILOT_VERSION); answered asynchronously
+            self.conn.mav.command_long_send(self.sysid, 1, 512, 0, 148, 0, 0, 0, 0, 0, 0)
+        except Exception:
+            pass
+
+    def get_param(self, name: str, timeout_s: float = 3.0) -> float | None:
+        self._params.pop(name, None)
+        self._param_evt.clear()
+        self.conn.mav.param_request_read_send(self.sysid, 1, name.encode(), -1)
+        deadline = time.time() + timeout_s
+        while time.time() < deadline:
+            if name in self._params:
+                got = self._params[name]
+                return struct.unpack("<i", struct.pack("<f", got))[0] if name in INT_PARAMS else got
+            self._param_evt.wait(0.1)
+            self._param_evt.clear()
+        return None
 
     def set_param(self, name: str, value: float, timeout_s: float = 5.0) -> float:
         from pymavlink import mavutil
@@ -438,6 +489,7 @@ class DroneLink:
                 last_req = time.time()
             if self.ready():
                 self.request_streams()
+                self.request_firmware()
                 return
             time.sleep(0.3)
         raise BridgeError(f"{self.uin}: PX4 not ready (heartbeat={bool(self.state.last_heartbeat)}, fix={self.state.gps_fix}, home={self.state.home is not None})")
@@ -457,7 +509,7 @@ class DroneLink:
         payload = {
             "drone_id": self.drone_id,
             "name": self.name,
-            "uin": self.uin,
+            "uin": self.pub_uin,
             "latitude": s.lat,
             "longitude": s.lon,
             "altitude": round(s.rel_alt, 2),
@@ -465,6 +517,7 @@ class DroneLink:
             "heading": round(s.heading, 1),
             "speed": round(s.groundspeed or math.hypot(s.vx, s.vy), 2),
             "flight_mode": s.mode,
+            "fc_id": self.uin,
             "gps_status": {3: "3D_FIX", 4: "3D_FIX", 5: "3D_FIX", 6: "3D_FIX", 2: "2D_FIX"}.get(s.gps_fix, "NO_FIX"),
             "armed": s.armed,
             "link_quality": link.quality_pct(),

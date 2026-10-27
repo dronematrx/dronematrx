@@ -1,0 +1,106 @@
+<testsuites id="" name="" tests="17" failures="0" skipped="1" errors="0" time="482.70179099999996">
+<testsuite name="mission-wizard.spec.ts" timestamp="2026-10-27T13:19:29.231Z" hostname="chromium" tests="4" failures="0" skipped="0" time="22.79" errors="0">
+<testcase name="critical path: wizard -&gt; CBBA -&gt; validate -&gt; arm -&gt; activate" classname="mission-wizard.spec.ts" time="10.779">
+</testcase>
+<testcase name="NFZ negative path: AOI through an NFZ blocks arming in UI and API" classname="mission-wizard.spec.ts" time="5.794">
+</testcase>
+<testcase name="save &amp; exit then resume restores wizard progress" classname="mission-wizard.spec.ts" time="3.691">
+</testcase>
+<testcase name="observer gets a read-only wizard" classname="mission-wizard.spec.ts" time="2.526">
+</testcase>
+</testsuite>
+<testsuite name="offline.spec.ts" timestamp="2026-10-27T13:19:29.231Z" hostname="chromium" tests="1" failures="0" skipped="0" time="4.261" errors="0">
+<testcase name="mission planning and CBBA work with the external network cut off" classname="offline.spec.ts" time="4.261">
+</testcase>
+</testsuite>
+<testsuite name="screenshots.spec.ts" timestamp="2026-10-27T13:19:29.231Z" hostname="chromium" tests="1" failures="0" skipped="1" time="0" errors="0">
+<testcase name="capture sprint 3 screens" classname="screenshots.spec.ts">
+<properties>
+<property name="skip" value="set SCREENSHOTS=1 to capture UI screenshots">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="sprint4.spec.ts" timestamp="2026-10-27T13:19:29.231Z" hostname="chromium" tests="9" failures="0" skipped="0" time="90.137" errors="0">
+<testcase name="00 baseline: Drone MatrX running (Sprint 1-3 features intact)" classname="sprint4.spec.ts" time="2.108">
+<properties>
+<property name="serial" value="">
+</property>
+</properties>
+</testcase>
+<testcase name="TEST 1: ORCA two-drone collision avoided" classname="sprint4.spec.ts" time="0.156">
+<properties>
+<property name="serial" value="">
+</property>
+</properties>
+</testcase>
+<testcase name="TEST 3: 50 consecutive 8-drone ORCA runs, zero collisions" classname="sprint4.spec.ts" time="9.874">
+<properties>
+<property name="serial" value="">
+</property>
+</properties>
+</testcase>
+<testcase name="TEST 2 + TEST 4: 8-drone demo, prediction alert &gt;= 3 s ahead, avoidance, timeline" classname="sprint4.spec.ts" time="23.846">
+<properties>
+<property name="serial" value="">
+</property>
+</properties>
+</testcase>
+<testcase name="TEST 7: communication fallback Wi-Fi -&gt; LTE -&gt; LoRa -&gt; recovery (per-drone UI)" classname="sprint4.spec.ts" time="22.613">
+<properties>
+<property name="serial" value="">
+</property>
+</properties>
+</testcase>
+<testcase name="TEST 5 + TEST 6: NATS telemetry flow and JetStream replay" classname="sprint4.spec.ts" time="2.721">
+<properties>
+<property name="serial" value="">
+</property>
+</properties>
+</testcase>
+<testcase name="TEST 9: 1-hour TimescaleDB query &lt; 500 ms (UI)" classname="sprint4.spec.ts" time="2.403">
+<properties>
+<property name="serial" value="">
+</property>
+</properties>
+</testcase>
+<testcase name="TEST 8: 16-drone live telemetry ingestion into TimescaleDB" classname="sprint4.spec.ts" time="25.003">
+<properties>
+<property name="serial" value="">
+</property>
+</properties>
+</testcase>
+<testcase name="TEST 10: complete Sprint 4 flow verified end to end" classname="sprint4.spec.ts" time="1.413">
+<properties>
+<property name="serial" value="">
+</property>
+</properties>
+</testcase>
+</testsuite>
+<testsuite name="sprint5.spec.ts" timestamp="2026-10-27T13:19:29.231Z" hostname="chromium" tests="2" failures="0" skipped="0" time="352.777" errors="0">
+<testcase name="AOI selected on Leaflet -&gt; Gazebo SITL simulation -&gt; live map -&gt; report" classname="sprint5.spec.ts" time="272.375">
+<properties>
+<property name="serial" value="">
+</property>
+</properties>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|..\..\..\frontend\test-results\sprint5-AOI-selected-on-Le-44c05-ulation---live-map---report-chromium\video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="report comparison against a re-run of the same mission" classname="sprint5.spec.ts" time="80.402">
+<properties>
+<property name="serial" value="">
+</property>
+</properties>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|..\..\..\frontend\test-results\sprint5-report-comparison--16648--re-run-of-the-same-mission-chromium\video.webm]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+</testsuites>

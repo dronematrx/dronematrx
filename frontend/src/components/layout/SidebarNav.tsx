@@ -2,6 +2,7 @@ import { ChevronRight, X } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 
 const NAV_ITEMS: { label: string; path: string }[] = [
+  { label: 'Mission Control', path: '/mission-control' },
   { label: 'Mission', path: '/missions' },
   { label: 'Flight Plan', path: '/map' },
   { label: 'Analyse', path: '/analytics' },

@@ -10,7 +10,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-KINDS = ("telemetry", "state", "alert", "command")
+KINDS = ("telemetry", "state", "alert", "command", "detection")  # detection: Sprint 6 inference events
 UIN_PATTERN = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 
 

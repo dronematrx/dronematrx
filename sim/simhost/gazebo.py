@@ -24,6 +24,7 @@ from collections import deque
 from pathlib import Path
 
 logger = logging.getLogger("simhost.gazebo")
+MODELS_DIR = Path(__file__).resolve().parent / "models"
 
 
 class GazeboError(Exception):
@@ -61,7 +62,10 @@ class GazeboWorld:
         if self.headless_rendering:
             cmd.insert(3, "--headless-rendering")
         log = open(self.log_path, "wb")
-        self.process = subprocess.Popen(cmd, stdout=log, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL, start_new_session=True, env=os.environ.copy())
+        env = os.environ.copy()
+        # Drone MatrX models (x500_dm_cam) resolve before PX4's own models.
+        env["GZ_SIM_RESOURCE_PATH"] = f"{MODELS_DIR}:{env.get('GZ_SIM_RESOURCE_PATH', '')}"
+        self.process = subprocess.Popen(cmd, stdout=log, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL, start_new_session=True, env=env)
         self._connect()
         deadline = time.time() + timeout_s
         while time.time() < deadline:
@@ -100,7 +104,7 @@ class GazeboWorld:
         poses = {}
         for p in msg.pose:
             if p.name:
-                poses[p.name] = (p.position.x, p.position.y, p.position.z, p.orientation.z)
+                poses[p.name] = (p.position.x, p.position.y, p.position.z, p.orientation.x, p.orientation.y, p.orientation.z, p.orientation.w)
         with self._lock:
             self.poses.update(poses)
 
@@ -228,6 +232,23 @@ class GazeboWorld:
     def server_exit_code(self) -> int | None:
         """None while the gz sim server runs; its return code once it has exited."""
         return self.process.poll() if self.process else None
+
+    def subscribe(self, topic: str, msg_type, callback) -> None:
+        if self._node is None:
+            raise GazeboError("Gazebo transport not connected")
+        if not self._node.subscribe(msg_type, topic, callback):
+            raise GazeboError(f"Could not subscribe to {topic}")
+
+    def model_yaw(self, model: str) -> float | None:
+        """ENU yaw (rad, counter-clockwise from east) from the model quaternion."""
+        import math
+
+        with self._lock:
+            p = self.poses.get(model)
+        if not p or len(p) < 7:
+            return None
+        qx, qy, qz, qw = p[3:7]
+        return math.atan2(2 * (qw * qz + qx * qy), 1 - 2 * (qy * qy + qz * qz))
 
     def model_pose(self, model: str) -> tuple[float, float, float] | None:
         with self._lock:

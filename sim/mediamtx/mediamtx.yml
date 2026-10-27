@@ -1,0 +1,59 @@
+# Drone MatrX Sprint 6 media relay (MediaMTX 1.9.3).
+#
+#   simhost (SITL cameras, test patterns) --RTSP publish--> mediamtx
+#   browser <--WebRTC media (UDP/TCP 8189)--> mediamtx
+#   browser --WHEP offer--> backend (auth, RBAC, org) --> mediamtx :8889
+#   backend --> mediamtx :9997 (API: paths, recording) and :9996 (DVR playback)
+#
+# Every action needs a user: the browser never talks to 8889/9996/9997
+# directly (they are published on 127.0.0.1 only, for the backend).
+# Development credentials; override with MTX_AUTHINTERNALUSERS_<n>_PASS.
+logLevel: info
+
+api: yes
+apiAddress: :9997
+playback: yes
+playbackAddress: :9996
+
+rtsp: yes
+rtspAddress: :8554
+protocols: [tcp]
+rtmp: no
+hls: no
+srt: no
+
+webrtc: yes
+webrtcAddress: :8889
+webrtcLocalUDPAddress: :8189
+webrtcLocalTCPAddress: :8189
+# Docker Desktop: container interface IPs are not reachable from the host
+# browser; advertise the published port on localhost instead.
+webrtcIPsFromInterfaces: no
+webrtcAdditionalHosts: [127.0.0.1]
+
+authMethod: internal
+authInternalUsers:
+  - user: dmx-publisher
+    pass: dmx-publisher-dev
+    ips: []
+    permissions:
+      - action: publish
+  - user: dmx-backend
+    pass: dmx-backend-dev
+    ips: []
+    permissions:
+      - action: read
+      - action: playback
+      - action: api
+
+pathDefaults:
+  # Recording is switched on per path by the backend (POST /video/feeds/{id}/recordings).
+  record: no
+  recordPath: /recordings/%path/%Y-%m-%d_%H-%M-%S-%f
+  recordFormat: fmp4
+  recordPartDuration: 1s
+  recordSegmentDuration: 60s
+  recordDeleteAfter: 2h
+
+paths:
+  all_others:

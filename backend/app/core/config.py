@@ -61,6 +61,25 @@ class Settings(BaseSettings):
     SIM_ALLOW_FLAT_FALLBACK: bool = True  # labelled fallback when no DEM data can be fetched
     SIM_COMM_LOSS_S: float = 3.0  # telemetry silence that marks a simulated drone comm_lost
 
+    # Sprint 6: mission control.
+    MC_TELEMETRY_STALE_S: float = 5.0  # no telemetry for this long -> STALE (not connected)
+    MC_TELEMETRY_OFFLINE_S: float = 60.0  # ... and for this long -> OFFLINE
+    MC_PREARM_MIN_BATTERY_PCT: float = 30.0
+    MC_COMMAND_CONFIRM_TIMEOUT_S: float = 20.0  # telemetry must show the commanded state within this time
+    MC_BENCH_LAT: float = 23.2400  # SITL bench site (open ground, Gandhinagar; same area as the demo fleet)
+    MC_BENCH_LON: float = 72.6500
+    # Flight-controller discovery scope. SITL: bench sessions on SIMHOST_URL.
+    # Hardware: explicit allow-list only ("udp:192.168.1.10:14550,serial:/dev/ttyACM0"); never scanned.
+    FC_HARDWARE_ENDPOINTS: str = ""
+    # Media relay (MediaMTX, docker-compose.sim.yml). Backend-only credentials.
+    MEDIAMTX_WHEP_URL: str = "http://127.0.0.1:8889"
+    MEDIAMTX_API_URL: str = "http://127.0.0.1:9997"
+    MEDIAMTX_PLAYBACK_URL: str = "http://127.0.0.1:9996"
+    MEDIAMTX_USER: str = "dmx-backend"
+    MEDIAMTX_PASS: str = "dmx-backend-dev"
+    # Admin-only deterministic detection fixtures (labelled TEST FIXTURE). Off in production.
+    DETECTION_TEST_FIXTURES: bool = True
+
 
 @lru_cache
 def get_settings() -> Settings:

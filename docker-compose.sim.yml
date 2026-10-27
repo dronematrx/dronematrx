@@ -25,6 +25,9 @@ services:
       SIM_MAX_INSTANCES: ${SIM_MAX_INSTANCES:-8}
       GZ_IP: 127.0.0.1
       PYTHONPATH: /opt/shared:/opt/simhost
+      MEDIAMTX_RTSP: rtsp://mediamtx:8554
+      MEDIAMTX_PUBLISH_USER: dmx-publisher
+      MEDIAMTX_PUBLISH_PASS: ${MEDIAMTX_PUBLISH_PASS:-dmx-publisher-dev}
     ports:
       - "8100:8100"
     shm_size: "2gb"
@@ -39,3 +42,30 @@ services:
       interval: 10s
       timeout: 5s
       retries: 30
+
+  # Sprint 6 media relay: RTSP in (simhost), WebRTC/WHEP out, recording + DVR playback.
+  mediamtx:
+    image: bluenviron/mediamtx:1.9.3
+    container_name: dronematrx_mediamtx
+    restart: unless-stopped
+    environment:
+      MTX_AUTHINTERNALUSERS_0_PASS: ${MEDIAMTX_PUBLISH_PASS:-dmx-publisher-dev}
+      MTX_AUTHINTERNALUSERS_1_PASS: ${MEDIAMTX_BACKEND_PASS:-dmx-backend-dev}
+      # ICE host candidates the relay advertises. Browsers gather candidates on
+      # LAN interfaces, not loopback, so include this machine's LAN IP:
+      #   MEDIAMTX_WEBRTC_HOSTS=127.0.0.1,192.168.1.20 docker compose ... up -d mediamtx
+      MTX_WEBRTCADDITIONALHOSTS: ${MEDIAMTX_WEBRTC_HOSTS:-127.0.0.1}
+    volumes:
+      - ./sim/mediamtx/mediamtx.yml:/mediamtx.yml:ro
+      - mediamtx_recordings:/recordings
+    ports:
+      - "127.0.0.1:8889:8889"        # WHEP (backend only)
+      - "127.0.0.1:9997:9997"        # control API (backend only)
+      - "127.0.0.1:9996:9996"        # DVR playback (backend only)
+      # WebRTC media on all interfaces: media flows only for sessions the
+      # authenticated backend negotiated (ICE credentials per session).
+      - "8189:8189/udp"
+      - "8189:8189"                  # TCP fallback
+
+volumes:
+  mediamtx_recordings:

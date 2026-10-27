@@ -289,9 +289,13 @@ class SitlProcessManager:
             rc = inst.process.poll()
             if rc is None:
                 if inst.state == "starting" and time.time() - (inst.started_at or 0) > self.startup_timeout_s:
+                    # Never leave a PX4 running that we report as crashed: stop it,
+                    # so the state is true and its MAVLink port is released.
+                    logger.warning("sitl.startup_timeout index=%s after %.0f s: stopping it", inst.index, self.startup_timeout_s)
+                    inst.expected_exit = True  # our own kill: not a second crash report
+                    self._terminate(inst, 5.0)
                     inst.state = "crashed"
                     inst.returncode = None
-                    logger.warning("sitl.startup_timeout index=%s", inst.index)
                     exited.append(inst)
                     if self.on_exit:
                         self.on_exit(inst, -1, False)

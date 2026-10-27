@@ -34,6 +34,7 @@ from simhost.bridge import BridgeError
 from simhost.gazebo import GazeboError, gz_version
 from simhost.session import SPEED_LEVELS, DroneSpec, SessionError, SessionSpec, SimSession
 from simhost.sitl_manager import SitlError, SitlProcessManager, running_px4_processes
+from simhost.video import TestPatternSource
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
 logger = logging.getLogger("simhost")
@@ -55,7 +56,10 @@ def _on_sitl_exit(inst, returncode, expected) -> None:
         sess.process_exited(inst.uin, returncode, expected)
 
 
-manager = SitlProcessManager(PX4_BUILD, MAX_INSTANCES, on_exit=_on_sitl_exit)
+# Start-up budget per PX4 instance (process start -> EKF ready -> configured).
+# Camera benches under software rendering need far more than a bare PX4.
+STARTUP_TIMEOUT_S = float(os.environ.get("SIM_STARTUP_TIMEOUT_S", "180"))
+manager = SitlProcessManager(PX4_BUILD, MAX_INSTANCES, on_exit=_on_sitl_exit, startup_timeout_s=STARTUP_TIMEOUT_S)
 
 
 # ------------------------------------------------------------------ NATS
@@ -102,8 +106,11 @@ async def lifespan(app: FastAPI):
     await _nats_connect()
     state["versions"] = {"gazebo": gz_version(), "px4": _px4_version()}
     yield
+    _stop_gui_recording()
     for s in list(sessions.values()):
         s.stop()
+    for src in test_sources.values():
+        src.stop()
     manager.shutdown()
     if state.get("nc"):
         await state["nc"].close()
@@ -163,6 +170,19 @@ class SessionIn(BaseModel):
     # False for simulator-only integration tests: nothing is put on the shared
     # NATS bus (test drones are not Drone MatrX drones).
     publish: bool = True
+    # Sprint 6 SITL bench (controllers for mission control) and drone cameras.
+    bench: bool = False
+    camera: bool = False
+
+
+class BindIn(BaseModel):
+    drone_id: str
+    uin: str
+    name: str
+
+
+class TestSourcesIn(BaseModel):
+    count: int = Field(..., ge=1, le=9)
 
 
 class MissionsIn(BaseModel):
@@ -228,6 +248,8 @@ def create_session(body: SessionIn) -> dict:
         cruise_speed_mps=body.cruise_speed_mps,
         battery_drain_s=body.battery_drain_s,
         params=body.params,
+        bench=body.bench,
+        camera=body.camera,
     )
     sess = SimSession(spec, manager, Path(body.world_sdf).parent / "run", publish_threadsafe if body.publish else (lambda *a: None))
     sessions[body.session_id] = sess
@@ -259,11 +281,16 @@ def upload_missions(session_id: str, body: MissionsIn) -> dict:
 
 @app.post("/sessions/{session_id}/command")
 def command(session_id: str, body: CommandIn) -> dict:
+    received = time.perf_counter()
     sess = _session(session_id)
     link = _guard(sess.link, body.uin)
+    link.last_command_timing = {}
     p = body.params
     c = body.command
-    if c == "arm":
+    if c == "arm_once":
+        # Mission control: one arm attempt; PX4's own pre-arm checks decide.
+        result = _guard(link.arm)
+    elif c == "arm":
         result = _guard(link.arm_when_ready, float(p.get("timeout_s", 120)))
     elif c == "disarm":
         result = _guard(link.disarm)
@@ -283,7 +310,87 @@ def command(session_id: str, body: CommandIn) -> dict:
         result = _guard(link.goto, float(p["latitude"]), float(p["longitude"]), float(p.get("altitude_m", 30)))
     else:
         raise HTTPException(422, f"Unsupported command {c}")
-    return {"uin": body.uin, "command": c, "result": result}
+    done = time.perf_counter()
+    t = link.last_command_timing or {}
+    timing = {"handler_ms": round((done - received) * 1000, 3)}
+    if t.get("sent"):
+        # receipt here -> COMMAND_LONG/INT written to PX4's MAVLink socket, and -> COMMAND_ACK
+        timing["recv_to_send_ms"] = round((t["sent"] - received) * 1000, 3)
+        if t.get("ack"):
+            timing["send_to_ack_ms"] = round((t["ack"] - t["sent"]) * 1000, 3)
+    return {"uin": body.uin, "command": c, "result": result, "timing": timing, "mode": link.state.mode, "armed": link.state.armed}
+
+
+@app.get("/sessions/{session_id}/fc")
+def flight_controllers(session_id: str) -> dict:
+    sess = _session(session_id)
+    return {"session_id": session_id, "state": sess.state, "bench": sess.spec.bench,
+            "controllers": [sess.fc_info(u) for u in sess.links]}
+
+
+@app.post("/sessions/{session_id}/fc/{fc_id}/bind")
+def bind(session_id: str, fc_id: str, body: BindIn) -> dict:
+    return _guard(_session(session_id).bind, fc_id, body.drone_id, body.uin, body.name)
+
+
+@app.post("/sessions/{session_id}/fc/{fc_id}/unbind")
+def unbind(session_id: str, fc_id: str) -> dict:
+    return _guard(_session(session_id).unbind, fc_id)
+
+
+@app.get("/sessions/{session_id}/fc/{fc_id}/prearm")
+def prearm(session_id: str, fc_id: str) -> dict:
+    return _guard(_session(session_id).prearm, fc_id)
+
+
+# ------------------------------------------------------------------ video
+
+test_sources: dict[int, TestPatternSource] = {}
+
+
+@app.post("/video/test-sources")
+def start_test_sources(body: TestSourcesIn) -> dict:
+    for n in range(1, body.count + 1):
+        src = test_sources.get(n) or TestPatternSource(n, str(WORKSPACE / "video_logs"))
+        test_sources[n] = src
+        src.start()
+    return video_sources()
+
+
+@app.post("/video/test-sources/{number}/{action}")
+def control_test_source(number: int, action: str) -> dict:
+    src = test_sources.get(number)
+    if src is None:
+        raise HTTPException(404, f"Test source {number} is not configured")
+    if action == "stop":
+        src.stop()
+    elif action == "start":
+        src.start()
+    else:
+        raise HTTPException(422, "action must be start or stop")
+    return src.status()
+
+
+@app.delete("/video/test-sources")
+def stop_test_sources() -> dict:
+    for src in test_sources.values():
+        src.stop()
+    return video_sources()
+
+
+@app.get("/video/sources")
+def video_sources() -> dict:
+    # Cameras of live sessions only: a stopped bench's cameras are gone.
+    sitl = [{**c.status(), "session_id": sid} for sid, sess in sessions.items() if sess.state in ("ready", "running", "paused")
+            for c in getattr(sess, "cameras", {}).values()]
+    return {"test_patterns": [s.status() for s in test_sources.values()], "sitl_cameras": sitl}
+
+
+@app.get("/clock")
+def clock() -> dict:
+    """This host's wall clock, for NTP-style offset estimation by the backend
+    (test-pattern capture times are stamped with it)."""
+    return {"epoch_ms": time.time() * 1000}
 
 
 @app.post("/sessions/{session_id}/pause")
@@ -325,7 +432,7 @@ def failure(session_id: str, body: FailureIn) -> dict:
     elif body.type == "wind":
         fx, fy = _wind_force(p)
         targets = [body.uin] if body.uin else list(sess.links)
-        models = [f"x500_{sess.index_of[u]}" for u in targets]
+        models = [sess.model_name(u) for u in targets]
         for m in models:
             _guard(sess.world.apply_force, m, fx, fy, 0.0, True)
         duration = float(p.get("duration_s", 10))
@@ -399,6 +506,7 @@ def _gps_drift(link, p: dict) -> dict:
 @app.post("/sessions/{session_id}/stop")
 def stop(session_id: str) -> dict:
     sess = _session(session_id)
+    _stop_gui_recording(session_id)  # a recording of this session's world must not outlive it
     result = sess.stop()
     manager.forget_session(session_id)
     leftovers = [p for p in running_px4_processes() if p["session"] == session_id]
@@ -502,20 +610,30 @@ def record_start(session_id: str, body: CaptureIn) -> dict:
     sess = _session(session_id)
     out = Path(sess.spec.world_sdf).parent / "evidence" / body.filename
     out.parent.mkdir(parents=True, exist_ok=True)
+    _stop_gui_recording()  # one recorder at a time: never orphan the previous one
     _gui["rec"] = subprocess.Popen(["ffmpeg", "-y", "-loglevel", "error", "-f", "x11grab", "-framerate", "10", "-video_size", GUI_CROP, "-i", f"{DISPLAY}.0",
                                     "-c:v", "libx264", "-preset", "veryfast", "-pix_fmt", "yuv420p", str(out)], stdin=subprocess.PIPE, start_new_session=True)
     _gui["rec_path"] = out
+    _gui["rec_session"] = session_id
     return {"recording": str(out)}
 
 
-@app.post("/sessions/{session_id}/gui/record/stop")
-def record_stop(session_id: str) -> dict:
-    rec = _gui.pop("rec", None)
-    if rec is None:
-        raise HTTPException(409, "Not recording")
+def _stop_gui_recording(session_id: str | None = None) -> Path | None:
+    """Finish the GUI recording (only if it belongs to `session_id`, when given)."""
+    if "rec" not in _gui or (session_id is not None and _gui.get("rec_session") != session_id):
+        return None
+    rec = _gui.pop("rec")
+    _gui.pop("rec_session", None)
     try:
         rec.communicate(b"q", timeout=20)
     except Exception:
         rec.kill()
-    path = _gui.pop("rec_path")
+    return _gui.pop("rec_path", None)
+
+
+@app.post("/sessions/{session_id}/gui/record/stop")
+def record_stop(session_id: str) -> dict:
+    if "rec" not in _gui:
+        raise HTTPException(409, "Not recording")
+    path = _stop_gui_recording()
     return {"path": str(path), "bytes": path.stat().st_size if path.exists() else 0}

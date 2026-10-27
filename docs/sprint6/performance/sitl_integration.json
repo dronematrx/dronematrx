@@ -1,0 +1,67 @@
+{
+  "mc_discovery": {
+    "discovery_ms": 4.5,
+    "controllers": 2,
+    "bench_startup_s": 33.6,
+    "at": "2026-10-27T17:24:44"
+  },
+  "mc_cameras": {
+    "FC-f0f8b0-01": {
+      "frames": 149,
+      "size": [
+        256,
+        192
+      ]
+    },
+    "FC-f0f8b0-02": {
+      "frames": 149,
+      "size": [
+        256,
+        192
+      ]
+    },
+    "at": "2026-10-27T17:25:17"
+  },
+  "mc_prearm_health": {
+    "sensors_present": 35684365,
+    "sensors_health": 572555327,
+    "gps_fix": 3,
+    "satellites": 10,
+    "battery_pct": 100.0,
+    "failsafe_params": {
+      "NAV_DLL_ACT": 2,
+      "COM_LOW_BAT_ACT": 3,
+      "GF_ACTION": 2
+    },
+    "at": "2026-10-27T17:24:46"
+  },
+  "mc_command_timing": {
+    "arm": {
+      "handler_ms": 6.559,
+      "recv_to_send_ms": 0.138,
+      "send_to_ack_ms": 6.415
+    },
+    "takeoff": {
+      "handler_ms": 15.175,
+      "recv_to_send_ms": 0.029,
+      "send_to_ack_ms": 15.14
+    },
+    "goto": {
+      "handler_ms": 13.51,
+      "recv_to_send_ms": 0.029,
+      "send_to_ack_ms": 13.474
+    },
+    "hold": {
+      "handler_ms": 6.829,
+      "recv_to_send_ms": 0.088,
+      "send_to_ack_ms": 6.733
+    },
+    "at": "2026-10-27T17:25:14"
+  },
+  "mc_detector": {
+    "geolocation_error_m": 2.08,
+    "confidence": 0.691,
+    "camera_height_m": 19.33,
+    "at": "2026-10-27T17:25:14"
+  }
+}

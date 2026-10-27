@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.routes import auth, drones, geofences, mission_planning, missions, ops, orca, simulations
+from app.api.routes import auth, drones, geofences, mission_control, mission_planning, missions, ops, orca, simulations
 
 api_router = APIRouter()
 api_router.include_router(auth.router)
@@ -14,3 +14,6 @@ api_router.include_router(ops.comms_router)
 api_router.include_router(ops.telemetry_router)
 api_router.include_router(ops.messaging_router)
 api_router.include_router(simulations.router)
+api_router.include_router(mission_control.router)
+api_router.include_router(mission_control.video_router)
+api_router.include_router(mission_control.detections_router)

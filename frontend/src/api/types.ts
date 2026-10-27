@@ -374,6 +374,8 @@ export interface ReadinessResult {
 
 export interface TelemetryUpdate {
   drone_id: string
+  /** When the backend received this frame (its clock); used for link freshness. */
+  received_at?: string
   name: string
   latitude: number
   longitude: number

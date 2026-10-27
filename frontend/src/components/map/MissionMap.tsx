@@ -36,7 +36,8 @@ function FitBounds({ bounds, fitKey, maxZoom }: { bounds: LatLngBoundsExpression
 function ExposeMapForTests() {
   const map = useMap()
   useEffect(() => {
-    if (!import.meta.env.DEV) return
+    // Dev server, or a development-mode build (the E2E runs against `npm run build:e2e`).
+    if (!import.meta.env.DEV && import.meta.env.MODE !== 'development') return
     const w = window as unknown as { __dmMap?: LeafletMap }
     w.__dmMap = map
     return () => {

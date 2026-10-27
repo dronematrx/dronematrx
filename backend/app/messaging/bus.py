@@ -102,7 +102,7 @@ def consumer_specs(prefix: str) -> dict[str, dict[str, Any]]:
     k = lambda kind: subjects.kind_filter(kind, prefix)  # noqa: E731
     return {
         "orchestrator": {"filters": [k(kind) for kind in subjects.KINDS], "deliver": api.DeliverPolicy.ALL},
-        "ui": {"filters": [k("telemetry"), k("state"), k("alert")], "deliver": api.DeliverPolicy.NEW},
+        "ui": {"filters": [k("telemetry"), k("state"), k("alert"), k("detection")], "deliver": api.DeliverPolicy.NEW},
         "telemetry-writer": {"filters": [k("telemetry")], "deliver": api.DeliverPolicy.ALL},
         "command-dispatch": {"filters": [k("command")], "deliver": api.DeliverPolicy.NEW},
     }
@@ -238,7 +238,8 @@ class DroneBus:
             )
             try:
                 existing = await self.js.consumer_info(self.stream, name)
-                if existing.config.deliver_subject != consumer.deliver_subject:
+                stale_filters = sorted(existing.config.filter_subjects or [existing.config.filter_subject or ""]) != sorted(spec["filters"])
+                if existing.config.deliver_subject != consumer.deliver_subject or stale_filters:
                     await self.js.delete_consumer(self.stream, name)  # stale definition: recreate
                     await self.js.add_consumer(self.stream, consumer)
             except NotFoundError:

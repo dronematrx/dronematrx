@@ -6,6 +6,7 @@ import { FleetPage } from './pages/FleetPage'
 import { MapPage } from './pages/MapPage'
 import { AnalyticsPage } from './pages/AnalyticsPage'
 import { MissionsPage } from './pages/MissionsPage'
+import { MissionControlPage } from './pages/MissionControlPage'
 import { MissionWizardPage } from './pages/MissionWizardPage'
 import { SimulationPage } from './pages/SimulationPage'
 import { SettingsPage } from './pages/SettingsPage'
@@ -30,6 +31,14 @@ export function AppRouter() {
           element={
             <RequireAuth>
               <MapPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/mission-control"
+          element={
+            <RequireAuth>
+              <MissionControlPage />
             </RequireAuth>
           }
         />

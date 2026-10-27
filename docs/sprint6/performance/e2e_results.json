@@ -1,0 +1,5447 @@
+{
+  "steps": {
+    "dashboard": "PASS",
+    "live_telemetry": "PASS",
+    "fc_discovery": "PASS",
+    "fc_binding": "PASS",
+    "leaflet_sync": "PASS",
+    "prearm": "PASS",
+    "arm": "PASS",
+    "quick_commands_goto": "PASS",
+    "pip": "PASS",
+    "webrtc_reconnection": "PASS",
+    "video_layouts": "PASS",
+    "dvr": "PASS",
+    "assign_task": "PASS",
+    "quick_commands": "PASS",
+    "fleet_commands": "PASS",
+    "detection_review": "PASS",
+    "postgis": "PASS",
+    "rbac": "PASS",
+    "stale_recovery": "PASS",
+    "cleanup": "PASS"
+  },
+  "bench": {
+    "session_id": "bench-6efcb0",
+    "controllers": [
+      "FC-6efcb0-01",
+      "FC-6efcb0-02",
+      "FC-6efcb0-03"
+    ],
+    "startup_s": 40.57,
+    "wall_s": 40.694
+  },
+  "started_at": "2026-10-27T13:01:03.170Z",
+  "drones": [
+    "SIM-01",
+    "SIM-02",
+    "SIM-03"
+  ],
+  "dashboard_load": {
+    "mountedAt": 92.80000001192093,
+    "readyAt": 369.30000001192093,
+    "navToReadyMs": 369.30000001192093,
+    "mountToReadyMs": 276.5,
+    "domContentLoadedMs": 51.10000002384186,
+    "loadEventMs": 53.5
+  },
+  "discovery_ui_ms": 621,
+  "discovery_api": 54.1,
+  "bindings": [
+    {
+      "drone": "SIM-03",
+      "state": "bound",
+      "via": "manual"
+    },
+    {
+      "drone": "SIM-02",
+      "state": "bound",
+      "via": "qr"
+    },
+    {
+      "drone": "SIM-01",
+      "state": "bound",
+      "via": "discovery"
+    }
+  ],
+  "prearm_blocked": {
+    "blocking": [
+      "operating_area"
+    ]
+  },
+  "arm_attempts": [
+    {
+      "refused": null
+    }
+  ],
+  "arm_attempts_api": [
+    {
+      "status": 202
+    }
+  ],
+  "goto_rejected": "GOTO rejected: destination inside Airport Approach NFZ",
+  "nine_feeds": [
+    "mc-tile-sitl/FC-6efcb0-01/hi",
+    "mc-tile-test/01/hi",
+    "mc-tile-test/02/hi",
+    "mc-tile-test/03/hi",
+    "mc-tile-test/04/hi",
+    "mc-tile-test/05/hi",
+    "mc-tile-test/06/hi",
+    "mc-tile-test/07/hi",
+    "mc-tile-test/08/hi"
+  ],
+  "pip": {
+    "enabled": true
+  },
+  "pip_entered": true,
+  "link_loss_overlay_ms": 3224,
+  "reconnect_ms": 9415,
+  "video_latency": [
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 49.343994140625,
+      "captureMs": 1793106091268.956,
+      "presentedMs": 1793106091318.3,
+      "counter": 422
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 45.343994140625,
+      "captureMs": 1793106091272.956,
+      "presentedMs": 1793106091318.3,
+      "counter": 422
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 60.94384765625,
+      "captureMs": 1793106091273.956,
+      "presentedMs": 1793106091334.9,
+      "counter": 422
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 100.643798828125,
+      "captureMs": 1793106091750.956,
+      "presentedMs": 1793106091851.5999,
+      "counter": 429
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 67.243896484375,
+      "captureMs": 1793106091850.956,
+      "presentedMs": 1793106091918.2,
+      "counter": 430
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 78.0439453125,
+      "captureMs": 1793106091806.956,
+      "presentedMs": 1793106091885,
+      "counter": 430
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 97.94384765625,
+      "captureMs": 1793106092386.956,
+      "presentedMs": 1793106092484.9,
+      "counter": 438
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 77.94384765625,
+      "captureMs": 1793106092406.956,
+      "presentedMs": 1793106092484.9,
+      "counter": 439
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 70.94384765625,
+      "captureMs": 1793106092413.956,
+      "presentedMs": 1793106092484.9,
+      "counter": 439
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 125.643798828125,
+      "captureMs": 1793106092875.956,
+      "presentedMs": 1793106093001.5999,
+      "counter": 446
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 121.643798828125,
+      "captureMs": 1793106092879.956,
+      "presentedMs": 1793106093001.5999,
+      "counter": 446
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 127.243896484375,
+      "captureMs": 1793106092990.956,
+      "presentedMs": 1793106093118.2,
+      "counter": 447
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 144.243896484375,
+      "captureMs": 1793106093673.956,
+      "presentedMs": 1793106093818.2,
+      "counter": 458
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 100.243896484375,
+      "captureMs": 1793106093717.956,
+      "presentedMs": 1793106093818.2,
+      "counter": 458
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 98.94384765625,
+      "captureMs": 1793106093685.956,
+      "presentedMs": 1793106093784.9,
+      "counter": 458
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 103.94384765625,
+      "captureMs": 1793106094480.956,
+      "presentedMs": 1793106094584.9,
+      "counter": 470
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 111.94384765625,
+      "captureMs": 1793106094472.956,
+      "presentedMs": 1793106094584.9,
+      "counter": 470
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 101.5439453125,
+      "captureMs": 1793106094449.956,
+      "presentedMs": 1793106094551.5,
+      "counter": 469
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 101.5439453125,
+      "captureMs": 1793106095049.956,
+      "presentedMs": 1793106095151.5,
+      "counter": 478
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 164.843994140625,
+      "captureMs": 1793106095419.956,
+      "presentedMs": 1793106095584.8,
+      "counter": 484
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 165.843994140625,
+      "captureMs": 1793106095418.956,
+      "presentedMs": 1793106095584.8,
+      "counter": 484
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 132.5439453125,
+      "captureMs": 1793106095718.956,
+      "presentedMs": 1793106095851.5,
+      "counter": 488
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 110.143798828125,
+      "captureMs": 1793106096207.956,
+      "presentedMs": 1793106096318.0999,
+      "counter": 496
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 103.143798828125,
+      "captureMs": 1793106096214.956,
+      "presentedMs": 1793106096318.0999,
+      "counter": 496
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 130.143798828125,
+      "captureMs": 1793106096587.956,
+      "presentedMs": 1793106096718.0999,
+      "counter": 501
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 104.143798828125,
+      "captureMs": 1793106096813.956,
+      "presentedMs": 1793106096918.0999,
+      "counter": 505
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 111.143798828125,
+      "captureMs": 1793106096806.956,
+      "presentedMs": 1793106096918.0999,
+      "counter": 505
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 68.143798828125,
+      "captureMs": 1793106097449.956,
+      "presentedMs": 1793106097518.0999,
+      "counter": 514
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 107.143798828125,
+      "captureMs": 1793106097410.956,
+      "presentedMs": 1793106097518.0999,
+      "counter": 514
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 104.143798828125,
+      "captureMs": 1793106097413.956,
+      "presentedMs": 1793106097518.0999,
+      "counter": 514
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 83.44384765625,
+      "captureMs": 1793106098117.956,
+      "presentedMs": 1793106098201.4,
+      "counter": 524
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 145.0439453125,
+      "captureMs": 1793106098072.956,
+      "presentedMs": 1793106098218,
+      "counter": 524
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 154.743896484375,
+      "captureMs": 1793106098079.956,
+      "presentedMs": 1793106098234.7,
+      "counter": 524
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 101.743896484375,
+      "captureMs": 1793106098782.956,
+      "presentedMs": 1793106098884.7,
+      "counter": 534
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 111.343994140625,
+      "captureMs": 1793106098739.956,
+      "presentedMs": 1793106098851.3,
+      "counter": 534
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 70.743896484375,
+      "captureMs": 1793106098813.956,
+      "presentedMs": 1793106098884.7,
+      "counter": 535
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 87.343994140625,
+      "captureMs": 1793106099413.956,
+      "presentedMs": 1793106099501.3,
+      "counter": 544
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 94.343994140625,
+      "captureMs": 1793106099406.956,
+      "presentedMs": 1793106099501.3,
+      "counter": 544
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 101.44384765625,
+      "captureMs": 1793106099449.956,
+      "presentedMs": 1793106099551.4,
+      "counter": 544
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 78.0439453125,
+      "captureMs": 1793106099939.956,
+      "presentedMs": 1793106100018,
+      "counter": 552
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 136.743896484375,
+      "captureMs": 1793106099947.956,
+      "presentedMs": 1793106100084.7,
+      "counter": 552
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 135.343994140625,
+      "captureMs": 1793106100115.956,
+      "presentedMs": 1793106100251.3,
+      "counter": 554
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 106.243896484375,
+      "captureMs": 1793106100544.956,
+      "presentedMs": 1793106100651.2,
+      "counter": 561
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 97.243896484375,
+      "captureMs": 1793106100553.956,
+      "presentedMs": 1793106100651.2,
+      "counter": 561
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 102.0439453125,
+      "captureMs": 1793106100715.956,
+      "presentedMs": 1793106100818,
+      "counter": 563
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 94.94384765625,
+      "captureMs": 1793106101072.956,
+      "presentedMs": 1793106101167.9,
+      "counter": 569
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 87.94384765625,
+      "captureMs": 1793106101079.956,
+      "presentedMs": 1793106101167.9,
+      "counter": 569
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 84.243896484375,
+      "captureMs": 1793106101516.956,
+      "presentedMs": 1793106101601.2,
+      "counter": 575
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 107.94384765625,
+      "captureMs": 1793106101809.956,
+      "presentedMs": 1793106101917.9,
+      "counter": 580
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 103.94384765625,
+      "captureMs": 1793106101813.956,
+      "presentedMs": 1793106101917.9,
+      "counter": 580
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 106.243896484375,
+      "captureMs": 1793106102044.956,
+      "presentedMs": 1793106102151.2,
+      "counter": 583
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 114.5439453125,
+      "captureMs": 1793106102469.956,
+      "presentedMs": 1793106102584.5,
+      "counter": 590
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 121.5439453125,
+      "captureMs": 1793106102462.956,
+      "presentedMs": 1793106102584.5,
+      "counter": 590
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 145.243896484375,
+      "captureMs": 1793106102705.956,
+      "presentedMs": 1793106102851.2,
+      "counter": 593
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 121.843994140625,
+      "captureMs": 1793106102995.956,
+      "presentedMs": 1793106103117.8,
+      "counter": 598
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 106.843994140625,
+      "captureMs": 1793106103010.956,
+      "presentedMs": 1793106103117.8,
+      "counter": 598
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 125.843994140625,
+      "captureMs": 1793106103441.956,
+      "presentedMs": 1793106103567.8,
+      "counter": 604
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 121.843994140625,
+      "captureMs": 1793106103795.956,
+      "presentedMs": 1793106103917.8,
+      "counter": 610
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 113.843994140625,
+      "captureMs": 1793106103803.956,
+      "presentedMs": 1793106103917.8,
+      "counter": 610
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 111.5439453125,
+      "captureMs": 1793106103972.956,
+      "presentedMs": 1793106104084.5,
+      "counter": 612
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 120.743896484375,
+      "captureMs": 1793106104396.956,
+      "presentedMs": 1793106104517.7,
+      "counter": 619
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 113.743896484375,
+      "captureMs": 1793106104403.956,
+      "presentedMs": 1793106104517.7,
+      "counter": 619
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 111.843994140625,
+      "captureMs": 1793106104505.956,
+      "presentedMs": 1793106104617.8,
+      "counter": 620
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 152.843994140625,
+      "captureMs": 1793106104864.956,
+      "presentedMs": 1793106105017.8,
+      "counter": 626
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 114.143798828125,
+      "captureMs": 1793106104936.956,
+      "presentedMs": 1793106105051.0999,
+      "counter": 627
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 111.143798828125,
+      "captureMs": 1793106105039.956,
+      "presentedMs": 1793106105151.0999,
+      "counter": 628
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 87.743896484375,
+      "captureMs": 1793106105529.956,
+      "presentedMs": 1793106105617.7,
+      "counter": 636
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 147.743896484375,
+      "captureMs": 1793106105469.956,
+      "presentedMs": 1793106105617.7,
+      "counter": 635
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 105.44384765625,
+      "captureMs": 1793106105578.956,
+      "presentedMs": 1793106105684.4,
+      "counter": 636
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 100.44384765625,
+      "captureMs": 1793106106333.956,
+      "presentedMs": 1793106106434.4,
+      "counter": 648
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 98.44384765625,
+      "captureMs": 1793106106285.956,
+      "presentedMs": 1793106106384.4,
+      "counter": 647
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 127.44384765625,
+      "captureMs": 1793106106306.956,
+      "presentedMs": 1793106106434.4,
+      "counter": 647
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 112.0439453125,
+      "captureMs": 1793106106838.956,
+      "presentedMs": 1793106106951,
+      "counter": 655
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 113.743896484375,
+      "captureMs": 1793106106803.956,
+      "presentedMs": 1793106106917.7,
+      "counter": 655
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 121.44384765625,
+      "captureMs": 1793106107062.956,
+      "presentedMs": 1793106107184.4,
+      "counter": 659
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 145.44384765625,
+      "captureMs": 1793106107438.956,
+      "presentedMs": 1793106107584.4,
+      "counter": 664
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 98.0439453125,
+      "captureMs": 1793106107402.956,
+      "presentedMs": 1793106107501,
+      "counter": 664
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 148.643798828125,
+      "captureMs": 1793106107668.956,
+      "presentedMs": 1793106107817.5999,
+      "counter": 668
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 80.643798828125,
+      "captureMs": 1793106107936.956,
+      "presentedMs": 1793106108017.5999,
+      "counter": 672
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 111.343994140625,
+      "captureMs": 1793106108172.956,
+      "presentedMs": 1793106108284.3,
+      "counter": 675
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 122.0439453125,
+      "captureMs": 1793106108328.956,
+      "presentedMs": 1793106108451,
+      "counter": 678
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 146.643798828125,
+      "captureMs": 1793106108670.956,
+      "presentedMs": 1793106108817.5999,
+      "counter": 683
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 112.0439453125,
+      "captureMs": 1793106108838.956,
+      "presentedMs": 1793106108951,
+      "counter": 685
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 121.243896484375,
+      "captureMs": 1793106108862.956,
+      "presentedMs": 1793106108984.2,
+      "counter": 686
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 154.94384765625,
+      "captureMs": 1793106109395.956,
+      "presentedMs": 1793106109550.9,
+      "counter": 694
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 78.243896484375,
+      "captureMs": 1793106109405.956,
+      "presentedMs": 1793106109484.2,
+      "counter": 694
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 110.94384765625,
+      "captureMs": 1793106109439.956,
+      "presentedMs": 1793106109550.9,
+      "counter": 694
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 137.643798828125,
+      "captureMs": 1793106109879.956,
+      "presentedMs": 1793106110017.5999,
+      "counter": 701
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 120.643798828125,
+      "captureMs": 1793106109996.956,
+      "presentedMs": 1793106110117.5999,
+      "counter": 703
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 111.94384765625,
+      "captureMs": 1793106110038.956,
+      "presentedMs": 1793106110150.9,
+      "counter": 703
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 108.243896484375,
+      "captureMs": 1793106110475.956,
+      "presentedMs": 1793106110584.2,
+      "counter": 710
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 94.5439453125,
+      "captureMs": 1793106110572.956,
+      "presentedMs": 1793106110667.5,
+      "counter": 711
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 112.243896484375,
+      "captureMs": 1793106110671.956,
+      "presentedMs": 1793106110784.2,
+      "counter": 713
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 97.94384765625,
+      "captureMs": 1793106111002.956,
+      "presentedMs": 1793106111100.9,
+      "counter": 718
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 104.94384765625,
+      "captureMs": 1793106111195.956,
+      "presentedMs": 1793106111300.9,
+      "counter": 721
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 111.243896484375,
+      "captureMs": 1793106111372.956,
+      "presentedMs": 1793106111484.2,
+      "counter": 723
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 80.5439453125,
+      "captureMs": 1793106111536.956,
+      "presentedMs": 1793106111617.5,
+      "counter": 726
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 154.94384765625,
+      "captureMs": 1793106111795.956,
+      "presentedMs": 1793106111950.9,
+      "counter": 730
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 174.843994140625,
+      "captureMs": 1793106111975.956,
+      "presentedMs": 1793106112150.8,
+      "counter": 732
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 104.5439453125,
+      "captureMs": 1793106112212.956,
+      "presentedMs": 1793106112317.5,
+      "counter": 736
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 86.143798828125,
+      "captureMs": 1793106112597.956,
+      "presentedMs": 1793106112684.0999,
+      "counter": 742
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 111.843994140625,
+      "captureMs": 1793106112638.956,
+      "presentedMs": 1793106112750.8,
+      "counter": 742
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 131.143798828125,
+      "captureMs": 1793106112802.956,
+      "presentedMs": 1793106112934.0999,
+      "counter": 745
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 138.143798828125,
+      "captureMs": 1793106113195.956,
+      "presentedMs": 1793106113334.0999,
+      "counter": 751
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 144.843994140625,
+      "captureMs": 1793106113305.956,
+      "presentedMs": 1793106113450.8,
+      "counter": 752
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 80.44384765625,
+      "captureMs": 1793106113736.956,
+      "presentedMs": 1793106113817.4,
+      "counter": 759
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 144.843994140625,
+      "captureMs": 1793106113905.956,
+      "presentedMs": 1793106114050.8,
+      "counter": 761
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 120.843994140625,
+      "captureMs": 1793106113929.956,
+      "presentedMs": 1793106114050.8,
+      "counter": 762
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 128.0439453125,
+      "captureMs": 1793106114555.956,
+      "presentedMs": 1793106114684,
+      "counter": 771
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 110.0439453125,
+      "captureMs": 1793106114573.956,
+      "presentedMs": 1793106114684,
+      "counter": 771
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 131.0439453125,
+      "captureMs": 1793106114552.956,
+      "presentedMs": 1793106114684,
+      "counter": 771
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 121.143798828125,
+      "captureMs": 1793106115062.956,
+      "presentedMs": 1793106115184.0999,
+      "counter": 779
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 108.44384765625,
+      "captureMs": 1793106115108.956,
+      "presentedMs": 1793106115217.4,
+      "counter": 779
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 113.143798828125,
+      "captureMs": 1793106115070.956,
+      "presentedMs": 1793106115184.0999,
+      "counter": 779
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 114.343994140625,
+      "captureMs": 1793106115602.956,
+      "presentedMs": 1793106115717.3,
+      "counter": 787
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 144.0439453125,
+      "captureMs": 1793106115839.956,
+      "presentedMs": 1793106115984,
+      "counter": 790
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 154.44384765625,
+      "captureMs": 1793106115862.956,
+      "presentedMs": 1793106116017.4,
+      "counter": 791
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 77.0439453125,
+      "captureMs": 1793106116206.956,
+      "presentedMs": 1793106116284,
+      "counter": 796
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 121.0439453125,
+      "captureMs": 1793106116462.956,
+      "presentedMs": 1793106116584,
+      "counter": 800
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 145.0439453125,
+      "captureMs": 1793106116438.956,
+      "presentedMs": 1793106116584,
+      "counter": 799
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 113.343994140625,
+      "captureMs": 1793106116803.956,
+      "presentedMs": 1793106116917.3,
+      "counter": 805
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 121.343994140625,
+      "captureMs": 1793106116995.956,
+      "presentedMs": 1793106117117.3,
+      "counter": 808
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 178.0439453125,
+      "captureMs": 1793106117105.956,
+      "presentedMs": 1793106117284,
+      "counter": 809
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 114.0439453125,
+      "captureMs": 1793106117469.956,
+      "presentedMs": 1793106117584,
+      "counter": 815
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 120.643798828125,
+      "captureMs": 1793106117529.956,
+      "presentedMs": 1793106117650.5999,
+      "counter": 816
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 144.643798828125,
+      "captureMs": 1793106117705.956,
+      "presentedMs": 1793106117850.5999,
+      "counter": 818
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 113.343994140625,
+      "captureMs": 1793106118003.956,
+      "presentedMs": 1793106118117.3,
+      "counter": 823
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 86.343994140625,
+      "captureMs": 1793106118130.956,
+      "presentedMs": 1793106118217.3,
+      "counter": 825
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 110.94384765625,
+      "captureMs": 1793106118372.956,
+      "presentedMs": 1793106118483.9,
+      "counter": 828
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 113.5439453125,
+      "captureMs": 1793106118536.956,
+      "presentedMs": 1793106118650.5,
+      "counter": 831
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 88.343994140625,
+      "captureMs": 1793106118728.956,
+      "presentedMs": 1793106118817.3,
+      "counter": 834
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 111.243896484375,
+      "captureMs": 1793106118905.956,
+      "presentedMs": 1793106119017.2,
+      "counter": 836
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 80.243896484375,
+      "captureMs": 1793106119136.956,
+      "presentedMs": 1793106119217.2,
+      "counter": 840
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 120.5439453125,
+      "captureMs": 1793106119529.956,
+      "presentedMs": 1793106119650.5,
+      "counter": 846
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 111.843994140625,
+      "captureMs": 1793106119571.956,
+      "presentedMs": 1793106119683.8,
+      "counter": 846
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 79.843994140625,
+      "captureMs": 1793106119803.956,
+      "presentedMs": 1793106119883.8,
+      "counter": 850
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 121.5439453125,
+      "captureMs": 1793106120128.956,
+      "presentedMs": 1793106120250.5,
+      "counter": 855
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 142.5439453125,
+      "captureMs": 1793106120307.956,
+      "presentedMs": 1793106120450.5,
+      "counter": 857
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 113.843994140625,
+      "captureMs": 1793106120469.956,
+      "presentedMs": 1793106120583.8,
+      "counter": 860
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 121.44384765625,
+      "captureMs": 1793106120728.956,
+      "presentedMs": 1793106120850.4,
+      "counter": 864
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 109.143798828125,
+      "captureMs": 1793106120907.956,
+      "presentedMs": 1793106121017.0999,
+      "counter": 866
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 80.243896484375,
+      "captureMs": 1793106121136.956,
+      "presentedMs": 1793106121217.2,
+      "counter": 870
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 87.143798828125,
+      "captureMs": 1793106121329.956,
+      "presentedMs": 1793106121417.0999,
+      "counter": 873
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 110.44384765625,
+      "captureMs": 1793106121439.956,
+      "presentedMs": 1793106121550.4,
+      "counter": 874
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 81.143798828125,
+      "captureMs": 1793106121735.956,
+      "presentedMs": 1793106121817.0999,
+      "counter": 879
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 119.743896484375,
+      "captureMs": 1793106121863.956,
+      "presentedMs": 1793106121983.7,
+      "counter": 881
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 78.143798828125,
+      "captureMs": 1793106122038.956,
+      "presentedMs": 1793106122117.0999,
+      "counter": 883
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 80.143798828125,
+      "captureMs": 1793106122336.956,
+      "presentedMs": 1793106122417.0999,
+      "counter": 888
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 120.143798828125,
+      "captureMs": 1793106122396.956,
+      "presentedMs": 1793106122517.0999,
+      "counter": 889
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 111.743896484375,
+      "captureMs": 1793106122571.956,
+      "presentedMs": 1793106122683.7,
+      "counter": 891
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 113.843994140625,
+      "captureMs": 1793106122869.956,
+      "presentedMs": 1793106122983.8,
+      "counter": 896
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 120.0439453125,
+      "captureMs": 1793106122996.956,
+      "presentedMs": 1793106123117,
+      "counter": 898
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 109.743896484375,
+      "captureMs": 1793106123173.956,
+      "presentedMs": 1793106123283.7,
+      "counter": 900
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 80.0439453125,
+      "captureMs": 1793106123536.956,
+      "presentedMs": 1793106123617,
+      "counter": 906
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 87.0439453125,
+      "captureMs": 1793106123729.956,
+      "presentedMs": 1793106123817,
+      "counter": 909
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 78.44384765625,
+      "captureMs": 1793106123771.956,
+      "presentedMs": 1793106123850.4,
+      "counter": 909
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 79.94384765625,
+      "captureMs": 1793106124136.956,
+      "presentedMs": 1793106124216.9,
+      "counter": 915
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 109.94384765625,
+      "captureMs": 1793106124306.956,
+      "presentedMs": 1793106124416.9,
+      "counter": 917
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 87.94384765625,
+      "captureMs": 1793106124328.956,
+      "presentedMs": 1793106124416.9,
+      "counter": 918
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 113.343994140625,
+      "captureMs": 1793106124736.956,
+      "presentedMs": 1793106124850.3,
+      "counter": 924
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 87.343994140625,
+      "captureMs": 1793106124862.956,
+      "presentedMs": 1793106124950.3,
+      "counter": 926
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 111.0439453125,
+      "captureMs": 1793106124905.956,
+      "presentedMs": 1793106125017,
+      "counter": 926
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 79.94384765625,
+      "captureMs": 1793106125336.956,
+      "presentedMs": 1793106125416.9,
+      "counter": 933
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 121.0439453125,
+      "captureMs": 1793106125395.956,
+      "presentedMs": 1793106125517,
+      "counter": 934
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 111.243896484375,
+      "captureMs": 1793106125438.956,
+      "presentedMs": 1793106125550.2,
+      "counter": 934
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 112.643798828125,
+      "captureMs": 1793106125870.956,
+      "presentedMs": 1793106125983.5999,
+      "counter": 941
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 87.5439453125,
+      "captureMs": 1793106125995.956,
+      "presentedMs": 1793106126083.5,
+      "counter": 943
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 111.243896484375,
+      "captureMs": 1793106126038.956,
+      "presentedMs": 1793106126150.2,
+      "counter": 943
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 120.643798828125,
+      "captureMs": 1793106126462.956,
+      "presentedMs": 1793106126583.5999,
+      "counter": 950
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 112.643798828125,
+      "captureMs": 1793106126470.956,
+      "presentedMs": 1793106126583.5999,
+      "counter": 950
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 111.5439453125,
+      "captureMs": 1793106126571.956,
+      "presentedMs": 1793106126683.5,
+      "counter": 951
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 86.94384765625,
+      "captureMs": 1793106127129.956,
+      "presentedMs": 1793106127216.9,
+      "counter": 960
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 79.94384765625,
+      "captureMs": 1793106127136.956,
+      "presentedMs": 1793106127216.9,
+      "counter": 960
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 111.243896484375,
+      "captureMs": 1793106127238.956,
+      "presentedMs": 1793106127350.2,
+      "counter": 961
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 87.843994140625,
+      "captureMs": 1793106127728.956,
+      "presentedMs": 1793106127816.8,
+      "counter": 969
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 77.843994140625,
+      "captureMs": 1793106127738.956,
+      "presentedMs": 1793106127816.8,
+      "counter": 969
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 110.243896484375,
+      "captureMs": 1793106127839.956,
+      "presentedMs": 1793106127950.2,
+      "counter": 970
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 87.843994140625,
+      "captureMs": 1793106128328.956,
+      "presentedMs": 1793106128416.8,
+      "counter": 978
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 107.243896484375,
+      "captureMs": 1793106128342.956,
+      "presentedMs": 1793106128450.2,
+      "counter": 978
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 111.5439453125,
+      "captureMs": 1793106128371.956,
+      "presentedMs": 1793106128483.5,
+      "counter": 978
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 87.243896484375,
+      "captureMs": 1793106128862.956,
+      "presentedMs": 1793106128950.2,
+      "counter": 986
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 110.843994140625,
+      "captureMs": 1793106128905.956,
+      "presentedMs": 1793106129016.8,
+      "counter": 986
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 79.843994140625,
+      "captureMs": 1793106128936.956,
+      "presentedMs": 1793106129016.8,
+      "counter": 987
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 87.44384765625,
+      "captureMs": 1793106129395.956,
+      "presentedMs": 1793106129483.4,
+      "counter": 994
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 113.44384765625,
+      "captureMs": 1793106129469.956,
+      "presentedMs": 1793106129583.4,
+      "counter": 995
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 110.843994140625,
+      "captureMs": 1793106129505.956,
+      "presentedMs": 1793106129616.8,
+      "counter": 995
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 84.843994140625,
+      "captureMs": 1793106129931.956,
+      "presentedMs": 1793106130016.8,
+      "counter": 1002
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 111.0439453125,
+      "captureMs": 1793106130038.956,
+      "presentedMs": 1793106130150,
+      "counter": 1003
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 80.0439453125,
+      "captureMs": 1793106130069.956,
+      "presentedMs": 1793106130150,
+      "counter": 1004
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 120.44384765625,
+      "captureMs": 1793106130462.956,
+      "presentedMs": 1793106130583.4,
+      "counter": 1010
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 78.143798828125,
+      "captureMs": 1793106130571.956,
+      "presentedMs": 1793106130650.0999,
+      "counter": 1011
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 80.44384765625,
+      "captureMs": 1793106130602.956,
+      "presentedMs": 1793106130683.4,
+      "counter": 1012
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 87.0439453125,
+      "captureMs": 1793106131062.956,
+      "presentedMs": 1793106131150,
+      "counter": 1019
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 111.0439453125,
+      "captureMs": 1793106131238.956,
+      "presentedMs": 1793106131350,
+      "counter": 1021
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 113.743896484375,
+      "captureMs": 1793106131202.956,
+      "presentedMs": 1793106131316.7,
+      "counter": 1021
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 87.343994140625,
+      "captureMs": 1793106131595.956,
+      "presentedMs": 1793106131683.3,
+      "counter": 1027
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 113.743896484375,
+      "captureMs": 1793106131802.956,
+      "presentedMs": 1793106131916.7,
+      "counter": 1030
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 111.0439453125,
+      "captureMs": 1793106131838.956,
+      "presentedMs": 1793106131950,
+      "counter": 1030
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 90.0439453125,
+      "captureMs": 1793106132259.956,
+      "presentedMs": 1793106132350,
+      "counter": 1037
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 116.743896484375,
+      "captureMs": 1793106132399.956,
+      "presentedMs": 1793106132516.7,
+      "counter": 1039
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 114.0439453125,
+      "captureMs": 1793106132435.956,
+      "presentedMs": 1793106132550,
+      "counter": 1039
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 56.743896484375,
+      "captureMs": 1793106132859.956,
+      "presentedMs": 1793106132916.7,
+      "counter": 1046
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 109.343994140625,
+      "captureMs": 1793106132973.956,
+      "presentedMs": 1793106133083.3,
+      "counter": 1047
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 83.343994140625,
+      "captureMs": 1793106132999.956,
+      "presentedMs": 1793106133083.3,
+      "counter": 1048
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 56.643798828125,
+      "captureMs": 1793106133459.956,
+      "presentedMs": 1793106133516.5999,
+      "counter": 1055
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 80.94384765625,
+      "captureMs": 1793106133568.956,
+      "presentedMs": 1793106133649.9,
+      "counter": 1056
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 83.343994140625,
+      "captureMs": 1793106133599.956,
+      "presentedMs": 1793106133683.3,
+      "counter": 1057
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.343994140625,
+      "captureMs": 1793106133993.956,
+      "presentedMs": 1793106134083.3,
+      "counter": 1063
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 83.343994140625,
+      "captureMs": 1793106134199.956,
+      "presentedMs": 1793106134283.3,
+      "counter": 1066
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 46.643798828125,
+      "captureMs": 1793106134169.956,
+      "presentedMs": 1793106134216.5999,
+      "counter": 1065
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 88.643798828125,
+      "captureMs": 1793106134527.956,
+      "presentedMs": 1793106134616.5999,
+      "counter": 1071
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 83.643798828125,
+      "captureMs": 1793106134732.956,
+      "presentedMs": 1793106134816.5999,
+      "counter": 1074
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 80.94384765625,
+      "captureMs": 1793106134768.956,
+      "presentedMs": 1793106134849.9,
+      "counter": 1074
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.94384765625,
+      "captureMs": 1793106135059.956,
+      "presentedMs": 1793106135149.9,
+      "counter": 1079
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 83.243896484375,
+      "captureMs": 1793106135399.956,
+      "presentedMs": 1793106135483.2,
+      "counter": 1084
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 80.94384765625,
+      "captureMs": 1793106135368.956,
+      "presentedMs": 1793106135449.9,
+      "counter": 1083
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.243896484375,
+      "captureMs": 1793106135593.956,
+      "presentedMs": 1793106135683.2,
+      "counter": 1087
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 113.5439453125,
+      "captureMs": 1793106135902.956,
+      "presentedMs": 1793106136016.5,
+      "counter": 1091
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 82.243896484375,
+      "captureMs": 1793106136000.956,
+      "presentedMs": 1793106136083.2,
+      "counter": 1093
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 123.5439453125,
+      "captureMs": 1793106136192.956,
+      "presentedMs": 1793106136316.5,
+      "counter": 1096
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 80.843994140625,
+      "captureMs": 1793106136568.956,
+      "presentedMs": 1793106136649.8,
+      "counter": 1101
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 83.143798828125,
+      "captureMs": 1793106136599.956,
+      "presentedMs": 1793106136683.0999,
+      "counter": 1102
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 123.5439453125,
+      "captureMs": 1793106136792.956,
+      "presentedMs": 1793106136916.5,
+      "counter": 1105
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 82.5439453125,
+      "captureMs": 1793106137133.956,
+      "presentedMs": 1793106137216.5,
+      "counter": 1110
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 111.843994140625,
+      "captureMs": 1793106137237.956,
+      "presentedMs": 1793106137349.8,
+      "counter": 1111
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 56.44384765625,
+      "captureMs": 1793106137459.956,
+      "presentedMs": 1793106137516.4,
+      "counter": 1115
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 82.843994140625,
+      "captureMs": 1793106137666.956,
+      "presentedMs": 1793106137749.8,
+      "counter": 1118
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 113.843994140625,
+      "captureMs": 1793106137835.956,
+      "presentedMs": 1793106137949.8,
+      "counter": 1120
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 90.143798828125,
+      "captureMs": 1793106137992.956,
+      "presentedMs": 1793106138083.0999,
+      "counter": 1123
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 80.143798828125,
+      "captureMs": 1793106138202.956,
+      "presentedMs": 1793106138283.0999,
+      "counter": 1126
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 110.843994140625,
+      "captureMs": 1793106138438.956,
+      "presentedMs": 1793106138549.8,
+      "counter": 1129
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 90.44384765625,
+      "captureMs": 1793106138525.956,
+      "presentedMs": 1793106138616.4,
+      "counter": 1131
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 82.44384765625,
+      "captureMs": 1793106138733.956,
+      "presentedMs": 1793106138816.4,
+      "counter": 1134
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 113.743896484375,
+      "captureMs": 1793106139035.956,
+      "presentedMs": 1793106139149.7,
+      "counter": 1138
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.743896484375,
+      "captureMs": 1793106139259.956,
+      "presentedMs": 1793106139349.7,
+      "counter": 1142
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 83.44384765625,
+      "captureMs": 1793106139332.956,
+      "presentedMs": 1793106139416.4,
+      "counter": 1143
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 80.44384765625,
+      "captureMs": 1793106139635.956,
+      "presentedMs": 1793106139716.4,
+      "counter": 1147
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.143798828125,
+      "captureMs": 1793106139793.956,
+      "presentedMs": 1793106139883.0999,
+      "counter": 1150
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 116.143798828125,
+      "captureMs": 1793106139866.956,
+      "presentedMs": 1793106139983.0999,
+      "counter": 1151
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 80.743896484375,
+      "captureMs": 1793106140368.956,
+      "presentedMs": 1793106140449.7,
+      "counter": 1158
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 90.343994140625,
+      "captureMs": 1793106140325.956,
+      "presentedMs": 1793106140416.3,
+      "counter": 1158
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 115.343994140625,
+      "captureMs": 1793106140400.956,
+      "presentedMs": 1793106140516.3,
+      "counter": 1159
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.743896484375,
+      "captureMs": 1793106140859.956,
+      "presentedMs": 1793106140949.7,
+      "counter": 1166
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 80.643798828125,
+      "captureMs": 1793106140968.956,
+      "presentedMs": 1793106141049.5999,
+      "counter": 1167
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 83.0439453125,
+      "captureMs": 1793106140999.956,
+      "presentedMs": 1793106141083,
+      "counter": 1168
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.94384765625,
+      "captureMs": 1793106141392.956,
+      "presentedMs": 1793106141482.9,
+      "counter": 1174
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 113.343994140625,
+      "captureMs": 1793106141502.956,
+      "presentedMs": 1793106141616.3,
+      "counter": 1175
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 82.343994140625,
+      "captureMs": 1793106141533.956,
+      "presentedMs": 1793106141616.3,
+      "counter": 1176
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 90.243896484375,
+      "captureMs": 1793106141925.956,
+      "presentedMs": 1793106142016.2,
+      "counter": 1182
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 113.743896484375,
+      "captureMs": 1793106142035.956,
+      "presentedMs": 1793106142149.7,
+      "counter": 1183
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 82.743896484375,
+      "captureMs": 1793106142066.956,
+      "presentedMs": 1793106142149.7,
+      "counter": 1184
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.643798828125,
+      "captureMs": 1793106142459.956,
+      "presentedMs": 1793106142549.5999,
+      "counter": 1190
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 83.0439453125,
+      "captureMs": 1793106142599.956,
+      "presentedMs": 1793106142683,
+      "counter": 1192
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 80.343994140625,
+      "captureMs": 1793106142635.956,
+      "presentedMs": 1793106142716.3,
+      "counter": 1192
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 88.94384765625,
+      "captureMs": 1793106142993.956,
+      "presentedMs": 1793106143082.9,
+      "counter": 1198
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 79.643798828125,
+      "captureMs": 1793106143169.956,
+      "presentedMs": 1793106143249.5999,
+      "counter": 1200
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 116.343994140625,
+      "captureMs": 1793106143199.956,
+      "presentedMs": 1793106143316.3,
+      "counter": 1201
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.843994140625,
+      "captureMs": 1793106143592.956,
+      "presentedMs": 1793106143682.8,
+      "counter": 1207
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 79.94384765625,
+      "captureMs": 1793106143702.956,
+      "presentedMs": 1793106143782.9,
+      "counter": 1208
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 82.843994140625,
+      "captureMs": 1793106143799.956,
+      "presentedMs": 1793106143882.8,
+      "counter": 1210
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.843994140625,
+      "captureMs": 1793106144192.956,
+      "presentedMs": 1793106144282.8,
+      "counter": 1216
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 79.5439453125,
+      "captureMs": 1793106144369.956,
+      "presentedMs": 1793106144449.5,
+      "counter": 1218
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 82.243896484375,
+      "captureMs": 1793106144333.956,
+      "presentedMs": 1793106144416.2,
+      "counter": 1218
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 90.243896484375,
+      "captureMs": 1793106144725.956,
+      "presentedMs": 1793106144816.2,
+      "counter": 1224
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 82.5439453125,
+      "captureMs": 1793106144866.956,
+      "presentedMs": 1793106144949.5,
+      "counter": 1226
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 80.843994140625,
+      "captureMs": 1793106144901.956,
+      "presentedMs": 1793106144982.8,
+      "counter": 1226
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.44384765625,
+      "captureMs": 1793106145259.956,
+      "presentedMs": 1793106145349.4,
+      "counter": 1232
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 82.843994140625,
+      "captureMs": 1793106145399.956,
+      "presentedMs": 1793106145482.8,
+      "counter": 1234
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 80.243896484375,
+      "captureMs": 1793106145435.956,
+      "presentedMs": 1793106145516.2,
+      "counter": 1234
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 56.243896484375,
+      "captureMs": 1793106145859.956,
+      "presentedMs": 1793106145916.2,
+      "counter": 1241
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 83.143798828125,
+      "captureMs": 1793106145932.956,
+      "presentedMs": 1793106146016.0999,
+      "counter": 1242
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 80.143798828125,
+      "captureMs": 1793106146035.956,
+      "presentedMs": 1793106146116.0999,
+      "counter": 1243
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.44384765625,
+      "captureMs": 1793106146459.956,
+      "presentedMs": 1793106146549.4,
+      "counter": 1250
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 115.843994140625,
+      "captureMs": 1793106146466.956,
+      "presentedMs": 1793106146582.8,
+      "counter": 1250
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 80.44384765625,
+      "captureMs": 1793106146568.956,
+      "presentedMs": 1793106146649.4,
+      "counter": 1251
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 56.143798828125,
+      "captureMs": 1793106147059.956,
+      "presentedMs": 1793106147116.0999,
+      "counter": 1259
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 82.44384765625,
+      "captureMs": 1793106147066.956,
+      "presentedMs": 1793106147149.4,
+      "counter": 1259
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 113.44384765625,
+      "captureMs": 1793106147235.956,
+      "presentedMs": 1793106147349.4,
+      "counter": 1261
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.743896484375,
+      "captureMs": 1793106147592.956,
+      "presentedMs": 1793106147682.7,
+      "counter": 1267
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 82.743896484375,
+      "captureMs": 1793106147599.956,
+      "presentedMs": 1793106147682.7,
+      "counter": 1267
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 113.343994140625,
+      "captureMs": 1793106147835.956,
+      "presentedMs": 1793106147949.3,
+      "counter": 1270
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 90.0439453125,
+      "captureMs": 1793106148325.956,
+      "presentedMs": 1793106148416,
+      "counter": 1278
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 82.0439453125,
+      "captureMs": 1793106148333.956,
+      "presentedMs": 1793106148416,
+      "counter": 1278
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 80.0439453125,
+      "captureMs": 1793106148435.956,
+      "presentedMs": 1793106148516,
+      "counter": 1279
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 115.643798828125,
+      "captureMs": 1793106148866.956,
+      "presentedMs": 1793106148982.5999,
+      "counter": 1286
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 88.0439453125,
+      "captureMs": 1793106148927.956,
+      "presentedMs": 1793106149016,
+      "counter": 1287
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 80.343994140625,
+      "captureMs": 1793106148968.956,
+      "presentedMs": 1793106149049.3,
+      "counter": 1287
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 115.743896484375,
+      "captureMs": 1793106149466.956,
+      "presentedMs": 1793106149582.7,
+      "counter": 1295
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 113.0439453125,
+      "captureMs": 1793106149502.956,
+      "presentedMs": 1793106149616,
+      "counter": 1295
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 90.0439453125,
+      "captureMs": 1793106149525.956,
+      "presentedMs": 1793106149616,
+      "counter": 1296
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 113.243896484375,
+      "captureMs": 1793106150035.956,
+      "presentedMs": 1793106150149.2,
+      "counter": 1303
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 82.743896484375,
+      "captureMs": 1793106150199.956,
+      "presentedMs": 1793106150282.7,
+      "counter": 1306
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 122.643798828125,
+      "captureMs": 1793106150259.956,
+      "presentedMs": 1793106150382.5999,
+      "counter": 1307
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 80.343994140625,
+      "captureMs": 1793106150568.956,
+      "presentedMs": 1793106150649.3,
+      "counter": 1311
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 82.94384765625,
+      "captureMs": 1793106150732.956,
+      "presentedMs": 1793106150815.9,
+      "counter": 1314
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 56.0439453125,
+      "captureMs": 1793106150859.956,
+      "presentedMs": 1793106150916,
+      "counter": 1316
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 79.643798828125,
+      "captureMs": 1793106151102.956,
+      "presentedMs": 1793106151182.5999,
+      "counter": 1319
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 48.643798828125,
+      "captureMs": 1793106151333.956,
+      "presentedMs": 1793106151382.5999,
+      "counter": 1323
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.643798828125,
+      "captureMs": 1793106151392.956,
+      "presentedMs": 1793106151482.5999,
+      "counter": 1324
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 79.94384765625,
+      "captureMs": 1793106151635.956,
+      "presentedMs": 1793106151715.9,
+      "counter": 1327
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 82.243896484375,
+      "captureMs": 1793106151866.956,
+      "presentedMs": 1793106151949.2,
+      "counter": 1331
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.5439453125,
+      "captureMs": 1793106151992.956,
+      "presentedMs": 1793106152082.5,
+      "counter": 1333
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 80.243896484375,
+      "captureMs": 1793106152168.956,
+      "presentedMs": 1793106152249.2,
+      "counter": 1335
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 82.5439453125,
+      "captureMs": 1793106152399.956,
+      "presentedMs": 1793106152482.5,
+      "counter": 1339
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.5439453125,
+      "captureMs": 1793106152592.956,
+      "presentedMs": 1793106152682.5,
+      "counter": 1342
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 112.94384765625,
+      "captureMs": 1793106152702.956,
+      "presentedMs": 1793106152815.9,
+      "counter": 1343
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 81.843994140625,
+      "captureMs": 1793106152933.956,
+      "presentedMs": 1793106153015.8,
+      "counter": 1347
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.843994140625,
+      "captureMs": 1793106153125.956,
+      "presentedMs": 1793106153215.8,
+      "counter": 1350
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 112.843994140625,
+      "captureMs": 1793106153302.956,
+      "presentedMs": 1793106153415.8,
+      "counter": 1352
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 49.5439453125,
+      "captureMs": 1793106153532.956,
+      "presentedMs": 1793106153582.5,
+      "counter": 1356
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.5439453125,
+      "captureMs": 1793106153792.956,
+      "presentedMs": 1793106153882.5,
+      "counter": 1360
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 113.243896484375,
+      "captureMs": 1793106153835.956,
+      "presentedMs": 1793106153949.2,
+      "counter": 1360
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 115.44384765625,
+      "captureMs": 1793106154066.956,
+      "presentedMs": 1793106154182.4,
+      "counter": 1364
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.843994140625,
+      "captureMs": 1793106154325.956,
+      "presentedMs": 1793106154415.8,
+      "counter": 1368
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 79.843994140625,
+      "captureMs": 1793106154435.956,
+      "presentedMs": 1793106154515.8,
+      "counter": 1369
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 115.843994140625,
+      "captureMs": 1793106154599.956,
+      "presentedMs": 1793106154715.8,
+      "counter": 1372
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.743896484375,
+      "captureMs": 1793106154925.956,
+      "presentedMs": 1793106155015.7,
+      "counter": 1377
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 79.843994140625,
+      "captureMs": 1793106155035.956,
+      "presentedMs": 1793106155115.8,
+      "counter": 1378
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 115.743896484375,
+      "captureMs": 1793106155199.956,
+      "presentedMs": 1793106155315.7,
+      "counter": 1381
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 56.44384765625,
+      "captureMs": 1793106155525.956,
+      "presentedMs": 1793106155582.4,
+      "counter": 1386
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 80.0439453125,
+      "captureMs": 1793106155568.956,
+      "presentedMs": 1793106155649,
+      "counter": 1386
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 82.44384765625,
+      "captureMs": 1793106155799.956,
+      "presentedMs": 1793106155882.4,
+      "counter": 1390
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 55.743896484375,
+      "captureMs": 1793106156059.956,
+      "presentedMs": 1793106156115.7,
+      "counter": 1394
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 113.0439453125,
+      "captureMs": 1793106156235.956,
+      "presentedMs": 1793106156349,
+      "counter": 1396
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 82.743896484375,
+      "captureMs": 1793106156332.956,
+      "presentedMs": 1793106156415.7,
+      "counter": 1398
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 55.743896484375,
+      "captureMs": 1793106156659.956,
+      "presentedMs": 1793106156715.7,
+      "counter": 1403
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 113.143798828125,
+      "captureMs": 1793106156835.956,
+      "presentedMs": 1793106156949.0999,
+      "counter": 1405
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 114.44384765625,
+      "captureMs": 1793106156867.956,
+      "presentedMs": 1793106156982.4,
+      "counter": 1406
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.0439453125,
+      "captureMs": 1793106157259.956,
+      "presentedMs": 1793106157349,
+      "counter": 1412
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 79.743896484375,
+      "captureMs": 1793106157435.956,
+      "presentedMs": 1793106157515.7,
+      "counter": 1414
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 115.743896484375,
+      "captureMs": 1793106157399.956,
+      "presentedMs": 1793106157515.7,
+      "counter": 1414
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 88.94384765625,
+      "captureMs": 1793106157859.956,
+      "presentedMs": 1793106157948.9,
+      "counter": 1421
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 79.94384765625,
+      "captureMs": 1793106157968.956,
+      "presentedMs": 1793106158048.9,
+      "counter": 1422
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 82.343994140625,
+      "captureMs": 1793106157999.956,
+      "presentedMs": 1793106158082.3,
+      "counter": 1423
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.343994140625,
+      "captureMs": 1793106158392.956,
+      "presentedMs": 1793106158482.3,
+      "counter": 1429
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 79.343994140625,
+      "captureMs": 1793106158502.956,
+      "presentedMs": 1793106158582.3,
+      "counter": 1430
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 82.343994140625,
+      "captureMs": 1793106158599.956,
+      "presentedMs": 1793106158682.3,
+      "counter": 1432
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.643798828125,
+      "captureMs": 1793106158925.956,
+      "presentedMs": 1793106159015.5999,
+      "counter": 1437
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 79.643798828125,
+      "captureMs": 1793106159035.956,
+      "presentedMs": 1793106159115.5999,
+      "counter": 1438
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 115.643798828125,
+      "captureMs": 1793106159199.956,
+      "presentedMs": 1793106159315.5999,
+      "counter": 1441
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 73.94384765625,
+      "captureMs": 1793106159574.956,
+      "presentedMs": 1793106159648.9,
+      "counter": 1446
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 55.94384765625,
+      "captureMs": 1793106159592.956,
+      "presentedMs": 1793106159648.9,
+      "counter": 1447
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 82.343994140625,
+      "captureMs": 1793106159799.956,
+      "presentedMs": 1793106159882.3,
+      "counter": 1450
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 79.94384765625,
+      "captureMs": 1793106160168.956,
+      "presentedMs": 1793106160248.9,
+      "counter": 1455
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.243896484375,
+      "captureMs": 1793106160192.956,
+      "presentedMs": 1793106160282.2,
+      "counter": 1456
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 81.243896484375,
+      "captureMs": 1793106160400.956,
+      "presentedMs": 1793106160482.2,
+      "counter": 1459
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 112.5439453125,
+      "captureMs": 1793106160702.956,
+      "presentedMs": 1793106160815.5,
+      "counter": 1463
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.5439453125,
+      "captureMs": 1793106160725.956,
+      "presentedMs": 1793106160815.5,
+      "counter": 1464
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 81.5439453125,
+      "captureMs": 1793106160933.956,
+      "presentedMs": 1793106161015.5,
+      "counter": 1467
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 112.843994140625,
+      "captureMs": 1793106161235.956,
+      "presentedMs": 1793106161348.8,
+      "counter": 1471
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 88.843994140625,
+      "captureMs": 1793106161259.956,
+      "presentedMs": 1793106161348.8,
+      "counter": 1472
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 115.243896484375,
+      "captureMs": 1793106161466.956,
+      "presentedMs": 1793106161582.2,
+      "counter": 1475
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 78.94384765625,
+      "captureMs": 1793106161769.956,
+      "presentedMs": 1793106161848.9,
+      "counter": 1479
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.143798828125,
+      "captureMs": 1793106161792.956,
+      "presentedMs": 1793106161882.0999,
+      "counter": 1480
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 115.143798828125,
+      "captureMs": 1793106162066.956,
+      "presentedMs": 1793106162182.0999,
+      "counter": 1484
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 80.843994140625,
+      "captureMs": 1793106162367.956,
+      "presentedMs": 1793106162448.8,
+      "counter": 1488
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 90.44384765625,
+      "captureMs": 1793106162324.956,
+      "presentedMs": 1793106162415.4,
+      "counter": 1488
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 83.743896484375,
+      "captureMs": 1793106162664.956,
+      "presentedMs": 1793106162748.7,
+      "counter": 1493
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 88.843994140625,
+      "captureMs": 1793106162859.956,
+      "presentedMs": 1793106162948.8,
+      "counter": 1496
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 80.843994140625,
+      "captureMs": 1793106162967.956,
+      "presentedMs": 1793106163048.8,
+      "counter": 1497
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 76.143798828125,
+      "captureMs": 1793106163205.956,
+      "presentedMs": 1793106163282.0999,
+      "counter": 1501
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 90.143798828125,
+      "captureMs": 1793106163391.956,
+      "presentedMs": 1793106163482.0999,
+      "counter": 1504
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 114.44384765625,
+      "captureMs": 1793106163500.956,
+      "presentedMs": 1793106163615.4,
+      "counter": 1505
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 77.44384765625,
+      "captureMs": 1793106163737.956,
+      "presentedMs": 1793106163815.4,
+      "counter": 1509
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.44384765625,
+      "captureMs": 1793106163925.956,
+      "presentedMs": 1793106164015.4,
+      "counter": 1512
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 113.743896484375,
+      "captureMs": 1793106164034.956,
+      "presentedMs": 1793106164148.7,
+      "counter": 1513
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 117.0439453125,
+      "captureMs": 1793106164264.956,
+      "presentedMs": 1793106164382,
+      "counter": 1517
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.743896484375,
+      "captureMs": 1793106164458.956,
+      "presentedMs": 1793106164548.7,
+      "counter": 1520
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 81.44384765625,
+      "captureMs": 1793106164633.956,
+      "presentedMs": 1793106164715.4,
+      "counter": 1522
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 117.143798828125,
+      "captureMs": 1793106164864.956,
+      "presentedMs": 1793106164982.0999,
+      "counter": 1526
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.143798828125,
+      "captureMs": 1793106164992.956,
+      "presentedMs": 1793106165082.0999,
+      "counter": 1528
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 79.743896484375,
+      "captureMs": 1793106165168.956,
+      "presentedMs": 1793106165248.7,
+      "counter": 1530
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 116.343994140625,
+      "captureMs": 1793106165398.956,
+      "presentedMs": 1793106165515.3,
+      "counter": 1534
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 90.343994140625,
+      "captureMs": 1793106165524.956,
+      "presentedMs": 1793106165615.3,
+      "counter": 1536
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 113.343994140625,
+      "captureMs": 1793106165701.956,
+      "presentedMs": 1793106165815.3,
+      "counter": 1538
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 83.44384765625,
+      "captureMs": 1793106165931.956,
+      "presentedMs": 1793106166015.4,
+      "counter": 1542
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 90.743896484375,
+      "captureMs": 1793106166057.956,
+      "presentedMs": 1793106166148.7,
+      "counter": 1544
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 114.743896484375,
+      "captureMs": 1793106166233.956,
+      "presentedMs": 1793106166348.7,
+      "counter": 1546
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 116.0439453125,
+      "captureMs": 1793106166465.956,
+      "presentedMs": 1793106166582,
+      "counter": 1550
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 91.0439453125,
+      "captureMs": 1793106166590.956,
+      "presentedMs": 1793106166682,
+      "counter": 1552
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 114.343994140625,
+      "captureMs": 1793106166900.956,
+      "presentedMs": 1793106167015.3,
+      "counter": 1556
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 83.643798828125,
+      "captureMs": 1793106167064.956,
+      "presentedMs": 1793106167148.5999,
+      "counter": 1559
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 90.643798828125,
+      "captureMs": 1793106167257.956,
+      "presentedMs": 1793106167348.5999,
+      "counter": 1562
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 113.643798828125,
+      "captureMs": 1793106167434.956,
+      "presentedMs": 1793106167548.5999,
+      "counter": 1564
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 82.94384765625,
+      "captureMs": 1793106167598.956,
+      "presentedMs": 1793106167681.9,
+      "counter": 1567
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 54.243896484375,
+      "captureMs": 1793106167860.956,
+      "presentedMs": 1793106167915.2,
+      "counter": 1571
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 114.643798828125,
+      "captureMs": 1793106168033.956,
+      "presentedMs": 1793106168148.5999,
+      "counter": 1573
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 82.94384765625,
+      "captureMs": 1793106168198.956,
+      "presentedMs": 1793106168281.9,
+      "counter": 1576
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 87.5439453125,
+      "captureMs": 1793106168460.956,
+      "presentedMs": 1793106168548.5,
+      "counter": 1580
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 80.243896484375,
+      "captureMs": 1793106168634.956,
+      "presentedMs": 1793106168715.2,
+      "counter": 1582
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 81.243896484375,
+      "captureMs": 1793106168933.956,
+      "presentedMs": 1793106169015.2,
+      "counter": 1587
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 90.94384765625,
+      "captureMs": 1793106168990.956,
+      "presentedMs": 1793106169081.9,
+      "counter": 1588
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 113.5439453125,
+      "captureMs": 1793106169234.956,
+      "presentedMs": 1793106169348.5,
+      "counter": 1591
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 49.94384765625,
+      "captureMs": 1793106169531.956,
+      "presentedMs": 1793106169581.9,
+      "counter": 1596
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 90.243896484375,
+      "captureMs": 1793106169524.956,
+      "presentedMs": 1793106169615.2,
+      "counter": 1596
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 114.243896484375,
+      "captureMs": 1793106169900.956,
+      "presentedMs": 1793106170015.2,
+      "counter": 1601
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 117.243896484375,
+      "captureMs": 1793106169997.956,
+      "presentedMs": 1793106170115.2,
+      "counter": 1603
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.243896484375,
+      "captureMs": 1793106170125.956,
+      "presentedMs": 1793106170215.2,
+      "counter": 1605
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 114.5439453125,
+      "captureMs": 1793106170433.956,
+      "presentedMs": 1793106170548.5,
+      "counter": 1609
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 83.843994140625,
+      "captureMs": 1793106170597.956,
+      "presentedMs": 1793106170681.8,
+      "counter": 1612
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 90.143798828125,
+      "captureMs": 1793106170724.956,
+      "presentedMs": 1793106170815.0999,
+      "counter": 1614
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 113.5439453125,
+      "captureMs": 1793106171034.956,
+      "presentedMs": 1793106171148.5,
+      "counter": 1618
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 83.143798828125,
+      "captureMs": 1793106171131.956,
+      "presentedMs": 1793106171215.0999,
+      "counter": 1620
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 90.5439453125,
+      "captureMs": 1793106171257.956,
+      "presentedMs": 1793106171348.5,
+      "counter": 1622
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 81.143798828125,
+      "captureMs": 1793106171633.956,
+      "presentedMs": 1793106171715.0999,
+      "counter": 1627
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 83.44384765625,
+      "captureMs": 1793106171664.956,
+      "presentedMs": 1793106171748.4,
+      "counter": 1628
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 78.0439453125,
+      "captureMs": 1793106171936.956,
+      "presentedMs": 1793106172015,
+      "counter": 1632
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 112.743896484375,
+      "captureMs": 1793106172168.956,
+      "presentedMs": 1793106172281.7,
+      "counter": 1635
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 116.143798828125,
+      "captureMs": 1793106172198.956,
+      "presentedMs": 1793106172315.0999,
+      "counter": 1636
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 90.44384765625,
+      "captureMs": 1793106172457.956,
+      "presentedMs": 1793106172548.4,
+      "counter": 1640
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 80.44384765625,
+      "captureMs": 1793106172767.956,
+      "presentedMs": 1793106172848.4,
+      "counter": 1644
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 114.743896484375,
+      "captureMs": 1793106172866.956,
+      "presentedMs": 1793106172981.7,
+      "counter": 1646
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 57.0439453125,
+      "captureMs": 1793106173057.956,
+      "presentedMs": 1793106173115,
+      "counter": 1649
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 113.743896484375,
+      "captureMs": 1793106173367.956,
+      "presentedMs": 1793106173481.7,
+      "counter": 1653
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 116.643798828125,
+      "captureMs": 1793106173464.956,
+      "presentedMs": 1793106173581.5999,
+      "counter": 1655
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 90.743896484375,
+      "captureMs": 1793106173590.956,
+      "presentedMs": 1793106173681.7,
+      "counter": 1657
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 113.0439453125,
+      "captureMs": 1793106173901.956,
+      "presentedMs": 1793106174015,
+      "counter": 1661
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 115.743896484375,
+      "captureMs": 1793106174065.956,
+      "presentedMs": 1793106174181.7,
+      "counter": 1664
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.743896484375,
+      "captureMs": 1793106174191.956,
+      "presentedMs": 1793106174281.7,
+      "counter": 1666
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 77.343994140625,
+      "captureMs": 1793106174570.956,
+      "presentedMs": 1793106174648.3,
+      "counter": 1671
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 116.0439453125,
+      "captureMs": 1793106174598.956,
+      "presentedMs": 1793106174715,
+      "counter": 1672
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 85.743896484375,
+      "captureMs": 1793106174795.956,
+      "presentedMs": 1793106174881.7,
+      "counter": 1675
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 80.0439453125,
+      "captureMs": 1793106175234.956,
+      "presentedMs": 1793106175315,
+      "counter": 1681
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 116.0439453125,
+      "captureMs": 1793106175198.956,
+      "presentedMs": 1793106175315,
+      "counter": 1681
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 122.643798828125,
+      "captureMs": 1793106175458.956,
+      "presentedMs": 1793106175581.5999,
+      "counter": 1685
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 116.343994140625,
+      "captureMs": 1793106175731.956,
+      "presentedMs": 1793106175848.3,
+      "counter": 1689
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 99.643798828125,
+      "captureMs": 1793106175781.956,
+      "presentedMs": 1793106175881.5999,
+      "counter": 1689
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 56.5439453125,
+      "captureMs": 1793106176124.956,
+      "presentedMs": 1793106176181.5,
+      "counter": 1695
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 144.243896484375,
+      "captureMs": 1793106176303.956,
+      "presentedMs": 1793106176448.2,
+      "counter": 1697
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 87.5439453125,
+      "captureMs": 1793106176493.956,
+      "presentedMs": 1793106176581.5,
+      "counter": 1700
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 115.643798828125,
+      "captureMs": 1793106176665.956,
+      "presentedMs": 1793106176781.5999,
+      "counter": 1703
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 104.243896484375,
+      "captureMs": 1793106177043.956,
+      "presentedMs": 1793106177148.2,
+      "counter": 1708
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 118.243896484375,
+      "captureMs": 1793106177029.956,
+      "presentedMs": 1793106177148.2,
+      "counter": 1708
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 89.843994140625,
+      "captureMs": 1793106177324.956,
+      "presentedMs": 1793106177414.8,
+      "counter": 1713
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 111.5439453125,
+      "captureMs": 1793106177569.956,
+      "presentedMs": 1793106177681.5,
+      "counter": 1716
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 112.5439453125,
+      "captureMs": 1793106177568.956,
+      "presentedMs": 1793106177681.5,
+      "counter": 1716
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 141.5439453125,
+      "captureMs": 1793106177939.956,
+      "presentedMs": 1793106178081.5,
+      "counter": 1722
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 145.243896484375,
+      "captureMs": 1793106178102.956,
+      "presentedMs": 1793106178248.2,
+      "counter": 1724
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 139.5439453125,
+      "captureMs": 1793106178141.956,
+      "presentedMs": 1793106178281.5,
+      "counter": 1724
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 114.5439453125,
+      "captureMs": 1793106179066.956,
+      "presentedMs": 1793106179181.5,
+      "counter": 1736
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 96.143798828125,
+      "captureMs": 1793106179051.956,
+      "presentedMs": 1793106179148.0999,
+      "counter": 1737
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 144.143798828125,
+      "captureMs": 1793106179003.956,
+      "presentedMs": 1793106179148.0999,
+      "counter": 1737
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 147.143798828125,
+      "captureMs": 1793106180000.956,
+      "presentedMs": 1793106180148.0999,
+      "counter": 1749
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 90.143798828125,
+      "captureMs": 1793106180057.956,
+      "presentedMs": 1793106180148.0999,
+      "counter": 1752
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 107.743896484375,
+      "captureMs": 1793106180006.956,
+      "presentedMs": 1793106180114.7,
+      "counter": 1751
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 124.743896484375,
+      "captureMs": 1793106180789.956,
+      "presentedMs": 1793106180914.7,
+      "counter": 1763
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 85.743896484375,
+      "captureMs": 1793106180778.956,
+      "presentedMs": 1793106180864.7,
+      "counter": 1761
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 127.743896484375,
+      "captureMs": 1793106180786.956,
+      "presentedMs": 1793106180914.7,
+      "counter": 1763
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 93.143798828125,
+      "captureMs": 1793106181454.956,
+      "presentedMs": 1793106181548.0999,
+      "counter": 1771
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 92.743896484375,
+      "captureMs": 1793106181521.956,
+      "presentedMs": 1793106181614.7,
+      "counter": 1774
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 128.0439453125,
+      "captureMs": 1793106181519.956,
+      "presentedMs": 1793106181648,
+      "counter": 1774
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 126.343994140625,
+      "captureMs": 1793106182054.956,
+      "presentedMs": 1793106182181.3,
+      "counter": 1782
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 128.343994140625,
+      "captureMs": 1793106182052.956,
+      "presentedMs": 1793106182181.3,
+      "counter": 1780
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 125.643798828125,
+      "captureMs": 1793106182188.956,
+      "presentedMs": 1793106182314.5999,
+      "counter": 1784
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 92.44384765625,
+      "captureMs": 1793106182588.956,
+      "presentedMs": 1793106182681.4,
+      "counter": 1790
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 100.643798828125,
+      "captureMs": 1793106182713.956,
+      "presentedMs": 1793106182814.5999,
+      "counter": 1790
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 126.343994140625,
+      "captureMs": 1793106182854.956,
+      "presentedMs": 1793106182981.3,
+      "counter": 1794
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 94.743896484375,
+      "captureMs": 1793106183119.956,
+      "presentedMs": 1793106183214.7,
+      "counter": 1798
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 101.643798828125,
+      "captureMs": 1793106183312.956,
+      "presentedMs": 1793106183414.5999,
+      "counter": 1799
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 73.343994140625,
+      "captureMs": 1793106183457.956,
+      "presentedMs": 1793106183531.3,
+      "counter": 1803
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 92.94384765625,
+      "captureMs": 1793106183654.956,
+      "presentedMs": 1793106183747.9,
+      "counter": 1806
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 101.94384765625,
+      "captureMs": 1793106183845.956,
+      "presentedMs": 1793106183947.9,
+      "counter": 1807
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 78.243896484375,
+      "captureMs": 1793106184052.956,
+      "presentedMs": 1793106184131.2,
+      "counter": 1812
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 111.643798828125,
+      "captureMs": 1793106184252.956,
+      "presentedMs": 1793106184364.5999,
+      "counter": 1815
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 102.243896484375,
+      "captureMs": 1793106184378.956,
+      "presentedMs": 1793106184481.2,
+      "counter": 1815
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 126.643798828125,
+      "captureMs": 1793106184587.956,
+      "presentedMs": 1793106184714.5999,
+      "counter": 1820
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 123.643798828125,
+      "captureMs": 1793106184790.956,
+      "presentedMs": 1793106184914.5999,
+      "counter": 1823
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 95.5439453125,
+      "captureMs": 1793106185118.956,
+      "presentedMs": 1793106185214.5,
+      "counter": 1826
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 127.243896484375,
+      "captureMs": 1793106185253.956,
+      "presentedMs": 1793106185381.2,
+      "counter": 1830
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 93.843994140625,
+      "captureMs": 1793106185653.956,
+      "presentedMs": 1793106185747.8,
+      "counter": 1836
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 101.5439453125,
+      "captureMs": 1793106185712.956,
+      "presentedMs": 1793106185814.5,
+      "counter": 1835
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 127.5439453125,
+      "captureMs": 1793106185786.956,
+      "presentedMs": 1793106185914.5,
+      "counter": 1838
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 128.94384765625,
+      "captureMs": 1793106186318.956,
+      "presentedMs": 1793106186447.9,
+      "counter": 1844
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 93.5439453125,
+      "captureMs": 1793106186520.956,
+      "presentedMs": 1793106186614.5,
+      "counter": 1849
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 123.94384765625,
+      "captureMs": 1793106186523.956,
+      "presentedMs": 1793106186647.9,
+      "counter": 1849
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 134.843994140625,
+      "captureMs": 1793106186912.956,
+      "presentedMs": 1793106187047.8,
+      "counter": 1853
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 93.94384765625,
+      "captureMs": 1793106187053.956,
+      "presentedMs": 1793106187147.9,
+      "counter": 1857
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 123.243896484375,
+      "captureMs": 1793106187257.956,
+      "presentedMs": 1793106187381.2,
+      "counter": 1860
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 117.44384765625,
+      "captureMs": 1793106187446.956,
+      "presentedMs": 1793106187564.4,
+      "counter": 1861
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 127.5439453125,
+      "captureMs": 1793106187586.956,
+      "presentedMs": 1793106187714.5,
+      "counter": 1865
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 93.843994140625,
+      "captureMs": 1793106187853.956,
+      "presentedMs": 1793106187947.8,
+      "counter": 1869
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 125.843994140625,
+      "captureMs": 1793106188121.956,
+      "presentedMs": 1793106188247.8,
+      "counter": 1871
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 126.843994140625,
+      "captureMs": 1793106188120.956,
+      "presentedMs": 1793106188247.8,
+      "counter": 1873
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 122.44384765625,
+      "captureMs": 1793106188391.956,
+      "presentedMs": 1793106188514.4,
+      "counter": 1877
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 102.0439453125,
+      "captureMs": 1793106188778.956,
+      "presentedMs": 1793106188881,
+      "counter": 1881
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 127.843994140625,
+      "captureMs": 1793106188719.956,
+      "presentedMs": 1793106188847.8,
+      "counter": 1882
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 127.743896484375,
+      "captureMs": 1793106189119.956,
+      "presentedMs": 1793106189247.7,
+      "counter": 1888
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 135.143798828125,
+      "captureMs": 1793106189245.956,
+      "presentedMs": 1793106189381.0999,
+      "counter": 1888
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 122.743896484375,
+      "captureMs": 1793106189324.956,
+      "presentedMs": 1793106189447.7,
+      "counter": 1891
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 128.143798828125,
+      "captureMs": 1793106189652.956,
+      "presentedMs": 1793106189781.0999,
+      "counter": 1896
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 96.743896484375,
+      "captureMs": 1793106189850.956,
+      "presentedMs": 1793106189947.7,
+      "counter": 1897
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 57.143798828125,
+      "captureMs": 1793106189923.956,
+      "presentedMs": 1793106189981.0999,
+      "counter": 1900
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 93.743896484375,
+      "captureMs": 1793106190253.956,
+      "presentedMs": 1793106190347.7,
+      "counter": 1905
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 102.0439453125,
+      "captureMs": 1793106190378.956,
+      "presentedMs": 1793106190481,
+      "counter": 1905
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 127.743896484375,
+      "captureMs": 1793106190519.956,
+      "presentedMs": 1793106190647.7,
+      "counter": 1909
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 127.343994140625,
+      "captureMs": 1793106190786.956,
+      "presentedMs": 1793106190914.3,
+      "counter": 1913
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 67.743896484375,
+      "captureMs": 1793106190979.956,
+      "presentedMs": 1793106191047.7,
+      "counter": 1914
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 94.343994140625,
+      "captureMs": 1793106191119.956,
+      "presentedMs": 1793106191214.3,
+      "counter": 1918
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 93.0439453125,
+      "captureMs": 1793106191387.956,
+      "presentedMs": 1793106191481,
+      "counter": 1922
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 100.343994140625,
+      "captureMs": 1793106191513.956,
+      "presentedMs": 1793106191614.3,
+      "counter": 1922
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 127.643798828125,
+      "captureMs": 1793106191719.956,
+      "presentedMs": 1793106191847.5999,
+      "counter": 1927
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 94.343994140625,
+      "captureMs": 1793106191919.956,
+      "presentedMs": 1793106192014.3,
+      "counter": 1930
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 135.0439453125,
+      "captureMs": 1793106192245.956,
+      "presentedMs": 1793106192381,
+      "counter": 1933
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 96.643798828125,
+      "captureMs": 1793106192450.956,
+      "presentedMs": 1793106192547.5999,
+      "counter": 1938
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 89.643798828125,
+      "captureMs": 1793106192457.956,
+      "presentedMs": 1793106192547.5999,
+      "counter": 1938
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 103.643798828125,
+      "captureMs": 1793106192843.956,
+      "presentedMs": 1793106192947.5999,
+      "counter": 1942
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 95.94384765625,
+      "captureMs": 1793106192984.956,
+      "presentedMs": 1793106193080.9,
+      "counter": 1946
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 95.94384765625,
+      "captureMs": 1793106192984.956,
+      "presentedMs": 1793106193080.9,
+      "counter": 1946
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 103.643798828125,
+      "captureMs": 1793106193443.956,
+      "presentedMs": 1793106193547.5999,
+      "counter": 1951
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 95.94384765625,
+      "captureMs": 1793106193584.956,
+      "presentedMs": 1793106193680.9,
+      "counter": 1955
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 129.343994140625,
+      "captureMs": 1793106193584.956,
+      "presentedMs": 1793106193714.3,
+      "counter": 1955
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 91.143798828125,
+      "captureMs": 1793106194122.956,
+      "presentedMs": 1793106194214.0999,
+      "counter": 1963
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 100.5439453125,
+      "captureMs": 1793106194246.956,
+      "presentedMs": 1793106194347.5,
+      "counter": 1963
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 94.243896484375,
+      "captureMs": 1793106194319.956,
+      "presentedMs": 1793106194414.2,
+      "counter": 1966
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 96.5439453125,
+      "captureMs": 1793106194650.956,
+      "presentedMs": 1793106194747.5,
+      "counter": 1971
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 103.94384765625,
+      "captureMs": 1793106194776.956,
+      "presentedMs": 1793106194880.9,
+      "counter": 1971
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 95.5439453125,
+      "captureMs": 1793106194851.956,
+      "presentedMs": 1793106194947.5,
+      "counter": 1974
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 90.143798828125,
+      "captureMs": 1793106195323.956,
+      "presentedMs": 1793106195414.0999,
+      "counter": 1981
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 102.143798828125,
+      "captureMs": 1793106195311.956,
+      "presentedMs": 1793106195414.0999,
+      "counter": 1979
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 121.243896484375,
+      "captureMs": 1793106195392.956,
+      "presentedMs": 1793106195514.2,
+      "counter": 1982
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 96.5439453125,
+      "captureMs": 1793106195850.956,
+      "presentedMs": 1793106195947.5,
+      "counter": 1989
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 102.5439453125,
+      "captureMs": 1793106195844.956,
+      "presentedMs": 1793106195947.5,
+      "counter": 1987
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 96.143798828125,
+      "captureMs": 1793106196117.956,
+      "presentedMs": 1793106196214.0999,
+      "counter": 1993
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 96.44384765625,
+      "captureMs": 1793106196450.956,
+      "presentedMs": 1793106196547.4,
+      "counter": 1996
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 87.44384765625,
+      "captureMs": 1793106196459.956,
+      "presentedMs": 1793106196547.4,
+      "counter": 1998
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 94.44384765625,
+      "captureMs": 1793106196652.956,
+      "presentedMs": 1793106196747.4,
+      "counter": 2001
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 62.143798828125,
+      "captureMs": 1793106197051.956,
+      "presentedMs": 1793106197114.0999,
+      "counter": 2007
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 100.143798828125,
+      "captureMs": 1793106197313.956,
+      "presentedMs": 1793106197414.0999,
+      "counter": 2009
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 95.143798828125,
+      "captureMs": 1793106197318.956,
+      "presentedMs": 1793106197414.0999,
+      "counter": 2011
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 94.44384765625,
+      "captureMs": 1793106197652.956,
+      "presentedMs": 1793106197747.4,
+      "counter": 2016
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 136.843994140625,
+      "captureMs": 1793106197843.956,
+      "presentedMs": 1793106197980.8,
+      "counter": 2017
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 127.843994140625,
+      "captureMs": 1793106197852.956,
+      "presentedMs": 1793106197980.8,
+      "counter": 2019
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 128.343994140625,
+      "captureMs": 1793106198318.956,
+      "presentedMs": 1793106198447.3,
+      "counter": 2026
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 95.343994140625,
+      "captureMs": 1793106198451.956,
+      "presentedMs": 1793106198547.3,
+      "counter": 2028
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 102.343994140625,
+      "captureMs": 1793106198444.956,
+      "presentedMs": 1793106198547.3,
+      "counter": 2026
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 96.0439453125,
+      "captureMs": 1793106198917.956,
+      "presentedMs": 1793106199014,
+      "counter": 2035
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 94.743896484375,
+      "captureMs": 1793106198985.956,
+      "presentedMs": 1793106199080.7,
+      "counter": 2036
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 70.0439453125,
+      "captureMs": 1793106199043.956,
+      "presentedMs": 1793106199114,
+      "counter": 2035
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 96.44384765625,
+      "captureMs": 1793106199450.956,
+      "presentedMs": 1793106199547.4,
+      "counter": 2043
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 83.0439453125,
+      "captureMs": 1793106199530.956,
+      "presentedMs": 1793106199614,
+      "counter": 2044
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 101.643798828125,
+      "captureMs": 1793106199578.956,
+      "presentedMs": 1793106199680.5999,
+      "counter": 2043
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 62.0439453125,
+      "captureMs": 1793106200051.956,
+      "presentedMs": 1793106200114,
+      "counter": 2052
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 68.343994140625,
+      "captureMs": 1793106200178.956,
+      "presentedMs": 1793106200247.3,
+      "counter": 2052
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 127.343994140625,
+      "captureMs": 1793106200119.956,
+      "presentedMs": 1793106200247.3,
+      "counter": 2053
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 129.343994140625,
+      "captureMs": 1793106200517.956,
+      "presentedMs": 1793106200647.3,
+      "counter": 2059
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 135.243896484375,
+      "captureMs": 1793106200711.956,
+      "presentedMs": 1793106200847.2,
+      "counter": 2060
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 127.243896484375,
+      "captureMs": 1793106200719.956,
+      "presentedMs": 1793106200847.2,
+      "counter": 2062
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 61.643798828125,
+      "captureMs": 1793106201168.956,
+      "presentedMs": 1793106201230.5999,
+      "counter": 2068
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 106.94384765625,
+      "captureMs": 1793106201256.956,
+      "presentedMs": 1793106201363.9,
+      "counter": 2068
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 94.94384765625,
+      "captureMs": 1793106201518.956,
+      "presentedMs": 1793106201613.9,
+      "counter": 2074
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 87.243896484375,
+      "captureMs": 1793106201659.956,
+      "presentedMs": 1793106201747.2,
+      "counter": 2076
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 122.94384765625,
+      "captureMs": 1793106201790.956,
+      "presentedMs": 1793106201913.9,
+      "counter": 2076
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 19.743896484375,
+      "captureMs": 1793106206317.956,
+      "presentedMs": 1793106206337.7,
+      "counter": 2146
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 19.243896484375,
+      "captureMs": 1793106206330.956,
+      "presentedMs": 1793106206350.2,
+      "counter": 2146
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 15.94384765625,
+      "captureMs": 1793106206377.956,
+      "presentedMs": 1793106206393.9,
+      "counter": 2145
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 84.44384765625,
+      "captureMs": 1793106206795.956,
+      "presentedMs": 1793106206880.4,
+      "counter": 2153
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 62.743896484375,
+      "captureMs": 1793106206850.956,
+      "presentedMs": 1793106206913.7,
+      "counter": 2154
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 69.743896484375,
+      "captureMs": 1793106206843.956,
+      "presentedMs": 1793106206913.7,
+      "counter": 2152
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 62.743896484375,
+      "captureMs": 1793106207450.956,
+      "presentedMs": 1793106207513.7,
+      "counter": 2161
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 90.0439453125,
+      "captureMs": 1793106207456.956,
+      "presentedMs": 1793106207547,
+      "counter": 2163
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 115.0439453125,
+      "captureMs": 1793106207431.956,
+      "presentedMs": 1793106207547,
+      "counter": 2162
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 70.343994140625,
+      "captureMs": 1793106208059.956,
+      "presentedMs": 1793106208130.3,
+      "counter": 2172
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 86.343994140625,
+      "captureMs": 1793106208043.956,
+      "presentedMs": 1793106208130.3,
+      "counter": 2170
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 73.343994140625,
+      "captureMs": 1793106208056.956,
+      "presentedMs": 1793106208130.3,
+      "counter": 2172
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 128.94384765625,
+      "captureMs": 1793106208517.956,
+      "presentedMs": 1793106208646.9,
+      "counter": 2179
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 120.94384765625,
+      "captureMs": 1793106208525.956,
+      "presentedMs": 1793106208646.9,
+      "counter": 2179
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 103.0439453125,
+      "captureMs": 1793106208643.956,
+      "presentedMs": 1793106208747,
+      "counter": 2179
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 87.0439453125,
+      "captureMs": 1793106209059.956,
+      "presentedMs": 1793106209147,
+      "counter": 2187
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 128.343994140625,
+      "captureMs": 1793106209251.956,
+      "presentedMs": 1793106209380.3,
+      "counter": 2190
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 68.643798828125,
+      "captureMs": 1793106209244.956,
+      "presentedMs": 1793106209313.5999,
+      "counter": 2188
+    },
+    {
+      "feed": "test/06/hi",
+      "latencyMs": 26.343994140625,
+      "captureMs": 1793106209370.956,
+      "presentedMs": 1793106209397.3,
+      "counter": 2192
+    },
+    {
+      "feed": "test/04/hi",
+      "latencyMs": 9.643798828125,
+      "captureMs": 1793106209454.956,
+      "presentedMs": 1793106209464.5999,
+      "counter": 2193
+    },
+    {
+      "feed": "test/05/hi",
+      "latencyMs": 4.843994140625,
+      "captureMs": 1793106209409.956,
+      "presentedMs": 1793106209414.8,
+      "counter": 2191
+    },
+    {
+      "feed": "test/08/hi",
+      "latencyMs": 17.5439453125,
+      "captureMs": 1793106209429.956,
+      "presentedMs": 1793106209447.5,
+      "counter": 2191
+    },
+    {
+      "feed": "test/07/hi",
+      "latencyMs": 20.44384765625,
+      "captureMs": 1793106209439.956,
+      "presentedMs": 1793106209460.4,
+      "counter": 2191
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 117.243896484375,
+      "captureMs": 1793106209662.956,
+      "presentedMs": 1793106209780.2,
+      "counter": 2196
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 96.94384765625,
+      "captureMs": 1793106209849.956,
+      "presentedMs": 1793106209946.9,
+      "counter": 2197
+    },
+    {
+      "feed": "test/06/hi",
+      "latencyMs": 63.5439453125,
+      "captureMs": 1793106209849.956,
+      "presentedMs": 1793106209913.5,
+      "counter": 2199
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 129.243896484375,
+      "captureMs": 1793106209850.956,
+      "presentedMs": 1793106209980.2,
+      "counter": 2199
+    },
+    {
+      "feed": "test/05/hi",
+      "latencyMs": 69.94384765625,
+      "captureMs": 1793106209876.956,
+      "presentedMs": 1793106209946.9,
+      "counter": 2198
+    },
+    {
+      "feed": "test/07/hi",
+      "latencyMs": 74.243896484375,
+      "captureMs": 1793106209905.956,
+      "presentedMs": 1793106209980.2,
+      "counter": 2198
+    },
+    {
+      "feed": "test/04/hi",
+      "latencyMs": 91.5439453125,
+      "captureMs": 1793106209921.956,
+      "presentedMs": 1793106210013.5,
+      "counter": 2200
+    },
+    {
+      "feed": "test/08/hi",
+      "latencyMs": 84.94384765625,
+      "captureMs": 1793106209961.956,
+      "presentedMs": 1793106210046.9,
+      "counter": 2199
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 81.643798828125,
+      "captureMs": 1793106210331.956,
+      "presentedMs": 1793106210413.5999,
+      "counter": 2206
+    },
+    {
+      "feed": "test/06/hi",
+      "latencyMs": 75.94384765625,
+      "captureMs": 1793106210370.956,
+      "presentedMs": 1793106210446.9,
+      "counter": 2207
+    },
+    {
+      "feed": "test/05/hi",
+      "latencyMs": 70.243896484375,
+      "captureMs": 1793106210409.956,
+      "presentedMs": 1793106210480.2,
+      "counter": 2206
+    },
+    {
+      "feed": "test/07/hi",
+      "latencyMs": 107.94384765625,
+      "captureMs": 1793106210438.956,
+      "presentedMs": 1793106210546.9,
+      "counter": 2206
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 92.94384765625,
+      "captureMs": 1793106210453.956,
+      "presentedMs": 1793106210546.9,
+      "counter": 2208
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 102.94384765625,
+      "captureMs": 1793106210443.956,
+      "presentedMs": 1793106210546.9,
+      "counter": 2206
+    },
+    {
+      "feed": "test/04/hi",
+      "latencyMs": 90.94384765625,
+      "captureMs": 1793106210455.956,
+      "presentedMs": 1793106210546.9,
+      "counter": 2208
+    },
+    {
+      "feed": "test/08/hi",
+      "latencyMs": 84.94384765625,
+      "captureMs": 1793106210561.956,
+      "presentedMs": 1793106210646.9,
+      "counter": 2208
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 118.643798828125,
+      "captureMs": 1793106210994.956,
+      "presentedMs": 1793106211113.5999,
+      "counter": 2216
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 131.643798828125,
+      "captureMs": 1793106210981.956,
+      "presentedMs": 1793106211113.5999,
+      "counter": 2214
+    },
+    {
+      "feed": "test/06/hi",
+      "latencyMs": 76.643798828125,
+      "captureMs": 1793106211036.956,
+      "presentedMs": 1793106211113.5999,
+      "counter": 2217
+    },
+    {
+      "feed": "test/05/hi",
+      "latencyMs": 96.643798828125,
+      "captureMs": 1793106211016.956,
+      "presentedMs": 1793106211113.5999,
+      "counter": 2215
+    },
+    {
+      "feed": "test/07/hi",
+      "latencyMs": 37.243896484375,
+      "captureMs": 1793106211042.956,
+      "presentedMs": 1793106211080.2,
+      "counter": 2215
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 121.643798828125,
+      "captureMs": 1793106210991.956,
+      "presentedMs": 1793106211113.5999,
+      "counter": 2216
+    },
+    {
+      "feed": "test/04/hi",
+      "latencyMs": 89.94384765625,
+      "captureMs": 1793106211056.956,
+      "presentedMs": 1793106211146.9,
+      "counter": 2217
+    },
+    {
+      "feed": "test/08/hi",
+      "latencyMs": 84.5439453125,
+      "captureMs": 1793106211228.956,
+      "presentedMs": 1793106211313.5,
+      "counter": 2218
+    },
+    {
+      "feed": "test/07/hi",
+      "latencyMs": 67.843994140625,
+      "captureMs": 1793106211578.956,
+      "presentedMs": 1793106211646.8,
+      "counter": 2223
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 104.843994140625,
+      "captureMs": 1793106211591.956,
+      "presentedMs": 1793106211696.8,
+      "counter": 2225
+    },
+    {
+      "feed": "test/05/hi",
+      "latencyMs": 67.143798828125,
+      "captureMs": 1793106211612.956,
+      "presentedMs": 1793106211680.0999,
+      "counter": 2224
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 87.5439453125,
+      "captureMs": 1793106211725.956,
+      "presentedMs": 1793106211813.5,
+      "counter": 2227
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 102.5439453125,
+      "captureMs": 1793106211710.956,
+      "presentedMs": 1793106211813.5,
+      "counter": 2225
+    },
+    {
+      "feed": "test/06/hi",
+      "latencyMs": 92.843994140625,
+      "captureMs": 1793106211703.956,
+      "presentedMs": 1793106211796.8,
+      "counter": 2227
+    },
+    {
+      "feed": "test/04/hi",
+      "latencyMs": 90.5439453125,
+      "captureMs": 1793106211722.956,
+      "presentedMs": 1793106211813.5,
+      "counter": 2227
+    },
+    {
+      "feed": "test/08/hi",
+      "latencyMs": 68.243896484375,
+      "captureMs": 1793106211761.956,
+      "presentedMs": 1793106211830.2,
+      "counter": 2226
+    },
+    {
+      "feed": "test/07/hi",
+      "latencyMs": 73.44384765625,
+      "captureMs": 1793106212239.956,
+      "presentedMs": 1793106212313.4,
+      "counter": 2233
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 77.843994140625,
+      "captureMs": 1793106212318.956,
+      "presentedMs": 1793106212396.8,
+      "counter": 2236
+    },
+    {
+      "feed": "test/05/hi",
+      "latencyMs": 86.143798828125,
+      "captureMs": 1793106212343.956,
+      "presentedMs": 1793106212430.0999,
+      "counter": 2235
+    },
+    {
+      "feed": "test/08/hi",
+      "latencyMs": 68.143798828125,
+      "captureMs": 1793106212361.956,
+      "presentedMs": 1793106212430.0999,
+      "counter": 2235
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 86.44384765625,
+      "captureMs": 1793106212326.956,
+      "presentedMs": 1793106212413.4,
+      "counter": 2236
+    },
+    {
+      "feed": "test/04/hi",
+      "latencyMs": 91.44384765625,
+      "captureMs": 1793106212321.956,
+      "presentedMs": 1793106212413.4,
+      "counter": 2236
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 53.143798828125,
+      "captureMs": 1793106212376.956,
+      "presentedMs": 1793106212430.0999,
+      "counter": 2235
+    },
+    {
+      "feed": "test/06/hi",
+      "latencyMs": 42.44384765625,
+      "captureMs": 1793106212370.956,
+      "presentedMs": 1793106212413.4,
+      "counter": 2237
+    },
+    {
+      "feed": "test/07/hi",
+      "latencyMs": 106.5439453125,
+      "captureMs": 1793106212706.956,
+      "presentedMs": 1793106212813.5,
+      "counter": 2240
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 62.44384765625,
+      "captureMs": 1793106212850.956,
+      "presentedMs": 1793106212913.4,
+      "counter": 2244
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 70.143798828125,
+      "captureMs": 1793106212859.956,
+      "presentedMs": 1793106212930.0999,
+      "counter": 2244
+    },
+    {
+      "feed": "test/05/hi",
+      "latencyMs": 70.843994140625,
+      "captureMs": 1793106212875.956,
+      "presentedMs": 1793106212946.8,
+      "counter": 2243
+    },
+    {
+      "feed": "test/08/hi",
+      "latencyMs": 51.843994140625,
+      "captureMs": 1793106212894.956,
+      "presentedMs": 1793106212946.8,
+      "counter": 2243
+    },
+    {
+      "feed": "test/06/hi",
+      "latencyMs": 76.143798828125,
+      "captureMs": 1793106212903.956,
+      "presentedMs": 1793106212980.0999,
+      "counter": 2245
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 85.843994140625,
+      "captureMs": 1793106212910.956,
+      "presentedMs": 1793106212996.8,
+      "counter": 2243
+    },
+    {
+      "feed": "test/04/hi",
+      "latencyMs": 74.843994140625,
+      "captureMs": 1793106212921.956,
+      "presentedMs": 1793106212996.8,
+      "counter": 2245
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 80.743896484375,
+      "captureMs": 1793106213515.956,
+      "presentedMs": 1793106213596.7,
+      "counter": 2252
+    },
+    {
+      "feed": "test/06/hi",
+      "latencyMs": 59.143798828125,
+      "captureMs": 1793106213570.956,
+      "presentedMs": 1793106213630.0999,
+      "counter": 2255
+    },
+    {
+      "feed": "test/07/hi",
+      "latencyMs": 57.143798828125,
+      "captureMs": 1793106213572.956,
+      "presentedMs": 1793106213630.0999,
+      "counter": 2253
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 67.743896484375,
+      "captureMs": 1793106213528.956,
+      "presentedMs": 1793106213596.7,
+      "counter": 2254
+    },
+    {
+      "feed": "test/04/hi",
+      "latencyMs": 73.743896484375,
+      "captureMs": 1793106213522.956,
+      "presentedMs": 1793106213596.7,
+      "counter": 2254
+    },
+    {
+      "feed": "test/05/hi",
+      "latencyMs": 86.143798828125,
+      "captureMs": 1793106213543.956,
+      "presentedMs": 1793106213630.0999,
+      "counter": 2253
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 77.743896484375,
+      "captureMs": 1793106213518.956,
+      "presentedMs": 1793106213596.7,
+      "counter": 2254
+    },
+    {
+      "feed": "test/08/hi",
+      "latencyMs": 68.143798828125,
+      "captureMs": 1793106213561.956,
+      "presentedMs": 1793106213630.0999,
+      "counter": 2253
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 69.0439453125,
+      "captureMs": 1793106214060.956,
+      "presentedMs": 1793106214130,
+      "counter": 2262
+    },
+    {
+      "feed": "test/04/hi",
+      "latencyMs": 106.843994140625,
+      "captureMs": 1793106213989.956,
+      "presentedMs": 1793106214096.8,
+      "counter": 2261
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 59.44384765625,
+      "captureMs": 1793106214053.956,
+      "presentedMs": 1793106214113.4,
+      "counter": 2262
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 81.44384765625,
+      "captureMs": 1793106214181.956,
+      "presentedMs": 1793106214263.4,
+      "counter": 2262
+    },
+    {
+      "feed": "test/07/hi",
+      "latencyMs": 107.0439453125,
+      "captureMs": 1793106214172.956,
+      "presentedMs": 1793106214280,
+      "counter": 2262
+    },
+    {
+      "feed": "test/06/hi",
+      "latencyMs": 109.44384765625,
+      "captureMs": 1793106214303.956,
+      "presentedMs": 1793106214413.4,
+      "counter": 2266
+    },
+    {
+      "feed": "test/05/hi",
+      "latencyMs": 98.143798828125,
+      "captureMs": 1793106214281.956,
+      "presentedMs": 1793106214380.0999,
+      "counter": 2264
+    },
+    {
+      "feed": "test/08/hi",
+      "latencyMs": 105.44384765625,
+      "captureMs": 1793106214307.956,
+      "presentedMs": 1793106214413.4,
+      "counter": 2264
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 89.44384765625,
+      "captureMs": 1793106214723.956,
+      "presentedMs": 1793106214813.4,
+      "counter": 2270
+    },
+    {
+      "feed": "test/07/hi",
+      "latencyMs": 83.44384765625,
+      "captureMs": 1793106214729.956,
+      "presentedMs": 1793106214813.4,
+      "counter": 2270
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 87.0439453125,
+      "captureMs": 1793106214792.956,
+      "presentedMs": 1793106214880,
+      "counter": 2273
+    },
+    {
+      "feed": "test/06/hi",
+      "latencyMs": 101.743896484375,
+      "captureMs": 1793106214844.956,
+      "presentedMs": 1793106214946.7,
+      "counter": 2274
+    },
+    {
+      "feed": "test/05/hi",
+      "latencyMs": 102.343994140625,
+      "captureMs": 1793106214810.956,
+      "presentedMs": 1793106214913.3,
+      "counter": 2272
+    },
+    {
+      "feed": "test/08/hi",
+      "latencyMs": 118.743896484375,
+      "captureMs": 1793106214827.956,
+      "presentedMs": 1793106214946.7,
+      "counter": 2272
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 128.0439453125,
+      "captureMs": 1793106214851.956,
+      "presentedMs": 1793106214980,
+      "counter": 2274
+    },
+    {
+      "feed": "test/04/hi",
+      "latencyMs": 150.743896484375,
+      "captureMs": 1793106214795.956,
+      "presentedMs": 1793106214946.7,
+      "counter": 2273
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 95.643798828125,
+      "captureMs": 1793106215250.956,
+      "presentedMs": 1793106215346.5999,
+      "counter": 2278
+    },
+    {
+      "feed": "test/07/hi",
+      "latencyMs": 96.643798828125,
+      "captureMs": 1793106215249.956,
+      "presentedMs": 1793106215346.5999,
+      "counter": 2278
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 120.44384765625,
+      "captureMs": 1793106215392.956,
+      "presentedMs": 1793106215513.4,
+      "counter": 2282
+    },
+    {
+      "feed": "test/05/hi",
+      "latencyMs": 99.44384765625,
+      "captureMs": 1793106215413.956,
+      "presentedMs": 1793106215513.4,
+      "counter": 2281
+    },
+    {
+      "feed": "test/08/hi",
+      "latencyMs": 115.743896484375,
+      "captureMs": 1793106215430.956,
+      "presentedMs": 1793106215546.7,
+      "counter": 2281
+    },
+    {
+      "feed": "test/06/hi",
+      "latencyMs": 75.643798828125,
+      "captureMs": 1793106215570.956,
+      "presentedMs": 1793106215646.5999,
+      "counter": 2285
+    },
+    {
+      "feed": "test/04/hi",
+      "latencyMs": 123.643798828125,
+      "captureMs": 1793106215522.956,
+      "presentedMs": 1793106215646.5999,
+      "counter": 2284
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 123.0439453125,
+      "captureMs": 1793106215656.956,
+      "presentedMs": 1793106215780,
+      "counter": 2286
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 100.743896484375,
+      "captureMs": 1793106215845.956,
+      "presentedMs": 1793106215946.7,
+      "counter": 2287
+    },
+    {
+      "feed": "test/07/hi",
+      "latencyMs": 106.743896484375,
+      "captureMs": 1793106215839.956,
+      "presentedMs": 1793106215946.7,
+      "counter": 2287
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 95.0439453125,
+      "captureMs": 1793106215934.956,
+      "presentedMs": 1793106216030,
+      "counter": 2290
+    },
+    {
+      "feed": "test/08/hi",
+      "latencyMs": 101.343994140625,
+      "captureMs": 1793106215961.956,
+      "presentedMs": 1793106216063.3,
+      "counter": 2289
+    },
+    {
+      "feed": "test/05/hi",
+      "latencyMs": 111.343994140625,
+      "captureMs": 1793106215951.956,
+      "presentedMs": 1793106216063.3,
+      "counter": 2289
+    },
+    {
+      "feed": "test/06/hi",
+      "latencyMs": 102.743896484375,
+      "captureMs": 1793106216043.956,
+      "presentedMs": 1793106216146.7,
+      "counter": 2292
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 169.343994140625,
+      "captureMs": 1793106216443.956,
+      "presentedMs": 1793106216613.3,
+      "counter": 2296
+    },
+    {
+      "feed": "test/04/hi",
+      "latencyMs": 127.743896484375,
+      "captureMs": 1793106216468.956,
+      "presentedMs": 1793106216596.7,
+      "counter": 2298
+    },
+    {
+      "feed": "test/07/hi",
+      "latencyMs": 160.343994140625,
+      "captureMs": 1793106216452.956,
+      "presentedMs": 1793106216613.3,
+      "counter": 2296
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 92.743896484375,
+      "captureMs": 1793106216603.956,
+      "presentedMs": 1793106216696.7,
+      "counter": 2300
+    },
+    {
+      "feed": "test/05/hi",
+      "latencyMs": 148.743896484375,
+      "captureMs": 1793106216547.956,
+      "presentedMs": 1793106216696.7,
+      "counter": 2298
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 94.643798828125,
+      "captureMs": 1793106216651.956,
+      "presentedMs": 1793106216746.5999,
+      "counter": 2301
+    },
+    {
+      "feed": "test/08/hi",
+      "latencyMs": 85.0439453125,
+      "captureMs": 1793106216894.956,
+      "presentedMs": 1793106216980,
+      "counter": 2303
+    },
+    {
+      "feed": "test/06/hi",
+      "latencyMs": 109.643798828125,
+      "captureMs": 1793106216836.956,
+      "presentedMs": 1793106216946.5999,
+      "counter": 2304
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 86.343994140625,
+      "captureMs": 1793106217326.956,
+      "presentedMs": 1793106217413.3,
+      "counter": 2311
+    },
+    {
+      "feed": "test/05/hi",
+      "latencyMs": 97.94384765625,
+      "captureMs": 1793106217281.956,
+      "presentedMs": 1793106217379.9,
+      "counter": 2309
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 108.94384765625,
+      "captureMs": 1793106217320.956,
+      "presentedMs": 1793106217429.9,
+      "counter": 2311
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 101.343994140625,
+      "captureMs": 1793106217311.956,
+      "presentedMs": 1793106217413.3,
+      "counter": 2309
+    },
+    {
+      "feed": "test/04/hi",
+      "latencyMs": 121.94384765625,
+      "captureMs": 1793106217257.956,
+      "presentedMs": 1793106217379.9,
+      "counter": 2310
+    },
+    {
+      "feed": "test/07/hi",
+      "latencyMs": 121.94384765625,
+      "captureMs": 1793106217257.956,
+      "presentedMs": 1793106217379.9,
+      "counter": 2308
+    },
+    {
+      "feed": "test/06/hi",
+      "latencyMs": 129.343994140625,
+      "captureMs": 1793106217783.956,
+      "presentedMs": 1793106217913.3,
+      "counter": 2318
+    },
+    {
+      "feed": "test/05/hi",
+      "latencyMs": 102.343994140625,
+      "captureMs": 1793106217810.956,
+      "presentedMs": 1793106217913.3,
+      "counter": 2317
+    },
+    {
+      "feed": "test/08/hi",
+      "latencyMs": 115.0439453125,
+      "captureMs": 1793106217764.956,
+      "presentedMs": 1793106217880,
+      "counter": 2316
+    },
+    {
+      "feed": "test/07/hi",
+      "latencyMs": 107.0439453125,
+      "captureMs": 1793106217772.956,
+      "presentedMs": 1793106217880,
+      "counter": 2316
+    },
+    {
+      "feed": "test/04/hi",
+      "latencyMs": 185.643798828125,
+      "captureMs": 1793106217860.956,
+      "presentedMs": 1793106218046.5999,
+      "counter": 2319
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 117.643798828125,
+      "captureMs": 1793106217928.956,
+      "presentedMs": 1793106218046.5999,
+      "counter": 2320
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 100.94384765625,
+      "captureMs": 1793106217978.956,
+      "presentedMs": 1793106218079.9,
+      "counter": 2319
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 111.643798828125,
+      "captureMs": 1793106217984.956,
+      "presentedMs": 1793106218096.5999,
+      "counter": 2321
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 86.343994140625,
+      "captureMs": 1793106218526.956,
+      "presentedMs": 1793106218613.3,
+      "counter": 2329
+    },
+    {
+      "feed": "test/05/hi",
+      "latencyMs": 134.343994140625,
+      "captureMs": 1793106218478.956,
+      "presentedMs": 1793106218613.3,
+      "counter": 2327
+    },
+    {
+      "feed": "test/08/hi",
+      "latencyMs": 117.343994140625,
+      "captureMs": 1793106218495.956,
+      "presentedMs": 1793106218613.3,
+      "counter": 2327
+    },
+    {
+      "feed": "test/07/hi",
+      "latencyMs": 106.5439453125,
+      "captureMs": 1793106218439.956,
+      "presentedMs": 1793106218546.5,
+      "counter": 2326
+    },
+    {
+      "feed": "test/06/hi",
+      "latencyMs": 94.343994140625,
+      "captureMs": 1793106218518.956,
+      "presentedMs": 1793106218613.3,
+      "counter": 2329
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 120.5439453125,
+      "captureMs": 1793106218525.956,
+      "presentedMs": 1793106218646.5,
+      "counter": 2329
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 101.94384765625,
+      "captureMs": 1793106218577.956,
+      "presentedMs": 1793106218679.9,
+      "counter": 2328
+    },
+    {
+      "feed": "test/04/hi",
+      "latencyMs": 121.5439453125,
+      "captureMs": 1793106218524.956,
+      "presentedMs": 1793106218646.5,
+      "counter": 2329
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 107.843994140625,
+      "captureMs": 1793106219071.956,
+      "presentedMs": 1793106219179.8,
+      "counter": 2337
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 102.94384765625,
+      "captureMs": 1793106219126.956,
+      "presentedMs": 1793106219229.9,
+      "counter": 2338
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 117.5439453125,
+      "captureMs": 1793106219178.956,
+      "presentedMs": 1793106219296.5,
+      "counter": 2337
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 115.94384765625,
+      "captureMs": 1793106219663.956,
+      "presentedMs": 1793106219779.9,
+      "counter": 2346
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 135.5439453125,
+      "captureMs": 1793106219710.956,
+      "presentedMs": 1793106219846.5,
+      "counter": 2345
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 133.44384765625,
+      "captureMs": 1793106220312.956,
+      "presentedMs": 1793106220446.4,
+      "counter": 2354
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 86.243896484375,
+      "captureMs": 1793106220526.956,
+      "presentedMs": 1793106220613.2,
+      "counter": 2359
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 135.843994140625,
+      "captureMs": 1793106220843.956,
+      "presentedMs": 1793106220979.8,
+      "counter": 2362
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 120.44384765625,
+      "captureMs": 1793106221325.956,
+      "presentedMs": 1793106221446.4,
+      "counter": 2371
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 101.44384765625,
+      "captureMs": 1793106221644.956,
+      "presentedMs": 1793106221746.4,
+      "counter": 2374
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 86.143798828125,
+      "captureMs": 1793106221926.956,
+      "presentedMs": 1793106222013.0999,
+      "counter": 2380
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 105.44384765625,
+      "captureMs": 1793106222240.956,
+      "presentedMs": 1793106222346.4,
+      "counter": 2383
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 90.44384765625,
+      "captureMs": 1793106222455.956,
+      "presentedMs": 1793106222546.4,
+      "counter": 2388
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 138.743896484375,
+      "captureMs": 1793106222840.956,
+      "presentedMs": 1793106222979.7,
+      "counter": 2392
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 122.0439453125,
+      "captureMs": 1793106222990.956,
+      "presentedMs": 1793106223113,
+      "counter": 2396
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 143.44384765625,
+      "captureMs": 1793106223502.956,
+      "presentedMs": 1793106223646.4,
+      "counter": 2403
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 138.44384765625,
+      "captureMs": 1793106223507.956,
+      "presentedMs": 1793106223646.4,
+      "counter": 2402
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 118.643798828125,
+      "captureMs": 1793106224060.956,
+      "presentedMs": 1793106224179.5999,
+      "counter": 2412
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 139.343994140625,
+      "captureMs": 1793106224106.956,
+      "presentedMs": 1793106224246.3,
+      "counter": 2411
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 79.0439453125,
+      "captureMs": 1793106224733.956,
+      "presentedMs": 1793106224813,
+      "counter": 2422
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 138.743896484375,
+      "captureMs": 1793106224640.956,
+      "presentedMs": 1793106224779.7,
+      "counter": 2419
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 119.94384765625,
+      "captureMs": 1793106225392.956,
+      "presentedMs": 1793106225512.9,
+      "counter": 2432
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 101.643798828125,
+      "captureMs": 1793106225377.956,
+      "presentedMs": 1793106225479.5999,
+      "counter": 2430
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 121.94384765625,
+      "captureMs": 1793106225990.956,
+      "presentedMs": 1793106226112.9,
+      "counter": 2441
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 121.94384765625,
+      "captureMs": 1793106225990.956,
+      "presentedMs": 1793106226112.9,
+      "counter": 2439
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 126.94384765625,
+      "captureMs": 1793106226585.956,
+      "presentedMs": 1793106226712.9,
+      "counter": 2448
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 123.643798828125,
+      "captureMs": 1793106226655.956,
+      "presentedMs": 1793106226779.5999,
+      "counter": 2451
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 129.243896484375,
+      "captureMs": 1793106227116.956,
+      "presentedMs": 1793106227246.2,
+      "counter": 2456
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 138.243896484375,
+      "captureMs": 1793106227207.956,
+      "presentedMs": 1793106227346.2,
+      "counter": 2459
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 47.0439453125,
+      "captureMs": 1793106227448.956,
+      "presentedMs": 1793106227496,
+      "counter": 2403
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 133.5439453125,
+      "captureMs": 1793106227645.956,
+      "presentedMs": 1793106227779.5,
+      "counter": 2464
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 135.243896484375,
+      "captureMs": 1793106228110.956,
+      "presentedMs": 1793106228246.2,
+      "counter": 2469
+    },
+    {
+      "feed": "test/03/hi",
+      "latencyMs": 93.843994140625,
+      "captureMs": 1793106228218.956,
+      "presentedMs": 1793106228312.8,
+      "counter": 2470
+    },
+    {
+      "feed": "test/01/hi",
+      "latencyMs": 68.243896484375,
+      "captureMs": 1793106228277.956,
+      "presentedMs": 1793106228346.2,
+      "counter": 2413
+    },
+    {
+      "feed": "test/02/hi",
+      "latencyMs": 108.5439453125,
+      "captureMs": 1793106228670.956,
+      "presentedMs": 1793106228779.5,
+      "counter": 2478
+    }
+  ],
+  "video_state": {
+    "98a5c5c5-3db7-4134-9e14-049c53e094ee": {
+      "state": "connected",
+      "rendition": "hi",
+      "stats": {
+        "fps": 4,
+        "width": 256,
+        "height": 192,
+        "bitrateKbps": 92,
+        "rttMs": 2,
+        "jitterMs": 15,
+        "lossPct": 0,
+        "framesDropped": 0,
+        "framesDecoded": 156,
+        "at": 1793106228826
+      }
+    },
+    "e54f2000-d3f3-42b4-a4c8-fbf960b35f31": {
+      "state": "connected",
+      "rendition": "hi",
+      "stats": {
+        "fps": 13,
+        "width": 480,
+        "height": 270,
+        "bitrateKbps": 1317,
+        "rttMs": 2,
+        "jitterMs": 13,
+        "lossPct": 0,
+        "framesDropped": 0,
+        "framesDecoded": 19,
+        "at": 1793106228827
+      }
+    },
+    "3cfc91b8-9232-455f-aca8-d67e5e19763d": {
+      "state": "connected",
+      "rendition": "hi",
+      "stats": {
+        "fps": 15,
+        "width": 480,
+        "height": 270,
+        "bitrateKbps": 210,
+        "rttMs": 16,
+        "jitterMs": 16,
+        "lossPct": 0,
+        "framesDropped": 0,
+        "framesDecoded": 338,
+        "at": 1793106229023
+      }
+    },
+    "374b672a-4688-4d1e-9303-7beb0ee39f15": {
+      "state": "connected",
+      "rendition": "hi",
+      "stats": {
+        "fps": 14,
+        "width": 480,
+        "height": 270,
+        "bitrateKbps": 271,
+        "rttMs": 16,
+        "jitterMs": 15,
+        "lossPct": 0,
+        "framesDropped": 0,
+        "framesDecoded": 336,
+        "at": 1793106229023
+      }
+    },
+    "919bf296-6211-4ba1-b2c0-d74ca9f7bf13": {
+      "state": "disconnected",
+      "rendition": "hi",
+      "stats": {
+        "fps": 15,
+        "width": 480,
+        "height": 270,
+        "bitrateKbps": 174,
+        "rttMs": 10,
+        "jitterMs": 19,
+        "lossPct": 0,
+        "framesDropped": 0,
+        "framesDecoded": 144,
+        "at": 1793106218903
+      }
+    },
+    "b3dfaed4-4a44-49e2-8035-f8d07be62c9a": {
+      "state": "disconnected",
+      "rendition": "hi",
+      "stats": {
+        "fps": 15,
+        "width": 480,
+        "height": 270,
+        "bitrateKbps": 226,
+        "rttMs": 10,
+        "jitterMs": 18,
+        "lossPct": 0,
+        "framesDropped": 0,
+        "framesDecoded": 143,
+        "at": 1793106218896
+      }
+    },
+    "a3bb3698-f882-4821-a397-81cdc3efb4f2": {
+      "state": "disconnected",
+      "rendition": "hi",
+      "stats": {
+        "fps": 16,
+        "width": 480,
+        "height": 270,
+        "bitrateKbps": 146,
+        "rttMs": 10,
+        "jitterMs": 16,
+        "lossPct": 0,
+        "framesDropped": 0,
+        "framesDecoded": 145,
+        "at": 1793106218896
+      }
+    },
+    "8bdd4882-d4d6-4fd0-9332-9bb7e0cd1ed1": {
+      "state": "disconnected",
+      "rendition": "hi",
+      "stats": {
+        "fps": 15,
+        "width": 480,
+        "height": 270,
+        "bitrateKbps": 192,
+        "rttMs": 10,
+        "jitterMs": 19,
+        "lossPct": 0,
+        "framesDropped": 0,
+        "framesDecoded": 142,
+        "at": 1793106218896
+      }
+    },
+    "3ad28b6e-8122-4d4a-93c2-2b0048a8f2ca": {
+      "state": "disconnected",
+      "rendition": "hi",
+      "stats": {
+        "fps": 15,
+        "width": 480,
+        "height": 270,
+        "bitrateKbps": 196,
+        "rttMs": 23,
+        "jitterMs": 19,
+        "lossPct": 0,
+        "framesDropped": 0,
+        "framesDecoded": 142,
+        "at": 1793106218896
+      }
+    }
+  },
+  "dvr_seek": {
+    "before": {
+      "t": 0,
+      "captureMs": 1793106199801
+    },
+    "after": {
+      "t": 19.5316,
+      "captureMs": 1793106219253
+    },
+    "positionDeltaS": 19.5316,
+    "recordedTimeDeltaS": 19.452
+  },
+  "assign_task": {
+    "drone": "DMX-001",
+    "task": "T005",
+    "persisted": true
+  },
+  "hold_all": {
+    "targets": 10,
+    "results": [
+      "DRONE\tRESULT\tDETAIL",
+      "DMX-001\tCONFIRMED\tconfirmed by telemetry",
+      "DMX-002\tCONFIRMED\tconfirmed by telemetry",
+      "DMX-003\tCONFIRMED\tconfirmed by telemetry",
+      "DMX-004\tCONFIRMED\tconfirmed by telemetry",
+      "DMX-005\tCONFIRMED\tconfirmed by telemetry",
+      "DMX-006\tCONFIRMED\tconfirmed by telemetry",
+      "DMX-007\tCONFIRMED\tconfirmed by telemetry",
+      "DMX-008\tCONFIRMED\tconfirmed by telemetry",
+      "SIM-01\tCONFIRMED\tconfirmed by telemetry",
+      "SIM-02\tCONFIRMED\tconfirmed by telemetry"
+    ]
+  },
+  "fixtures_via": "nats",
+  "sitl_detector_card": true,
+  "detection_latency": [
+    {
+      "id": "bcc29f1f-3edc-4237-9df9-efe201a4f5ae",
+      "inferenceToCardMs": 91,
+      "inferenceToSocketMs": 59,
+      "provider": "sim_colour_detector"
+    },
+    {
+      "id": "5b760800-c4c6-4142-8cb2-1ac5e04cd415",
+      "inferenceToCardMs": 180,
+      "inferenceToSocketMs": 150,
+      "provider": "test_fixture"
+    },
+    {
+      "id": "559316d6-82f9-43a5-b97e-6930918363a8",
+      "inferenceToCardMs": 323,
+      "inferenceToSocketMs": 210,
+      "provider": "test_fixture"
+    },
+    {
+      "id": "5f76ff15-89f7-4291-8838-4d4ecbdb31d7",
+      "inferenceToCardMs": 233,
+      "inferenceToSocketMs": 157,
+      "provider": "test_fixture"
+    },
+    {
+      "id": "09a92f48-6840-4320-b24f-9424520768fe",
+      "inferenceToCardMs": 303,
+      "inferenceToSocketMs": 213,
+      "provider": "test_fixture"
+    }
+  ],
+  "heatmap": {
+    "cells": 3,
+    "total": 3,
+    "max": 1
+  },
+  "audit_actions": [
+    "command_accepted",
+    "command_confirmed",
+    "command_dispatched",
+    "command_refused",
+    "command_requested",
+    "detection_accepted",
+    "detection_fixtures_emitted",
+    "detection_rejected",
+    "fc_bind",
+    "fc_discover",
+    "sitl_bench_started",
+    "sitl_bench_stopped",
+    "task_assigned",
+    "video_recording_started",
+    "video_recording_stopped"
+  ],
+  "rbac_denied": {
+    "command": 403,
+    "fleet": 403,
+    "discover": 403,
+    "review": 403,
+    "recording": 403
+  },
+  "stale_after_ms": 5246,
+  "recovered_after_ms": 507,
+  "fps": {
+    "frames": 172,
+    "seconds": 5.003999999964232,
+    "fps": 34.372501998646975,
+    "worstFrameMs": 150
+  },
+  "telemetry_intervals": {
+    "sitl": {
+      "n": 1182,
+      "median": 502,
+      "p95": 650,
+      "max": 6330,
+      "min": 177
+    }
+  },
+  "inflight_commands_after": 0,
+  "px4_processes_after": 0,
+  "finished_at": "2026-10-27T13:05:19.767Z",
+  "duration_s": 256.597
+}

@@ -17,6 +17,7 @@ from app.models.simulation import (  # noqa: F401
     SimulationReportComparison,
     SimulationSession,
 )
+from app.models.mission_control import Detection, DroneCommand, FlightControllerBinding, VideoSource  # noqa: F401
 
 __all__ = [
     "Organization",
@@ -38,4 +39,8 @@ __all__ = [
     "SimulationEvent",
     "SimulationReport",
     "SimulationReportComparison",
+    "FlightControllerBinding",
+    "DroneCommand",
+    "VideoSource",
+    "Detection",
 ]

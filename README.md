@@ -2,8 +2,10 @@
 
 Fleet management, live map/AOI planning, real-time telemetry, CBBA-based
 multi-drone mission planning, ORCA collision avoidance with a
-NATS JetStream / TimescaleDB communication stack, and Gazebo + PX4 SITL
-mission simulation for a drone operations platform. This repo contains a FastAPI + PostGIS backend and a React +
+NATS JetStream / TimescaleDB communication stack, Gazebo + PX4 SITL
+mission simulation, and a live mission-control dashboard (flight-controller
+binding, safe arming, fleet commands, WebRTC video, detection review) for a
+drone operations platform. This repo contains a FastAPI + PostGIS backend and a React +
 Leaflet frontend.
 
 - Sprint 3 (CBBA engine & mission wizard):
@@ -16,6 +18,11 @@ Leaflet frontend.
   [`docs/sprint5/SIMULATION.md`](docs/sprint5/SIMULATION.md); test report:
   [`docs/sprint5/SPRINT_5_TEST_REPORT.md`](docs/sprint5/SPRINT_5_TEST_REPORT.md);
   screenshots and recordings: [`documents/sprint5/`](documents/sprint5/)
+- Sprint 6 (live mission control):
+  [`docs/sprint6/MISSION_CONTROL.md`](docs/sprint6/MISSION_CONTROL.md); test report:
+  [`docs/sprint6/SPRINT_6_TEST_REPORT.md`](docs/sprint6/SPRINT_6_TEST_REPORT.md);
+  performance: [`docs/sprint6/PERFORMANCE_RESULTS.md`](docs/sprint6/PERFORMANCE_RESULTS.md);
+  screenshots and recordings: [`documents/sprint6/`](documents/sprint6/)
 
 ## Stack
 
@@ -145,6 +152,35 @@ python scripts/generate_sprint5_report.py                     # rebuild docs/spr
 
 Details, architecture and limitations: [`docs/sprint5/SIMULATION.md`](docs/sprint5/SIMULATION.md).
 
+## 5. Mission control (Sprint 6)
+
+**Operate → Mission Control** (`/mission-control`). No physical aircraft is
+needed: a *SITL bench* (PX4 SITL drones with downward cameras, started from the
+binding dialog) provides real flight controllers to discover, bind (list, QR or
+manual), pre-arm check, arm and command. Video is relayed by MediaMTX
+(RTSP in, WebRTC/WHEP out through the backend, fMP4 recording):
+
+```bash
+# MediaMTX must advertise an address the browser can reach: use this machine's LAN IP
+MEDIAMTX_WEBRTC_HOSTS=192.168.1.20 docker compose -f docker-compose.yml -f docker-compose.sim.yml up -d simhost mediamtx
+cd backend && alembic upgrade head
+```
+
+Tests:
+
+```bash
+cd backend
+pytest -q -m "not gazebo" tests/test_mission_control.py         # 41 unit/integration tests
+pytest -q -m gazebo -s tests/test_mc_sitl_integration.py        # real PX4 SITL bench
+docker compose -f docker-compose.yml -f docker-compose.sim.yml exec simhost pytest -q /sim/tests
+cd ../frontend
+npx playwright test -c playwright.sprint6.config.ts            # full E2E (bench, video, commands, detections, RBAC)
+cd ../backend && python scripts/generate_sprint6_report.py      # SPRINT_6_TEST_REPORT.md + PERFORMANCE_RESULTS.md
+```
+
+Hardware flight controllers and real cameras are not tested (none available):
+see [`docs/sprint6/performance/limitations.md`](docs/sprint6/performance/limitations.md).
+
 ## What's implemented
 
 - **Auth**: JWT access/refresh tokens, role-based access control (ADMIN,
@@ -188,6 +224,14 @@ Details, architecture and limitations: [`docs/sprint5/SIMULATION.md`](docs/sprin
 - **TimescaleDB telemetry (Sprint 4)**: `drone_telemetry` hypertable fed at
   1 Hz from NATS, no data loss for 16 drones, 1-hour queries < 500 ms;
   Telemetry tab under **Analyse**.
+- **Mission control (Sprint 6)**: three-panel dashboard (fleet, map + video,
+  drone control) with telemetry freshness (stale/offline) and source labels
+  (SITL / demo / hardware); flight-controller discovery and binding (QR v1,
+  manual, list) with audit; pre-arm checklist re-checked server-side before
+  ARM; quick and fleet-wide commands (HOLD / RTL / LAND ALL) with a tracked
+  lifecycle; WebRTC video wall (1/4/9, fullscreen, PiP, link-loss recovery,
+  quality ladder, DVR); detection feed with accept/reject, PostGIS layer and
+  heatmap; RBAC on every control.
 
 ## Repo layout
 
@@ -199,6 +243,8 @@ documents/  Product/design reference docs + Sprint 3 technical reference
 docs/sprint4/  Sprint 4 technical reference, test report, evidence/ screenshots, performance/ JSON
 docs/sprint5/  Sprint 5 simulation reference, test report, performance/ JSON + JUnit
 documents/sprint5/  Sprint 5 screenshots/ and recordings/
+docs/sprint6/  Sprint 6 mission-control reference, plan, test + performance reports, evidence/, performance/
+documents/sprint6/  Sprint 6 screenshots/ and recordings/
 sim/        simulation host image: Gazebo + PX4 SITL, simhost service (FastAPI + pymavlink), PX4 patch
 ```
 
@@ -232,6 +278,17 @@ backend/app/services/simulation/   ENU frames, DEM, world generator, sim fleet, 
 backend/app/api/routes/simulations.py   simulation REST API
 sim/simhost/                       SITL process manager, Gazebo control, MAVLink bridge, session, HTTP server
 frontend/src/pages/SimulationPage.tsx, components/simulation/   setup, map layers, controls, failures, report + diff
+```
+
+Sprint 6 code map:
+
+```
+backend/app/services/mission_control/   fleet view, FC discovery/binding, QR, pre-arm, adapters, commands, video, detections
+backend/app/api/routes/mission_control.py   /mission-control, /video, /detections REST API
+sim/simhost/video.py, detector.py       SITL camera + test-pattern encoders, classical-CV detector
+sim/mediamtx/                           MediaMTX relay config
+frontend/src/pages/MissionControlPage.tsx, components/missioncontrol/   dashboard panels, video wall, dialogs
+frontend/src/lib/whep.ts                WHEP player (reconnect back-off, quality ladder, stats)
 ```
 
 ## Design system

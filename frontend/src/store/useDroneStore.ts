@@ -39,7 +39,8 @@ function applyTelemetry(drones: Drone[], update: TelemetryUpdate): Drone[] {
       armed: update.armed,
       link_quality: update.link_quality,
       status: update.status,
-      last_telemetry_at: update.timestamp,
+      // Freshness follows the backend's receive time (one clock), not the producer's.
+      last_telemetry_at: update.received_at ?? update.timestamp,
     }
   })
   return found ? next : drones

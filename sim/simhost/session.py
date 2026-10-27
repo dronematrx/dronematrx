@@ -12,6 +12,7 @@ published. At 1x the guardrail only warns.
 from __future__ import annotations
 
 import logging
+import re
 import threading
 import time
 from collections.abc import Callable
@@ -22,6 +23,8 @@ from simhost.bridge import BridgeError, DroneLink, LinkEmulator
 from enu import EnuFrame
 from simhost.gazebo import GazeboError, GazeboWorld
 from simhost.sitl_manager import SitlProcessManager
+from simhost.detector import Detector
+from simhost.video import SitlCameraSource
 
 logger = logging.getLogger("simhost.session")
 
@@ -32,6 +35,7 @@ GUARDRAIL_SAMPLES = 3
 # A model this far from the world origin has left the generated terrain for
 # good; it is removed before the physics engine overflows (ODE AABB assert).
 RUNAWAY_LIMIT_M = 20_000.0
+PX4_PARAM = re.compile(r"^[A-Z][A-Z0-9_]{1,15}$")
 LINK_LOSS_TO_NAV_DLL_ACT = {"CONTINUE": 0, "HOLD": 1, "RTH": 2, "LAND": 3}
 
 
@@ -60,6 +64,10 @@ class SessionSpec:
     cruise_speed_mps: float = 8.0
     battery_drain_s: float = 1800.0
     params: dict = field(default_factory=dict)
+    # Sprint 6 SITL bench: flight controllers for mission control to discover
+    # and bind. Instances publish nothing until bound to a drone record.
+    bench: bool = False
+    camera: bool = False
 
 
 class SimSession:
@@ -67,11 +75,12 @@ class SimSession:
         self.spec = spec
         self.manager = manager
         self.workdir = Path(workdir)
-        self.publish = publish  # (uin, kind, payload) -> None ; thread-safe
+        self._raw_publish = publish  # (uin, kind, payload) -> None ; thread-safe
         self.world = GazeboWorld(Path(spec.world_sdf), spec.world_name, self.workdir / "gz_server.log")
         self.frame = EnuFrame(spec.origin["latitude"], spec.origin["longitude"], spec.origin.get("height_m", 0.0))
         self.links: dict[str, DroneLink] = {}
         self.index_of: dict[str, int] = {}
+        self.model_of: dict[str, str] = {}  # uin -> Gazebo model name (x500_N, x500_dm_cam_N)
         self.state = "created"
         self.error: str | None = None
         self.requested_speed = spec.speed
@@ -81,6 +90,8 @@ class SimSession:
         self._stop = threading.Event()
         self._threads: list[threading.Thread] = []
         self.started_wall: float | None = None
+        self.cameras: dict[str, SitlCameraSource] = {}
+        self.detections_recent: list[dict] = []  # detector output (observability), newest last
 
     # ------------------------------------------------------------ lifecycle
 
@@ -92,10 +103,13 @@ class SimSession:
         try:
             self._start_once()
         except SessionError as exc:
-            no_heartbeat = all(not l.state.last_heartbeat for l in self.links.values()) if self.links else False
-            if self.startup_attempts >= 2 or not no_heartbeat:
+            # A PX4 instance that never became ready (no heartbeat, or no GNSS
+            # home under start-up CPU load) is a start-up failure, not a
+            # flight failure: retry the whole start once.
+            not_ready = any(l.closed or not l.ready() for l in self.links.values()) if self.links else False
+            if self.startup_attempts >= 2 or not not_ready:
                 raise
-            logger.warning("session %s: no PX4 heartbeat on attempt 1 (%s); retrying start once", self.spec.session_id, exc)
+            logger.warning("session %s: PX4 not ready on attempt 1 (%s); retrying start once", self.spec.session_id, exc)
             self.startup_errors = [str(exc)]
             self.manager.forget_session(self.spec.session_id)
             self.links, self.index_of = {}, {}
@@ -112,10 +126,14 @@ class SimSession:
             self.world.set_real_time_factor(1.0)  # warm-up at 1x; the requested speed applies once ready
             indices = self.manager.allocate_indices(self.spec.session_id, len(self.spec.drones))
             for idx, d in zip(indices, self.spec.drones):
-                inst = self.manager.start(self.spec.session_id, idx, d.uin, d.pose, self.spec.world_name, self.workdir, extra_env=self.spec.params.get("env"))
+                model = "gz_x500_dm_cam" if self._has_camera(len(self.links)) else "gz_x500"
+                inst = self.manager.start(self.spec.session_id, idx, d.uin, d.pose, self.spec.world_name, self.workdir,
+                                          model=model, extra_env=self.spec.params.get("env"))
                 emulator = LinkEmulator(seed=self.spec.seed * 1000 + idx)
                 link = DroneLink(self.spec.session_id, idx, d.uin, d.drone_id, d.name, inst.api_port, emulator,
                                  on_event=self._event_cb(d.uin), truth=self._truth_cb(inst.gz_model_name))
+                self.model_of[d.uin] = inst.gz_model_name
+                link.publish_enabled = not self.spec.bench  # bench controllers stay silent until bound
                 link.open()
                 self.links[d.uin] = link
                 self.index_of[d.uin] = idx
@@ -135,8 +153,13 @@ class SimSession:
                 t.start()
             for t in threads:
                 t.join()
+            # A controller declared dead during start-up (link closed) must fail
+            # the start instead of leaving a "ready" session that cannot command it.
+            errors += [f"{u}: PX4 link closed during start-up" for u, l in self.links.items() if l.closed and not any(e.startswith(u) for e in errors)]
             if errors:
                 raise SessionError("; ".join(errors))
+            if self.spec.camera:
+                self._start_cameras()
             for target, name in ((self._telemetry_loop, "telemetry"), (self._monitor_loop, "monitor")):
                 th = threading.Thread(target=target, name=f"sess-{name}", daemon=True)
                 th.start()
@@ -166,7 +189,8 @@ class SimSession:
             # compensation would otherwise over-read the charge in flight (~+17 %).
             "BAT1_V_LOAD_DROP": 0.0,
             "COM_LOW_BAT_ACT": 3,  # warning -> RTL -> land, by battery thresholds
-            **{k: v for k, v in sp.params.items() if k != "env"},
+            # Only PX4 parameter names go to PX4 (other params, e.g. ground_z, configure simhost).
+            **{k: v for k, v in sp.params.items() if PX4_PARAM.match(k)},
         }
         for name, value in params.items():
             if value is None:
@@ -176,8 +200,42 @@ class SimSession:
             except BridgeError as exc:
                 logger.warning("param %s on %s not set: %s", name, link.uin, exc)
 
+    def _has_camera(self, n: int) -> bool:
+        """Camera on the first `camera_count` drones (default: all) of a camera session."""
+        return self.spec.camera and n < int(self.spec.params.get("camera_count", 1 << 30))
+
+    def _start_cameras(self) -> None:
+        ground_z = float(self.spec.params.get("ground_z", 0.0))
+        for n, uin in enumerate(self.links):
+            if not self._has_camera(n):
+                continue
+            model = self.model_name(uin)
+            det = Detector(drone_pose=lambda m=model: self.world.model_pose(m), drone_yaw=lambda m=model: self.world.model_yaw(m),
+                           ground_z=ground_z, to_geodetic=self.frame.to_geodetic,
+                           emit=lambda ev, u=uin: self._emit_detection(u, ev))
+            cam = SitlCameraSource(self.world, model, uin, str(self.workdir / "video"), on_frame=det.on_frame)
+            try:
+                cam.start()
+            except GazeboError as exc:
+                logger.warning("camera for %s not available: %s", uin, exc)
+                continue
+            self.cameras[uin] = cam
+
+    def _emit_detection(self, uin: str, event: dict) -> None:
+        link = self.links.get(uin)
+        if link is None:
+            return
+        published = bool(getattr(link, "publish_enabled", True))  # only a bound controller's detections leave simhost
+        self.detections_recent.append({k: event.get(k) for k in ("event_id", "label", "confidence", "latitude", "longitude", "location_error",
+                                                                  "inferred_at", "enu", "camera_height_m")} | {"fc_id": uin, "published": published})
+        self.detections_recent = self.detections_recent[-30:]
+        self.publish(uin, "detection", {**event, "drone_id": link.drone_id, "uin": uin, "fc_id": uin,
+                                        "session_id": self.spec.session_id, "sim_time_s": self.sim_time(), "source": "sitl"})
+
     def stop(self) -> dict:
         self._stop.set()
+        for cam in self.cameras.values():
+            cam.stop()
         for link in self.links.values():
             link.close()
         stopped = self.manager.stop_session(self.spec.session_id)
@@ -219,11 +277,14 @@ class SimSession:
         if not expected and uin in self.index_of and self.world.server_exit_code() is None:
             # Dead flight controller -> motors stop and the drone falls, as a
             # real one would; Gazebo would otherwise hold its last thrust.
-            threading.Thread(target=self._cut_motors, args=(f"x500_{self.index_of[uin]}",), daemon=True).start()
+            threading.Thread(target=self._cut_motors, args=(self.model_name(uin),), daemon=True).start()
         payload = {"type": "sim", "kind": "process_exited", "session_id": self.spec.session_id, "uin": uin,
                    "drone_id": link.drone_id if link else None, "returncode": returncode, "expected": expected,
                    "sim_time_s": self.sim_time(), "wall": time.time()}
         self.publish(uin, "alert", payload)
+
+    def model_name(self, uin: str) -> str:
+        return self.model_of.get(uin) or f"x500_{self.index_of[uin]}"
 
     def _cut_motors(self, model: str) -> None:
         try:
@@ -233,6 +294,64 @@ class SimSession:
 
     def sim_time(self) -> float | None:
         return self.world.stats.get("sim_time_s")
+
+    def publish(self, uin: str, kind: str, payload: dict) -> None:
+        """Publish under the drone record the controller is bound to; an
+        unbound bench controller publishes nothing."""
+        link = self.links.get(uin)
+        if link is not None:
+            if not getattr(link, "publish_enabled", True):
+                return
+            pub = getattr(link, "pub_uin", uin)
+            if pub != uin:
+                payload = {**payload, "uin": pub, "drone_id": link.drone_id, "name": link.name}
+                uin = pub
+        self._raw_publish(uin, kind, payload)
+
+    def bind(self, fc_id: str, drone_id: str, uin: str, name: str) -> dict:
+        link = self.link(fc_id)
+        link.drone_id, link.pub_uin, link.name = drone_id, uin, name
+        link.publish_enabled = True
+        return self.fc_info(fc_id)
+
+    def unbind(self, fc_id: str) -> dict:
+        link = self.link(fc_id)
+        link.publish_enabled = False
+        link.drone_id, link.pub_uin = "", fc_id
+        return self.fc_info(fc_id)
+
+    def fc_info(self, fc_id: str) -> dict:
+        link = self.link(fc_id)
+        s = link.state
+        return {
+            "fc_id": fc_id, "index": link.index, "api_port": link.port, "system_id": link.sysid,
+            "endpoint": f"udp:127.0.0.1:{link.port}", "firmware": s.firmware,
+            "heartbeat_age_s": round(time.time() - s.last_heartbeat, 2) if s.last_heartbeat else None,
+            "bound": link.publish_enabled and bool(link.drone_id), "drone_id": link.drone_id or None,
+            "uin": link.pub_uin if link.publish_enabled else None, "mode": s.mode, "armed": s.armed,
+            "closed": link.closed,
+        }
+
+    def prearm(self, fc_id: str) -> dict:
+        """Raw health the flight controller reports; the backend turns it into
+        the pre-arm checklist. Values that were never received stay None."""
+        link = self.link(fc_id)
+        s = link.state
+        params = {}
+        for name in ("NAV_DLL_ACT", "COM_LOW_BAT_ACT", "GF_ACTION"):
+            try:
+                params[name] = link.get_param(name)
+            except Exception:  # noqa: BLE001 - unknown, not failed
+                params[name] = None
+        return {
+            **self.fc_info(fc_id),
+            "sensors_present": s.sensors_present, "sensors_enabled": s.sensors_enabled, "sensors_health": s.sensors_health,
+            "gps_fix": s.gps_fix, "satellites": s.satellites, "home_set": s.home is not None,
+            "battery_pct": s.battery_pct, "landed_state": s.landed_state,
+            "last_rx_age_s": round(time.time() - s.last_rx, 2) if s.last_rx else None,
+            "statustext": [{"t": t, "severity": sev, "text": txt} for t, sev, txt in list(s.statustext)[-10:]],
+            "failsafe_params": params,
+        }
 
     def _check_world(self) -> None:
         """Gazebo server death and runaway models (called once a second)."""
@@ -247,7 +366,7 @@ class SimSession:
                                               "uin": first, "error": self.error, "sim_time_s": self.sim_time(), "wall": time.time()})
             return
         for uin, index in list(self.index_of.items()):
-            model = f"x500_{index}"
+            model = self.model_name(uin)
             pose = self.world.model_pose(model)
             if pose is None or all(abs(c) < RUNAWAY_LIMIT_M for c in pose):
                 continue
@@ -364,6 +483,9 @@ class SimSession:
                 for uin, l in self.links.items()
             },
             "obstacles": self.obstacles,
+            "bench": self.spec.bench,
+            "cameras": {u: c.status() for u, c in self.cameras.items()},
+            "detections_recent": self.detections_recent,
             "failures": self.failures,
             "startup_attempts": getattr(self, "startup_attempts", 1),
             "startup_errors": getattr(self, "startup_errors", []),

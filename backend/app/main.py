@@ -16,6 +16,11 @@ from app.services.mission_planning_service import MissionLockedError, PlanningEr
 from app.services.mission_state_service import InvalidTransitionError, TransitionBlockedError
 from app.services.runtime import FleetRuntime
 from app.services.simulation.orchestrator import SimulationError, SimulationOrchestrator
+from app.services.mission_control import MissionControl
+from app.services.mission_control.commands import CommandError
+from app.services.mission_control.detections import DetectionError
+from app.services.mission_control.fc import FcError
+from app.services.mission_control.video import VideoError
 from app.services.telemetry.manager import TelemetryManager
 from app.services.telemetry.simulator import SimulationTelemetryProvider
 from app.websocket.connection_manager import connection_manager
@@ -52,9 +57,14 @@ async def lifespan(app: FastAPI):
     sim_orchestrator = SimulationOrchestrator(SessionLocal, connection_manager, fleet_runtime)
     await sim_orchestrator.start()
     app.state.sim = sim_orchestrator
+    # Sprint 6: mission control (commands, bindings, detections over the same bus).
+    mission_control = MissionControl(SessionLocal, connection_manager, fleet_runtime)
+    await mission_control.start()
+    app.state.mc = mission_control
 
     yield
 
+    await mission_control.stop()
     await sim_orchestrator.stop()
     if fleet_runtime is not None:
         await fleet_runtime.stop()
@@ -119,6 +129,16 @@ async def transition_blocked_handler(request: Request, exc: TransitionBlockedErr
 @app.exception_handler(SimulationError)
 async def simulation_error_handler(request: Request, exc: SimulationError) -> JSONResponse:
     return JSONResponse(status_code=exc.status, content={"detail": exc.message, "code": exc.code})
+
+
+@app.exception_handler(CommandError)
+@app.exception_handler(FcError)
+@app.exception_handler(VideoError)
+@app.exception_handler(DetectionError)
+async def mission_control_error_handler(request: Request, exc: Exception) -> JSONResponse:
+    content = {"detail": exc.message, "code": exc.code}
+    content.update(jsonable_encoder(getattr(exc, "extra", {}) or {}))
+    return JSONResponse(status_code=exc.status, content=content)
 
 
 @app.exception_handler(SQLAlchemyError)

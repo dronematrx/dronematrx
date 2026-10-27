@@ -1,0 +1,15 @@
+<testsuites id="" name="" tests="1" failures="0" skipped="0" errors="0" time="303.39172499999995">
+<testsuite name="sprint6.spec.ts" timestamp="2026-10-27T13:01:03.285Z" hostname="chromium" tests="1" failures="0" skipped="0" time="254.183" errors="0">
+<testcase name="Sprint 6 mission control end to end (SITL bench, WebRTC, detections)" classname="sprint6.spec.ts" time="254.183">
+<properties>
+<property name="serial" value="">
+</property>
+</properties>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|..\..\..\frontend\test-results\sprint6-Sprint-6-mission-c-12cf4-TL-bench-WebRTC-detections--chromium\video.webm]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+</testsuites>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- PX4 x500 + a nadir camera. No <topic>: Gazebo then publishes on
+     /world/<w>/model/<model>/link/dm_cam_link/sensor/dm_cam/image, which is
+     unique per instance (PX4's mono_cam uses one global topic for all drones).
+     Pitch +90 deg turns the camera's +X (view axis) to world -Z: image top =
+     drone forward, image right = drone right. hfov 1.2 rad, 320x240, 10 Hz. -->
+<sdf version='1.9'>
+  <model name='x500_dm_cam'>
+    <include merge='true'>
+      <uri>x500</uri>
+    </include>
+    <link name="dm_cam_link">
+      <pose relative_to="base_link">0 0 -0.06 0 1.5707963 0</pose>
+      <inertial>
+        <mass>0.02</mass>
+        <inertia><ixx>0.00001</ixx><iyy>0.00001</iyy><izz>0.00001</izz><ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia>
+      </inertial>
+      <sensor name="dm_cam" type="camera">
+        <camera>
+          <horizontal_fov>1.2</horizontal_fov>
+          <image><width>256</width><height>192</height><format>R8G8B8</format></image>
+          <clip><near>0.1</near><far>500</far></clip>
+        </camera>
+        <always_on>1</always_on>
+        <update_rate>5</update_rate>
+      </sensor>
+    </link>
+    <joint name="dm_cam_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>dm_cam_link</child>
+    </joint>
+  </model>
+</sdf>
