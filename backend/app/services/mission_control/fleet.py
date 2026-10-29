@@ -127,6 +127,7 @@ def drone_view(drone: Drone, binding: FlightControllerBinding | None, kinematic:
         "uin": drone.uin,
         "model": drone.model,
         "simulated": drone.simulated,
+        "hardware": drone.hardware,
         "telemetry_source": src,
         "connection_state": state,
         "telemetry_age_s": round(age, 2) if age is not None else None,

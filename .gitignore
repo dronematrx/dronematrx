@@ -38,3 +38,8 @@ Thumbs.db
 backend/sim_workspace/
 backend/sim_cache/
 frontend/dist-e2e/
+
+# ArduPilot SITL binaries (downloaded by sim/ardupilot_sitl/start.ps1)
+sim/ardupilot_sitl/bin/
+# hardware bridge local config (COM ports, camera URLs, token)
+hwbridge/config.json

@@ -9,6 +9,7 @@ export function DroneFormModal({ onClose }: { onClose: () => void }) {
   const [uin, setUin] = useState('')
   const [latitude, setLatitude] = useState('23.2156')
   const [longitude, setLongitude] = useState('72.6369')
+  const [hardware, setHardware] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
@@ -27,6 +28,8 @@ export function DroneFormModal({ onClose }: { onClose: () => void }) {
         uin: uin || null,
         latitude: latitude ? Number(latitude) : null,
         longitude: longitude ? Number(longitude) : null,
+        hardware,
+        ...(hardware ? { firmware: 'ArduPilot' } : {}),
       })
       onClose()
     } catch (err) {
@@ -67,6 +70,13 @@ export function DroneFormModal({ onClose }: { onClose: () => void }) {
               <input value={longitude} onChange={(e) => setLongitude(e.target.value)} style={inputStyle} />
             </Field>
           </div>
+          <label style={{ display: 'flex', gap: '.5rem', alignItems: 'flex-start', fontSize: '.8rem' }}>
+            <input type="checkbox" checked={hardware} onChange={(e) => setHardware(e.target.checked)} data-testid="drone-hardware" />
+            <span>
+              <strong>Real aircraft (hardware)</strong>: flown through the hardware bridge (ArduPilot over a telemetry radio). It never
+              receives simulated telemetry. This cannot be changed later.
+            </span>
+          </label>
         </div>
 
         {error && <p style={{ color: 'var(--dm-status-alert)', fontSize: '.85rem' }}>{error}</p>}

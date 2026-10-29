@@ -59,11 +59,13 @@ def relay_paths() -> dict[str, dict] | None:
 def sync_sources(db: Session, org_id: uuid.UUID, client: SimhostClient) -> dict:
     """Register the sources simhost publishes: test patterns and SITL bench
     cameras (associated with the drone their controller is bound to)."""
+    existing = {v.path: v for v in db.execute(select(VideoSource).where(VideoSource.organization_id == org_id)).scalars()}
+    hw = _sync_hardware_cameras(db, org_id, existing)
     try:
         listed = client.video_sources()
     except SimhostError as exc:
-        return {"synced": 0, "error": str(exc)}
-    existing = {v.path: v for v in db.execute(select(VideoSource).where(VideoSource.organization_id == org_id)).scalars()}
+        db.commit()
+        return {"synced": hw, "error": f"simulator video sources unavailable: {exc}"}
     bindings = {b.endpoint.rsplit(":", 1)[-1]: b for b in db.execute(select(FlightControllerBinding).where(
         FlightControllerBinding.organization_id == org_id, FlightControllerBinding.state.in_(("binding", "bound")))).scalars()}
     seen = 0
@@ -95,7 +97,39 @@ def sync_sources(db: Session, org_id: uuid.UUID, client: SimhostClient) -> dict:
             v.active = False
             retired += 1
     db.commit()
-    return {"synced": seen, "retired": retired}
+    return {"synced": seen + hw, "retired": retired}
+
+
+def _sync_hardware_cameras(db: Session, org_id: uuid.UUID, existing: dict[str, VideoSource]) -> int:
+    """Real aircraft cameras (RTSP, configured per MAVLink system id in the
+    hardware bridge). MediaMTX pulls each URL itself (path `hw/sysN`); the
+    browser plays it through the same authenticated WHEP proxy as any feed."""
+    from app.services.mission_control.fc import hw_client
+    from app.services.mission_control.hwbridge import HwBridgeError
+
+    try:
+        cams = hw_client().video_sources().get("hardware_cameras", [])
+    except HwBridgeError:
+        return 0  # bridge not running: hardware feeds keep their last registration
+    s = get_settings()
+    names = {str(d.id): d.name for d in db.execute(select(Drone).where(Drone.organization_id == org_id)).scalars()}
+    for c in cams:
+        path = c["path"]
+        body = {"source": c["url"], "sourceOnDemand": False, "rtspTransport": "tcp"}
+        try:
+            r = _http.post(f"{s.MEDIAMTX_API_URL}/v3/config/paths/add/{path}", json=body, auth=_auth(), timeout=4)
+            if r.status_code == 400 and "already exists" in r.text:
+                _http.patch(f"{s.MEDIAMTX_API_URL}/v3/config/paths/patch/{path}", json=body, auth=_auth(), timeout=4)
+        except httpx.HTTPError:
+            pass  # relay down: the feed shows relay_unavailable
+        v = existing.get(path) or VideoSource(organization_id=org_id, kind="hardware_camera", path=path, low_path=None, record=False)
+        v.drone_id = uuid.UUID(c["drone_id"]) if c.get("drone_id") else None
+        drone = names.get(c["drone_id"]) if c.get("drone_id") else None
+        v.label = f"Camera - {drone}" if drone else f"Camera of MAVLink system {c['system_id']} (aircraft not bound)"
+        v.active = True
+        existing[path] = v
+        db.add(v)
+    return len(cams)
 
 
 def feed_view(v: VideoSource, paths: dict[str, dict] | None, drone_names: dict[str, str]) -> dict:

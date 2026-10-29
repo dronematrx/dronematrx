@@ -136,3 +136,25 @@ class Detection(Base):
     reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     reject_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     details: Mapped[dict] = mapped_column(JSONB, default=dict)
+
+
+class FlightPermission(Base):
+    """A human authorization to fly one real aircraft, for a limited time.
+    Required (and checked again by the hardware bridge) for ARM, TAKEOFF,
+    GOTO and MISSION_START on hardware. Never deleted: revoking closes it."""
+
+    __tablename__ = "flight_permissions"
+    __table_args__ = (Index("ix_flight_permissions_drone", "drone_id", "expires_at"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    organization_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("organizations.id", ondelete="CASCADE"))
+    drone_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("drones.id", ondelete="CASCADE"))
+    mission_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("missions.id", ondelete="SET NULL"), nullable=True)
+    granted_by: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    granted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    revoked_by: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    revoke_reason: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    acknowledgements: Mapped[dict] = mapped_column(JSONB, default=dict, server_default=text("'{}'::jsonb"))
+    note: Mapped[str | None] = mapped_column(String(500), nullable=True)

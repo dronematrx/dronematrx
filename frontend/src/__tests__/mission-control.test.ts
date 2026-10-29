@@ -35,7 +35,7 @@ describe('test-pattern barcode', () => {
 
 function meta(id: string, lastIso: string | null, extra: Partial<McDrone> = {}): McDrone {
   return {
-    id, name: id, uin: null, model: 'x500', simulated: true, telemetry_source: 'sitl', connection_state: 'connected', telemetry_age_s: 0,
+    id, name: id, uin: null, model: 'x500', simulated: true, hardware: false, telemetry_source: 'sitl', connection_state: 'connected', telemetry_age_s: 0,
     last_telemetry_at: lastIso, status: 'online', flight_mode: 'HOLD', armed: false, battery: 90, latitude: 23.24, longitude: 72.65,
     altitude: 0, heading: 0, speed: 0, gps_status: '3D_FIX', binding: null, mission: null, capabilities: [], ...extra,
   }

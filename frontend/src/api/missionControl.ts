@@ -28,6 +28,7 @@ export interface McDrone {
   uin: string | null
   model: string
   simulated: boolean
+  hardware: boolean
   telemetry_source: TelemetrySource
   connection_state: ConnectionState
   telemetry_age_s: number | null
@@ -94,7 +95,7 @@ export interface Discovery {
   errors: string[]
   discovery_ms: number
   request_ms: number
-  scope: { sitl: string; hardware_allow_list: string[] }
+  scope: { sitl: string; hardware_bridge?: string; hardware_allow_list: string[] }
 }
 
 export type CheckStatus = 'PASS' | 'FAIL' | 'UNKNOWN' | 'WARNING'
@@ -115,7 +116,7 @@ export interface Prearm {
   checks: PrearmCheck[]
 }
 
-export type CommandName = 'ARM' | 'DISARM' | 'TAKEOFF' | 'HOLD' | 'RTL' | 'LAND' | 'GOTO' | 'RESUME'
+export type CommandName = 'ARM' | 'DISARM' | 'TAKEOFF' | 'HOLD' | 'RTL' | 'LAND' | 'GOTO' | 'RESUME' | 'MISSION_START'
 export type CommandState = 'requested' | 'dispatched' | 'accepted' | 'confirmed' | 'rejected' | 'timed_out' | 'failed' | 'unsupported' | 'cancelled'
 export interface DroneCommand {
   id: string
@@ -290,3 +291,42 @@ export async function thumbnailUrl(id: string): Promise<string> {
   if (!res.ok) throw new Error('thumbnail unavailable')
   return URL.createObjectURL(await res.blob())
 }
+
+// ------------------------------------------------- real aircraft (hardware)
+
+export interface FlightPermission {
+  id: string
+  drone_id: string
+  mission_id: string | null
+  granted_by: string | null
+  granted_at: string | null
+  expires_at: string
+  remaining_s: number
+  active: boolean
+  acknowledgements: Record<string, boolean>
+  note: string | null
+}
+
+export interface HardwareStatus {
+  available: boolean
+  error?: string
+  links?: { endpoint: string; open: boolean; error: string | null; rx_messages: number; vehicles: number[]; ignored: Record<string, string> }[]
+  nats?: { connected: boolean; error: string | null; published: number }
+  limits?: { max_alt_m?: number; max_distance_m?: number }
+}
+
+export const hardwareStatus = () => apiFetch<HardwareStatus>('/mission-control/hardware/status')
+export const flightPermissionAcks = () => apiFetch<{ required: Record<string, string> }>('/mission-control/flight-permission/acknowledgements')
+export const getFlightPermission = (droneId: string) =>
+  apiFetch<{ drone_id: string; permission: FlightPermission | null }>(`/mission-control/drones/${droneId}/flight-permission`)
+export const grantFlightPermission = (droneId: string, minutes: number, acknowledgements: Record<string, boolean>, missionId: string | null, note: string | null) =>
+  apiFetch<FlightPermission>(`/mission-control/drones/${droneId}/flight-permission`, {
+    method: 'POST', body: { minutes, acknowledgements, mission_id: missionId, note },
+  })
+export const revokeFlightPermission = (droneId: string, reason: string) =>
+  apiFetch<{ revoked: boolean; bridge_error: string | null }>(`/mission-control/drones/${droneId}/flight-permission?reason=${encodeURIComponent(reason)}`, { method: 'DELETE' })
+export const releaseOverride = (droneId: string, reason: string) =>
+  apiFetch<unknown>(`/mission-control/drones/${droneId}/override/release`, { method: 'POST', body: { reason } })
+export const uploadHardwareMission = (droneId: string, missionId: string, altitudeM: number | null, speedMps: number | null) =>
+  apiFetch<{ uploaded: number; tasks: string[]; planned_route: [number, number][]; altitude_m: number; speed_mps: number }>(
+    `/mission-control/drones/${droneId}/hardware-mission`, { method: 'POST', body: { mission_id: missionId, altitude_m: altitudeM, speed_mps: speedMps } })

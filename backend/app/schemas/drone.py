@@ -17,6 +17,8 @@ class DroneBase(BaseModel):
 
 class DroneCreate(DroneBase):
     status: str = "offline"
+    # A real aircraft (hardware bridge). Fixed at registration.
+    hardware: bool = False
     latitude: float | None = Field(None, ge=-90, le=90)
     longitude: float | None = Field(None, ge=-180, le=180)
     altitude: float = 0
@@ -71,6 +73,7 @@ class DroneOut(DroneBase):
     last_telemetry_at: datetime | None
     active: bool
     simulated: bool = False
+    hardware: bool = False
     max_speed: float = 15.0
     endurance_minutes: float = 30.0
     # Lightweight payload list so fleet/mission UIs can check sensor
@@ -112,6 +115,7 @@ class DroneOut(DroneBase):
             last_telemetry_at=drone.last_telemetry_at,
             active=drone.active,
             simulated=bool(drone.simulated),
+            hardware=bool(drone.hardware),
             max_speed=drone.max_speed,
             endurance_minutes=drone.endurance_minutes,
             payload_summary=[PayloadSummary(type=p.type, name=p.name, status=p.status) for p in drone.payloads],

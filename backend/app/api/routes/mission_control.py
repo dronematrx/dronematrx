@@ -27,10 +27,12 @@ from app.models.user import User
 from app.services.mission_control import detections as detsvc
 from app.services.mission_control import fc as fcsvc
 from app.services.mission_control import fleet as fleetsvc
+from app.services.mission_control import permissions as permsvc
 from app.services.mission_control import qr as qrsvc
 from app.services.mission_control import video as videosvc
-from app.services.mission_control.adapters import BenchSitlAdapter, KinematicDemoAdapter
+from app.services.mission_control.adapters import BenchSitlAdapter, HardwareMavlinkAdapter, KinematicDemoAdapter
 from app.services.mission_control.commands import FLEET_COMMANDS, SINGLE_COMMANDS
+from app.services.mission_control.hwbridge import HwBridgeError
 from app.services.simulation.simhost import SimhostError
 
 router = APIRouter(prefix="/mission-control", tags=["mission-control"])
@@ -38,7 +40,8 @@ video_router = APIRouter(prefix="/video", tags=["video"])
 detections_router = APIRouter(prefix="/detections", tags=["detections"])
 
 require_reviewer = RequireRole("ADMIN", "OPERATOR", "ANALYST")
-CAPS = {"sitl": sorted(BenchSitlAdapter.capabilities), "kinematic_demo": sorted(KinematicDemoAdapter.capabilities), "hardware": [], "none": []}
+CAPS = {"sitl": sorted(BenchSitlAdapter.capabilities), "kinematic_demo": sorted(KinematicDemoAdapter.capabilities),
+        "hardware": sorted(HardwareMavlinkAdapter.capabilities), "none": []}
 
 
 def _mc(request: Request):
@@ -226,6 +229,74 @@ async def drone_command(drone_id: uuid.UUID, payload: CommandIn, request: Reques
     t0 = time.perf_counter()
     return await asyncio.to_thread(_mc(request).commands.execute, user, drone_id, payload.command, payload.params, payload.confirm_mode,
                                    payload.idempotency_key, t0)
+
+
+# ------------------------------------------------ real aircraft (hardware)
+
+
+class FlightPermissionIn(BaseModel):
+    minutes: int = Field(10, ge=1, le=60)
+    acknowledgements: dict[str, bool]
+    mission_id: uuid.UUID | None = None
+    note: str | None = Field(None, max_length=500)
+
+
+class OverrideReleaseIn(BaseModel):
+    reason: str = Field(..., min_length=3, max_length=200)
+
+
+class HardwareMissionIn(BaseModel):
+    mission_id: uuid.UUID
+    altitude_m: float | None = Field(None, ge=5, le=120)  # per-drone altitude (vertical separation)
+    speed_mps: float | None = Field(None, ge=1, le=15)
+
+
+@router.get("/hardware/status")
+async def hardware_status(user: User = Depends(require_any_authenticated)) -> dict:
+    try:
+        return {"available": True, **await asyncio.to_thread(fcsvc.hw_client().health)}
+    except HwBridgeError as exc:
+        return {"available": False, "error": str(exc)}
+
+
+@router.get("/flight-permission/acknowledgements")
+def flight_permission_acks(user: User = Depends(require_any_authenticated)) -> dict:
+    return {"required": permsvc.REQUIRED_ACKS}
+
+
+@router.get("/drones/{drone_id}/flight-permission")
+def get_flight_permission(drone_id: uuid.UUID, db: Session = Depends(get_db), user: User = Depends(require_any_authenticated)) -> dict:
+    drone = _org_drone(db, user, drone_id)
+    return {"drone_id": str(drone.id), "permission": permsvc.permission_view(permsvc.active_permission(db, drone.id))}
+
+
+@router.post("/drones/{drone_id}/flight-permission", status_code=status.HTTP_201_CREATED)
+async def grant_flight_permission(drone_id: uuid.UUID, payload: FlightPermissionIn, request: Request, db: Session = Depends(get_db),
+                                  user: User = Depends(require_fleet_write)) -> dict:
+    drone = _org_drone(db, user, drone_id)
+    pre = await asyncio.to_thread(_mc(request).commands.prearm, db, drone, "hardware")
+    return await asyncio.to_thread(permsvc.grant, db, user, drone.id, payload.minutes, payload.acknowledgements, pre, payload.mission_id,
+                                   payload.note)
+
+
+@router.delete("/drones/{drone_id}/flight-permission")
+async def revoke_flight_permission(drone_id: uuid.UUID, reason: str | None = Query(None, max_length=200), db: Session = Depends(get_db),
+                                   user: User = Depends(require_fleet_write)) -> dict:
+    return await asyncio.to_thread(permsvc.revoke, db, user, drone_id, reason)
+
+
+@router.post("/drones/{drone_id}/override/release")
+async def release_override(drone_id: uuid.UUID, payload: OverrideReleaseIn, db: Session = Depends(get_db),
+                           user: User = Depends(require_fleet_write)) -> dict:
+    return await asyncio.to_thread(permsvc.release_override, db, user, drone_id, payload.reason)
+
+
+@router.post("/drones/{drone_id}/hardware-mission")
+async def upload_hardware_mission(drone_id: uuid.UUID, payload: HardwareMissionIn, request: Request, db: Session = Depends(get_db),
+                                  user: User = Depends(require_fleet_write)) -> dict:
+    drone = _org_drone(db, user, drone_id)
+    live = fleetsvc.latest_telemetry(_runtime(request)).get(str(drone.id))
+    return await asyncio.to_thread(permsvc.upload_mission, db, user, drone.id, payload.mission_id, live, payload.altitude_m, payload.speed_mps)
 
 
 @router.get("/commands")

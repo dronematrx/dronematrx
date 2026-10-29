@@ -41,13 +41,19 @@ from app.models.user import User
 from app.services.mission_control import fc as fcsvc
 from app.services.mission_control import fleet as fleetsvc
 from app.services.mission_control import prearm as prearmsvc
-from app.services.mission_control.adapters import (AdapterError, BenchSitlAdapter, CommandAdapter, KinematicDemoAdapter,
-                                                   LockedHardwareAdapter)
+from app.services.mission_control.adapters import (AdapterError, BenchSitlAdapter, CommandAdapter, HardwareMavlinkAdapter,
+                                                   KinematicDemoAdapter, LockedHardwareAdapter)
+from app.services.mission_control.hwbridge import HwBridgeError, parse_identity
 from app.services.simulation.simhost import SimhostClient, SimhostError
 
 logger = logging.getLogger("dronematrx.mission_control")
 
-SINGLE_COMMANDS = ("ARM", "DISARM", "TAKEOFF", "HOLD", "RTL", "LAND", "GOTO", "RESUME")
+SINGLE_COMMANDS = ("ARM", "DISARM", "TAKEOFF", "HOLD", "RTL", "LAND", "GOTO", "RESUME", "MISSION_START")
+# Real aircraft: these need an active human flight permission (permissions.py).
+FLIGHT_COMMANDS = ("ARM", "TAKEOFF", "GOTO", "MISSION_START")
+# ArduCopter mode names that satisfy each command (telemetry confirmation).
+HW_EXPECT = {"HOLD": {"flight_mode": ["LOITER", "BRAKE", "POSHOLD"]}, "RTL": {"flight_mode": ["RTL", "SMART_RTL", "AUTO_RTL", "LAND"]},
+             "LAND": {"flight_mode": ["LAND"], "or_disarmed": True}}
 FLEET_COMMANDS = {"HOLD_ALL": "HOLD", "RTL_ALL": "RTL", "LAND_ALL": "LAND"}
 IN_FLIGHT = ("requested", "dispatched", "accepted")
 
@@ -116,6 +122,9 @@ class CommandService:
         if source == "kinematic_demo":
             return KinematicDemoAdapter(runtime, self.loop, str(drone.id), user.email), source, binding
         if source == "hardware":
+            hw = parse_identity(binding.endpoint) if binding is not None and binding.state == "bound" else None
+            if hw is not None:
+                return HardwareMavlinkAdapter(fcsvc.hw_client(), hw["fc_id"]), source, binding
             return LockedHardwareAdapter(), source, binding
         return None, source, binding
 
@@ -127,6 +136,14 @@ class CommandService:
         return bool(live.armed) and (live.altitude or 0) > 0.5
 
     def fc_health(self, binding: FlightControllerBinding | None) -> tuple[dict | None, str | None]:
+        if binding is not None and binding.connection_type != "sitl" and binding.state == "bound":
+            hw = parse_identity(binding.endpoint)
+            if hw is None:
+                return None, "Hardware endpoint has no MAVLink system id"
+            try:
+                return fcsvc.hw_client().prearm(hw["fc_id"]), None
+            except HwBridgeError as exc:
+                return None, str(exc)
         if binding is None or binding.connection_type != "sitl" or binding.state != "bound":
             return None, None
         parsed = fcsvc.validate_endpoint("sitl", binding.endpoint)
@@ -136,9 +153,13 @@ class CommandService:
             return None, str(exc)
 
     def prearm(self, db: Session, drone: Drone, expected_mode: str | None) -> dict:
+        from app.services.mission_control.permissions import active_permission
+
         binding = fcsvc.active_binding(db, drone.id)
         fc, err = self.fc_health(binding)
-        return prearmsvc.checklist(db, drone, binding, self._live(str(drone.id)), fc, err, expected_mode, self._received(str(drone.id)))
+        permission = active_permission(db, drone.id) if drone.hardware else None
+        return prearmsvc.checklist(db, drone, binding, self._live(str(drone.id)), fc, err, expected_mode, self._received(str(drone.id)),
+                                   permission=permission)
 
     # --------------------------------------------------------- validation
 
@@ -158,6 +179,16 @@ class CommandService:
             raise CommandError("TELEMETRY_STALE", f"{drone.name} telemetry is {state}; commands need a live link", 409)
         flying = self._flying(source, live)
         p: dict = {}
+        if source == "hardware":
+            self._hardware_gates(db, drone, command)
+        if command == "MISSION_START":
+            if flying:
+                raise CommandError("INVALID_STATE", f"{drone.name} is already flying; MISSION_START starts from the ground")
+            if not live.armed:
+                pre = self.prearm(db, drone, confirm_mode)
+                if not pre["can_arm"]:
+                    raise CommandError("PREARM_FAILED", "Pre-arm checks block the mission start: " + ", ".join(pre["blocking"]), 409, {"prearm": pre})
+            return p, {"flight_mode": ["AUTO"]}
         if command == "ARM":
             pre = self.prearm(db, drone, confirm_mode)
             if not pre["can_arm"]:
@@ -180,6 +211,8 @@ class CommandService:
                 raise CommandError("INVALID_STATE", f"{drone.name} is not flying; {command} does not apply")
             expect = {"HOLD": {"flight_mode": ["HOLD"]}, "RTL": {"flight_mode": ["RTL", "LAND"]},
                       "LAND": {"flight_mode": ["LAND"], "or_disarmed": True}, "RESUME": {"flight_mode_not": ["HOLD"]}}[command]
+            if source == "hardware":
+                expect = HW_EXPECT[command]
             return p, expect
         if command == "GOTO":
             try:
@@ -202,6 +235,27 @@ class CommandService:
                 raise CommandError("ZONE_VIOLATION", f"GOTO rejected: destination {why}", 409, {"zones": z})
             return {"latitude": lat, "longitude": lon, "altitude_m": alt}, {"within_m": 6.0, "latitude": lat, "longitude": lon}
         raise CommandError("UNSUPPORTED", f"Unknown command {command}", 422)
+
+    def _hardware_gates(self, db: Session, drone: Drone, command: str) -> None:
+        """Real aircraft: never act during a pilot/autopilot override, and fly
+        only with an active human flight permission."""
+        from app.services.mission_control.permissions import active_permission
+
+        binding = fcsvc.active_binding(db, drone.id)
+        hw = parse_identity(binding.endpoint) if binding is not None else None
+        try:
+            info = next((c for c in fcsvc.hw_client().controllers() if hw and c["fc_id"] == hw["fc_id"]), None)
+        except HwBridgeError as exc:
+            raise CommandError("FC_UNREACHABLE", f"Hardware bridge unreachable: {exc}") from exc
+        if info is None:
+            raise CommandError("FC_UNREACHABLE", f"{drone.name}'s flight controller is not heard by the hardware bridge")
+        if info.get("override"):
+            raise CommandError("PILOT_OVERRIDE", f"Pilot/autopilot override on {drone.name}: {info['override'].get('reason')}. "
+                                                 "The RC pilot has control; release the override in Drone MatrX before automated commands", 409,
+                               {"override": info["override"]})
+        if command in FLIGHT_COMMANDS and active_permission(db, drone.id) is None:
+            raise CommandError("FLIGHT_NOT_AUTHORIZED", f"{command} on a real aircraft needs a flight permission: grant it for {drone.name} first",
+                               409)
 
     # ------------------------------------------------------------ execute
 

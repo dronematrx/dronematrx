@@ -47,6 +47,7 @@ export interface Drone {
   active: boolean
   /** Sprint 5: PX4 SITL drone; always shown with a SIMULATION badge. */
   simulated?: boolean
+  hardware?: boolean
   max_speed: number
   endurance_minutes: number
   payload_summary: { type: string; name: string; status: string }[]
@@ -95,6 +96,7 @@ export interface DroneCreateInput {
   latitude?: number | null
   longitude?: number | null
   altitude?: number
+  hardware?: boolean
 }
 
 export type DroneUpdateInput = Partial<DroneCreateInput> & { status?: DroneStatus }

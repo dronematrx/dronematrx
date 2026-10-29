@@ -6,6 +6,7 @@ import { ApiError } from '../../api/client'
 import { useDroneStore } from '../../store/useDroneStore'
 import { useMissionControlStore } from '../../store/useMissionControlStore'
 import { SOURCE_LABEL, type LiveDrone } from './liveFleet'
+import { HardwareSafety } from './HardwareSafety'
 
 const FINAL = ['confirmed', 'rejected', 'timed_out', 'failed', 'unsupported', 'cancelled']
 
@@ -37,19 +38,22 @@ export function DroneControl({ drone, canWrite, gotoTarget, gotoPicking, setGoto
   const [taskKey, setTaskKey] = useState('')
   const [assignNote, setAssignNote] = useState<string | null>(null)
   const sitl = drone.telemetry_source === 'sitl'
+  const hw = drone.telemetry_source === 'hardware'
+  const withFc = sitl || hw // a real flight controller (PX4 SITL or ArduPilot hardware)
+  const fcMode = sitl ? 'sitl' : hw ? 'hardware' : undefined
   const hasCap = (c: string) => drone.capabilities.includes(c)
-  const flying = sitl ? drone.armed && drone.altitude > 0.5 : drone.telemetry_source === 'kinematic_demo' && drone.flight_mode !== 'STANDBY'
+  const flying = withFc ? drone.armed && drone.altitude > 0.5 : drone.telemetry_source === 'kinematic_demo' && drone.flight_mode !== 'STANDBY'
 
   const mine = useMemo(() => Object.values(commands).filter((c) => c.drone_id === drone.id)
     .sort((a, b) => (b.requested_at ?? '').localeCompare(a.requested_at ?? '')).slice(0, 6), [commands, drone.id])
 
-  const fetchPrearm = () => mc.getPrearm(drone.id, sitl ? 'sitl' : undefined)
+  const fetchPrearm = () => mc.getPrearm(drone.id, fcMode)
     .then((p) => { setPrearm(p); setPrearmErr(null) })
     .catch((err) => setPrearmErr(err instanceof Error ? err.message : 'Pre-arm unavailable'))
   const loadPrearm = () => void fetchPrearm()
   // The page keys this component by drone id, so state starts fresh per drone.
   useEffect(() => {
-    if (sitl && drone.binding?.state === 'bound') void fetchPrearm()
+    if (withFc && drone.binding?.state === 'bound') void fetchPrearm()
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reload when the binding changes
   }, [drone.binding?.state])
 
@@ -81,14 +85,14 @@ export function DroneControl({ drone, canWrite, gotoTarget, gotoPicking, setGoto
     setBusy(command)
     setError(null)
     try {
-      const c = await mc.sendCommand(drone.id, command, params, sitl ? 'sitl' : drone.telemetry_source)
+      const c = await mc.sendCommand(drone.id, command, params, fcMode ?? drone.telemetry_source)
       trackCommand({ ...c, drone_name: drone.name })
       if (command === 'GOTO') clearGoto()
       // PX4 disarms on its own if no take-off follows within COM_DISARM_PRFLT: with
       // "take off once armed", TAKEOFF goes out as soon as telemetry confirms ARMED.
       if (command === 'ARM' && takeoffAfterArm && c.state === 'accepted') {
         if (await waitArmed(8000)) {
-          const t = await mc.sendCommand(drone.id, 'TAKEOFF', { altitude_m: gotoAlt }, 'sitl')
+          const t = await mc.sendCommand(drone.id, 'TAKEOFF', { altitude_m: gotoAlt }, fcMode ?? null)
           trackCommand({ ...t, drone_name: drone.name })
         } else setError('ARM accepted, but telemetry did not show ARMED within 8 s: take-off not sent')
       }
@@ -127,12 +131,12 @@ export function DroneControl({ drone, canWrite, gotoTarget, gotoPicking, setGoto
       {drone.telemetry_source === 'kinematic_demo' && (
         <div className="dm-banner dm-banner--amber" style={{ fontSize: '.66rem', textTransform: 'none', letterSpacing: 0 }}>Sprint 4 kinematic demo drone: no flight controller. HOLD / RTL / RESUME only, acknowledged by the command bus and confirmed from telemetry.</div>
       )}
-      {!drone.binding && drone.simulated && canWrite && (
+      {!drone.binding && (drone.simulated || drone.hardware) && canWrite && (
         <button type="button" className="dm-btn dm-btn--primary" onClick={onBind} data-testid="mc-bind-open"><Link2 size={13} /> Bind a flight controller</button>
       )}
       {error && <div className="dm-banner dm-banner--bad" role="alert" data-testid="mc-cmd-error" style={{ fontSize: '.68rem', textTransform: 'none', letterSpacing: 0 }}>{error}</div>}
 
-      {sitl && drone.binding?.state === 'bound' && (
+      {withFc && drone.binding?.state === 'bound' && (
         <div data-testid="mc-prearm">
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span className="dm-card-title" style={{ fontSize: '.7rem', margin: 0 }}><ShieldCheck size={12} /> Pre-arm checklist</span>
@@ -149,11 +153,16 @@ export function DroneControl({ drone, canWrite, gotoTarget, gotoPicking, setGoto
         </div>
       )}
 
+      {hw && drone.binding?.state === 'bound' && (
+        <HardwareSafety drone={drone} prearm={prearm} canWrite={canWrite} busy={!!busy} onChanged={loadPrearm}
+          onStartMission={() => ask('MISSION_START')} />
+      )}
+
       {canWrite && (drone.telemetry_source === 'sitl' || drone.telemetry_source === 'kinematic_demo' || drone.telemetry_source === 'hardware') && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }} data-testid="mc-quick-actions">
           {hasCap('ARM') && !drone.armed && (
             <button type="button" className="dm-btn dm-btn--armed" disabled={!!busy || !prearm?.can_arm} onClick={() => ask('ARM')} data-testid="mc-arm"
-              title={prearm?.can_arm ? 'Arm (SITL)' : `Blocked: ${prearm?.blocking.join(', ') ?? 'pre-arm not run'}`}><Power size={12} /> Arm</button>
+              title={prearm?.can_arm ? `Arm (${fcMode?.toUpperCase()})` : `Blocked: ${prearm?.blocking.join(', ') ?? 'pre-arm not run'}`}><Power size={12} /> Arm</button>
           )}
           {hasCap('DISARM') && drone.armed && <button type="button" className="dm-btn" disabled={!!busy || flying} onClick={() => ask('DISARM')} data-testid="mc-disarm" title={flying ? 'Only on the ground' : 'Disarm'}><Power size={12} /> Disarm</button>}
           {hasCap('TAKEOFF') && drone.armed && !flying && <button type="button" className="dm-btn" disabled={!!busy} onClick={() => void send('TAKEOFF', { altitude_m: gotoAlt })} data-testid="mc-takeoff"><PlaneTakeoff size={12} /> Take off {gotoAlt} m</button>}
@@ -221,10 +230,12 @@ export function DroneControl({ drone, canWrite, gotoTarget, gotoPicking, setGoto
               {confirm.command === 'GOTO' && <> · to {Number(confirm.params.latitude).toFixed(6)}, {Number(confirm.params.longitude).toFixed(6)} at {String(confirm.params.altitude_m)} m</>}
             </p>
             {confirm.command === 'ARM' && <p style={{ margin: 0, fontSize: '.8rem' }}>The backend re-runs the pre-arm checklist immediately before sending ARM. The drone is reported armed only when its telemetry says so.</p>}
+            {hw && <p style={{ margin: 0, fontSize: '.8rem', color: '#FF8A80' }} data-testid="mc-confirm-hw">REAL AIRCRAFT: propellers can spin. The RC safety pilot must be ready to take over; switching the transmitter's flight mode takes control from Drone MatrX immediately.</p>}
+            {confirm.command === 'MISSION_START' && <p style={{ margin: 0, fontSize: '.8rem' }}>Arms the aircraft and flies the uploaded CBBA mission from its take-off item (AUTO mode), then returns to launch.</p>}
             {confirm.command === 'ARM' && (
               <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: '.8rem' }}>
                 <input type="checkbox" checked={takeoffAfterArm} onChange={(e) => setTakeoffAfterArm(e.target.checked)} data-testid="mc-confirm-takeoff" />
-                Take off to {gotoAlt} m once telemetry shows ARMED (PX4 disarms again if no take-off follows)
+                Take off to {gotoAlt} m once telemetry shows ARMED (the autopilot disarms again if no take-off follows)
               </label>
             )}
             <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: '.8rem' }}>

@@ -108,7 +108,9 @@ function VideoTile({ feed, selected, canWrite, others, onAssign, onSelectDrone, 
   const video = useRef<HTMLVideoElement>(null)
   const player = useRef<WhepPlayer | null>(null)
   const [snap, setSnap] = useState<FeedSnapshot | null>(null)
-  const [mode, setMode] = useState<'auto' | Rendition>('auto')
+  // A feed with a single stream (real aircraft cameras) has no low rendition to fall back to.
+  const singleStream = !feed.low_path
+  const [mode, setMode] = useState<'auto' | Rendition>(singleStream ? 'hi' : 'auto')
   const pipSupported = typeof document !== 'undefined' && 'pictureInPictureEnabled' in document && document.pictureInPictureEnabled
 
   useEffect(() => {
@@ -118,12 +120,13 @@ function VideoTile({ feed, selected, canWrite, others, onAssign, onSelectDrone, 
       ;(window.__dmxVideoState ??= {})[feed.id] = s
     })
     player.current = p
+    if (singleStream) p.setMode('hi')
     p.start()
     return () => {
       p.stop() // closes the WHEP session on the relay
       player.current = null
     }
-  }, [feed.id])
+  }, [feed.id, singleStream])
 
   // Latency sampling on test patterns (barcode), ~2 per second.
   useEffect(() => {
@@ -201,7 +204,8 @@ function VideoTile({ feed, selected, canWrite, others, onAssign, onSelectDrone, 
           <option value="">Feed…</option>
           {others.map((f) => <option key={f.id} value={f.id}>{f.drone_name ?? f.label}</option>)}
         </select>
-        <button type="button" onClick={() => { const m = mode === 'auto' ? 'lo' : mode === 'lo' ? 'hi' : 'auto'; setMode(m); player.current?.setMode(m) }} title="Rendition: auto / low / high" data-testid="tile-rendition">{mode.toUpperCase()}</button>
+        <button type="button" disabled={singleStream} onClick={() => { const m = mode === 'auto' ? 'lo' : mode === 'lo' ? 'hi' : 'auto'; setMode(m); player.current?.setMode(m) }}
+          title={singleStream ? 'Single stream (camera has no low-quality rendition)' : 'Rendition: auto / low / high'} data-testid="tile-rendition">{mode.toUpperCase()}</button>
         <button type="button" onClick={onDvr} title="DVR / recordings" data-testid="tile-dvr"><Film size={11} /></button>
         <button type="button" onClick={() => void pip()} disabled={!pipSupported} title={pipSupported ? 'Picture-in-Picture' : 'Picture-in-Picture is not supported by this browser'} data-testid="tile-pip"><PictureInPicture2 size={11} /></button>
         <button type="button" onClick={fullscreen} title="Fullscreen" data-testid="tile-fullscreen"><Maximize2 size={11} /></button>

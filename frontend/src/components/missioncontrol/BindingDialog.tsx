@@ -77,7 +77,7 @@ export function BindingDialog({ drones, initialDroneId, benches, onClose, onBoun
         <label style={{ fontSize: '.8rem' }}>Drone record
           <select className="dm-input" value={droneId} onChange={(e) => setDroneId(e.target.value)} style={{ display: 'block', marginTop: 3 }} data-testid="mc-bind-drone">
             <option value="">Select a drone…</option>
-            {unbound.map((d) => <option key={d.id} value={d.id}>{d.name}{d.simulated ? ' (simulation record)' : ' (real aircraft record)'}</option>)}
+            {unbound.map((d) => <option key={d.id} value={d.id}>{d.name}{d.simulated ? ' (simulation record)' : d.hardware ? ' (REAL AIRCRAFT)' : ' (demo record: cannot bind)'}</option>)}
           </select>
         </label>
         <div className="dm-tabs" role="tablist" style={{ margin: 0 }}>
@@ -93,7 +93,7 @@ export function BindingDialog({ drones, initialDroneId, benches, onClose, onBoun
             <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', fontSize: '.75rem' }}>
               <button type="button" className="dm-btn dm-btn--primary" disabled={!!busy} onClick={() => void discover()} data-testid="mc-discover">{busy === 'discover' ? 'Discovering…' : 'Auto-discover'}</button>
               {discMs != null && <span className="dm-mono" data-testid="mc-discover-ms">{disc?.controllers.length ?? 0} found in {discMs} ms</span>}
-              <span style={{ marginLeft: 'auto', opacity: 0.8 }}>Scope: {disc?.scope.sitl ?? '—'}{disc?.scope.hardware_allow_list.length ? ` + ${disc.scope.hardware_allow_list.length} approved hardware endpoint(s)` : ' · no hardware endpoints approved'}</span>
+              <span style={{ marginLeft: 'auto', opacity: 0.8 }}>Scope: {disc?.scope.sitl ?? '—'} · hardware bridge {disc?.scope.hardware_bridge ?? '—'}</span>
             </div>
             <div style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: '.72rem' }}>
               {runningBench ? (
@@ -126,7 +126,7 @@ export function BindingDialog({ drones, initialDroneId, benches, onClose, onBoun
                   </td>
                 </tr>
               ))}
-              {disc && !disc.controllers.length && <tr><td colSpan={7}>No controllers in scope. Start a SITL bench, or approve hardware endpoints (FC_HARDWARE_ENDPOINTS) and enter them manually.</td></tr>}
+              {disc && !disc.controllers.length && <tr><td colSpan={7}>No controllers in scope. Start a SITL bench, or start the hardware bridge (python -m hwbridge.server) with the radios connected and the aircraft powered.</td></tr>}
             </tbody></table>
             {qrLabel && (
               <div style={{ display: 'flex', gap: 10, alignItems: 'center' }} data-testid="mc-qr-label">
@@ -239,15 +239,15 @@ function ManualTab({ droneId, onBound, setError }: { droneId: string; onBound: (
       <label>Connection type
         <select className="dm-input" value={conn} onChange={(e) => setConn(e.target.value as typeof conn)} style={{ display: 'block' }} data-testid="mc-manual-conn">
           <option value="sitl">SITL (session-managed bench controller)</option>
-          <option value="udp">UDP (approved hardware endpoint)</option>
-          <option value="serial">Serial (approved hardware device)</option>
+          <option value="udp">UDP / TCP (hardware bridge)</option>
+          <option value="serial">Serial radio (hardware bridge)</option>
         </select>
       </label>
       <label>Endpoint
         <input className="dm-input" value={endpoint} onChange={(e) => setEndpoint(e.target.value)} style={{ display: 'block', width: '100%' }} data-testid="mc-manual-endpoint"
-          placeholder={conn === 'sitl' ? 'sitl:bench-xxxxxx:FC-xxxxxx-01' : conn === 'udp' ? 'udp:192.168.1.10:14550' : 'serial:/dev/ttyACM0'} />
+          placeholder={conn === 'sitl' ? 'sitl:bench-xxxxxx:FC-xxxxxx-01' : conn === 'udp' ? 'udp:0.0.0.0:14550/1' : 'serial:COM5/1  (endpoint / MAVLink system id)'} />
       </label>
-      <p style={{ margin: 0, opacity: 0.75 }}>Validated by the server: fixed formats only, hardware endpoints must be on the approved list, nothing is executed.</p>
+      <p style={{ margin: 0, opacity: 0.75 }}>Validated by the server: fixed formats only; a hardware controller must be heard by the hardware bridge and binds only to a drone registered as a real aircraft.</p>
       <button type="button" className="dm-btn dm-btn--primary" disabled={!droneId || !endpoint} data-testid="mc-manual-bind" onClick={async () => {
         setError(null)
         try {

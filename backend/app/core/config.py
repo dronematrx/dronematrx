@@ -79,6 +79,11 @@ class Settings(BaseSettings):
     MEDIAMTX_PASS: str = "dmx-backend-dev"
     # Admin-only deterministic detection fixtures (labelled TEST FIXTURE). Off in production.
     DETECTION_TEST_FIXTURES: bool = True
+    # Real aircraft: the hardware bridge (hwbridge/, ArduPilot over MAVLink) on the ops laptop.
+    HWBRIDGE_URL: str = "http://127.0.0.1:8110"
+    HWBRIDGE_TOKEN: str = ""  # must match "token" in hwbridge/config.json
+    HW_PREARM_MIN_BATTERY_PCT: float = 50.0  # real batteries: stricter than the simulator
+    HW_FLIGHT_PERMISSION_MAX_MIN: int = 30  # a human flight permission lasts at most this long
 
 
 @lru_cache

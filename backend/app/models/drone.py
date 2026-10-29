@@ -54,6 +54,9 @@ class Drone(Base):
     # Sprint 5: a simulation-only drone (PX4 SITL in Gazebo). Its telemetry is
     # always shown with a SIMULATION badge and never mixed with real hardware.
     simulated: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    # Real aircraft flown through the hardware bridge (ArduPilot over MAVLink).
+    # Fixed at registration; the development simulator never drives it.
+    hardware: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
 
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now())

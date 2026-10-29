@@ -312,7 +312,12 @@ def test_bind_validation_and_mode_separation(client, db, organization, mc, op):
     assert r.status_code == 403 and r.json()["code"] == "ENDPOINT_NOT_APPROVED"
     r = client.post("/mission-control/fc/bind", headers=op, json={"drone_id": str(real.id), "connection_type": "udp", "endpoint": "udp:10.0.0.9;rm -rf:1"})
     assert r.status_code == 422
-    # Approved hardware endpoint: the binding is recorded but cannot connect (adapter locked).
+    # A hardware endpoint binds only to a drone registered as a real aircraft (DMX-9 is a demo record).
+    r = client.post("/mission-control/fc/bind", headers=op, json={"drone_id": str(real.id), "connection_type": "udp", "endpoint": "udp:192.168.1.50:14550", "via": "manual"})
+    assert r.status_code == 409 and r.json()["code"] == "NOT_HARDWARE_DRONE"
+    # Hardware record + allow-listed endpoint without a MAVLink system id: recorded, cannot connect.
+    real.hardware = True
+    db.commit()
     r = client.post("/mission-control/fc/bind", headers=op, json={"drone_id": str(real.id), "connection_type": "udp", "endpoint": "udp:192.168.1.50:14550", "via": "manual"})
     assert r.status_code == 201 and r.json()["state"] == "connection_failed" and "HARDWARE_UNAVAILABLE" in r.json()["error"]
 

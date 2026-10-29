@@ -6,10 +6,11 @@ Discovery scope (no network scanning, ever):
   (session ids `bench-*`). A bench is a set of PX4 SITL flight controllers
   in a flat Gazebo test field, started from mission control; it is not a
   mission simulation. Its controllers publish nothing until bound.
-* Hardware: only the endpoints in the explicit allow-list
-  FC_HARDWARE_ENDPOINTS. They are listed but not probed, and binding one
-  fails with HARDWARE_UNAVAILABLE: no hardware transport is configured, and
-  the hardware adapter stays locked.
+* Hardware: the ArduPilot aircraft the hardware bridge (hwbridge/, on the
+  ops laptop) hears on its configured radio links, identified as
+  `<endpoint>/<MAVLink system id>` (e.g. `serial:COM5/1`). They bind only to
+  drone records registered as hardware. Endpoints in the legacy allow-list
+  FC_HARDWARE_ENDPOINTS without a system id are listed but not bindable.
 
 Binding lifecycle (flight_controller_bindings.state):
 
@@ -38,12 +39,23 @@ from app.models.drone import Drone
 from app.models.mission_control import FlightControllerBinding
 from app.models.user import User
 from app.services.mission_control.fleet import ACTIVE_BINDING, binding_view, now_utc
+from app.services.mission_control.hwbridge import HwBridgeClient, HwBridgeError, parse_identity
 from app.services.simulation.simhost import SimhostClient, SimhostError
 
 BENCH_PREFIX = "bench-"
 UDP_RE = re.compile(r"^udp:(?P<host>[A-Za-z0-9.\-]{1,63}):(?P<port>\d{2,5})$")
 SERIAL_RE = re.compile(r"^serial:(?P<dev>/dev/tty[A-Za-z0-9]{1,20}|COM\d{1,3})$")
 SITL_RE = re.compile(r"^sitl:(?P<session>bench-[a-f0-9]{6}):(?P<fc>FC-[a-f0-9]{6}-\d{2})$")
+
+
+_hw: HwBridgeClient | None = None
+
+
+def hw_client() -> HwBridgeClient:
+    global _hw
+    if _hw is None:
+        _hw = HwBridgeClient()
+    return _hw
 
 
 class FcError(Exception):
@@ -83,6 +95,11 @@ def validate_endpoint(conn: str, endpoint: str) -> dict:
         if not m:
             raise FcError("INVALID_ENDPOINT", "SITL endpoint must be 'sitl:bench-xxxxxx:FC-xxxxxx-NN' (a session-managed bench controller)")
         return {"session": m.group("session"), "fc": m.group("fc")}
+    hw = parse_identity(endpoint)
+    if hw is not None:  # a hardware-bridge controller: endpoint/sysid
+        if hw["conn"] != conn:
+            raise FcError("INVALID_ENDPOINT", f"{endpoint} is a {hw['conn']} controller, not {conn}")
+        return hw
     if conn == "udp":
         m = UDP_RE.match(endpoint)
         if not m or not 1024 <= int(m.group("port")) <= 65535:
@@ -189,10 +206,23 @@ def discover(db: Session, org_id: uuid.UUID, client: SimhostClient) -> dict:
                     note=f"PX4 SITL (simhost, MAVLink {fc.get('endpoint')})"))
     except SimhostError as exc:
         errors.append(f"SITL discovery unavailable: {exc}")
+    try:
+        for c in hw_client().controllers():
+            age = c.get("heartbeat_age_s")
+            hw = parse_identity(c["identity"]) or {}
+            notes = [f"ArduPilot via hardware bridge ({c['endpoint']}, sysid {c['system_id']})"]
+            if c.get("override"):
+                notes.append(f"PILOT OVERRIDE: {c['override'].get('reason')}")
+            found.append(Discovered(
+                fc_identity=c["identity"], connection_type=hw.get("conn", "serial"), endpoint=c["identity"], system_id=c.get("system_id"),
+                firmware=c.get("firmware"), status="connected" if age is not None and age < get_settings().MC_TELEMETRY_STALE_S else "stale",
+                fc_id=c["fc_id"], heartbeat_age_s=age, mode=c.get("mode"), armed=c.get("armed"), simulation=False, note="; ".join(notes)))
+    except HwBridgeError as exc:
+        errors.append(f"Hardware bridge: {exc}")
     for ep in hardware_allow_list():
         conn = ep.split(":", 1)[0]
         found.append(Discovered(fc_identity=ep, connection_type=conn, endpoint=ep, system_id=None, firmware=None, status="not_probed",
-                                simulation=False, note="Approved hardware endpoint. Not probed: no hardware transport configured (adapter locked)"))
+                                simulation=False, note="Allow-listed endpoint without a system id: connect it through the hardware bridge to bind"))
     bound = {b.fc_identity: b for b in db.execute(select(FlightControllerBinding).where(
         FlightControllerBinding.organization_id == org_id, FlightControllerBinding.state.in_(ACTIVE_BINDING))).scalars()}
     names = {str(d.id): d.name for d in db.execute(select(Drone).where(Drone.organization_id == org_id)).scalars()}
@@ -202,7 +232,8 @@ def discover(db: Session, org_id: uuid.UUID, client: SimhostClient) -> dict:
         items.append({**d.__dict__, "bound": b is not None, "bound_drone_id": str(b.drone_id) if b else None,
                       "bound_drone_name": names.get(str(b.drone_id)) if b else None})
     return {"controllers": items, "errors": errors, "discovery_ms": round((time.perf_counter() - t0) * 1000, 1),
-            "scope": {"sitl": f"bench sessions on {get_settings().SIMHOST_URL}", "hardware_allow_list": hardware_allow_list()}}
+            "scope": {"sitl": f"bench sessions on {get_settings().SIMHOST_URL}", "hardware_bridge": get_settings().HWBRIDGE_URL,
+                      "hardware_allow_list": hardware_allow_list()}}
 
 
 # --------------------------------------------------------------- binding
@@ -221,8 +252,9 @@ def bind(db: Session, user: User, drone_id: uuid.UUID, conn: str, endpoint: str,
     parsed = validate_endpoint(conn, endpoint)
     if conn == "sitl" and not drone.simulated:
         raise FcError("REAL_DRONE_SITL", f"{drone.name} is a real-aircraft record; a SITL controller can only bind to a simulation drone", 409)
-    if conn != "sitl" and drone.simulated:
-        raise FcError("SIM_DRONE_HARDWARE", f"{drone.name} is a simulation drone; hardware controllers bind only to real-aircraft records", 409)
+    if conn != "sitl" and not drone.hardware:
+        raise FcError("NOT_HARDWARE_DRONE", f"{drone.name} is not registered as a real aircraft (hardware); register the aircraft "
+                                            "as hardware to bind a real flight controller", 409)
     active = select(FlightControllerBinding).where(FlightControllerBinding.state.in_(ACTIVE_BINDING))
     if db.execute(active.where(FlightControllerBinding.fc_identity == endpoint)).scalars().first():
         raise FcError("FC_ALREADY_BOUND", f"{endpoint} is already bound to a drone", 409)
@@ -254,7 +286,16 @@ def bind(db: Session, user: User, drone_id: uuid.UUID, conn: str, endpoint: str,
 def _connect(b: FlightControllerBinding, drone: Drone, client: SimhostClient, parsed: dict | None = None) -> None:
     parsed = parsed or validate_endpoint(b.connection_type, b.endpoint)
     if b.connection_type != "sitl":
-        b.state, b.error = "connection_failed", "HARDWARE_UNAVAILABLE: no hardware flight-controller transport is configured"
+        if "fc_id" not in parsed:
+            b.state, b.error = "connection_failed", "HARDWARE_UNAVAILABLE: endpoint has no MAVLink system id; bind through the hardware bridge"
+            return
+        try:
+            info = hw_client().bind(parsed["fc_id"], str(drone.id), drone.uin or str(drone.id), drone.name)
+        except HwBridgeError as exc:
+            b.state, b.error = "connection_failed", f"Hardware controller unreachable: {exc}"
+            return
+        b.state, b.error, b.bound_at = "bound", None, now_utc()
+        b.system_id, b.firmware = info.get("system_id"), info.get("firmware")
         return
     try:
         info = client.bind_fc(parsed["session"], parsed["fc"], str(drone.id), drone.uin or str(drone.id), drone.name)
@@ -272,8 +313,14 @@ def unbind(db: Session, user: User, binding_id: uuid.UUID, client: SimhostClient
     if b.state == "unbound":
         return binding_view(b)
     drone = db.get(Drone, b.drone_id)
-    if b.connection_type == "sitl" and drone is not None and drone.armed:
+    if drone is not None and drone.armed:
         raise FcError("ARMED", f"{drone.name} is armed; disarm before unbinding its flight controller", 409)
+    hw = parse_identity(b.endpoint) if b.connection_type != "sitl" else None
+    if hw is not None:
+        try:
+            hw_client().unbind(hw["fc_id"])
+        except HwBridgeError:
+            pass  # bridge down: a restarted bridge publishes nothing until bound again
     if b.connection_type == "sitl":
         parsed = validate_endpoint("sitl", b.endpoint)
         try:
@@ -304,6 +351,7 @@ def reconcile(db: Session, client: SimhostClient) -> dict:
     or simhost restart): a vanished bench controller marks the binding
     connection_failed; a controller that lost its routing is re-bound."""
     changed = {"failed": 0, "rebound": 0, "recovered": 0}
+    _reconcile_hardware(db, changed)
     rows = db.execute(select(FlightControllerBinding).where(FlightControllerBinding.connection_type == "sitl",
                                                             FlightControllerBinding.state.in_(("bound", "connection_failed")))).scalars().all()
     if not rows:
@@ -335,6 +383,29 @@ def reconcile(db: Session, client: SimhostClient) -> dict:
             changed["rebound"] += 1
     db.commit()
     return changed
+
+
+def _reconcile_hardware(db: Session, changed: dict) -> None:
+    """Hardware bindings vs the bridge: a controller no longer heard marks the
+    binding connection_failed; after a bridge restart a bound controller is
+    re-bound so its telemetry keeps flowing under the same drone."""
+    rows = db.execute(select(FlightControllerBinding).where(FlightControllerBinding.connection_type != "sitl",
+                                                            FlightControllerBinding.state == "bound")).scalars().all()
+    if not rows:
+        return
+    try:
+        live = {c["identity"]: c for c in hw_client().controllers()}
+    except HwBridgeError:
+        return
+    for b in rows:
+        c = live.get(b.endpoint)
+        if c is None:
+            b.state, b.error = "connection_failed", "controller not heard on any hardware-bridge link"
+            changed["failed"] += 1
+        elif c.get("drone_id") != str(b.drone_id):
+            _connect(b, db.get(Drone, b.drone_id), None)
+            changed["rebound"] += 1
+    db.commit()
 
 
 def bindings(db: Session, org_id: uuid.UUID, include_history: bool = False) -> list[dict]:

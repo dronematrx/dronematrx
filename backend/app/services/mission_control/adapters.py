@@ -7,7 +7,9 @@ acknowledged, so the UI never claims more than the transport delivers.
                           command topic. No flight controller: ack = JetStream
                           publish ack only; the state change is confirmed from
                           telemetry.
-    LockedHardwareAdapter Real hardware: no transport configured, refuses all.
+    HardwareMavlinkAdapter Real ArduPilot aircraft via the hardware bridge
+                          (telemetry radio). Ack = ArduPilot COMMAND_ACK.
+    LockedHardwareAdapter Hardware drone whose controller is not bound: refuses all.
 """
 from __future__ import annotations
 
@@ -102,6 +104,42 @@ class KinematicDemoAdapter(CommandAdapter):
         ms = (time.perf_counter() - t0) * 1000
         return DispatchResult(True, "nats_publish_ack", None, "Published on the NATS command topic (JetStream ack); no flight controller",
                               {"nats_publish_ack_ms": round(ms, 3)})
+
+
+class HardwareMavlinkAdapter(CommandAdapter):
+    """A real ArduPilot aircraft through the hardware bridge (MAVLink over the
+    telemetry radio). Ack = ArduPilot COMMAND_ACK. The bridge refuses flight
+    commands without an operator flight permission and every automated
+    command while a pilot/autopilot override is active."""
+
+    name = "hardware_mavlink"
+    mode = "hardware"
+    capabilities = frozenset({"ARM", "DISARM", "TAKEOFF", "HOLD", "RTL", "LAND", "GOTO", "MISSION_START"})
+    BRIDGE_COMMAND = {"ARM": "arm", "DISARM": "disarm", "TAKEOFF": "takeoff", "HOLD": "hold", "RTL": "rtl", "LAND": "land",
+                      "GOTO": "goto", "MISSION_START": "mission_start"}
+
+    def __init__(self, client: Any, fc_id: str):
+        self.client, self.fc_id = client, fc_id
+
+    def dispatch(self, command: str, params: dict) -> DispatchResult:
+        from app.services.mission_control.hwbridge import HwBridgeError
+
+        t0 = time.perf_counter()
+        try:
+            out = self.client.command(self.fc_id, self.BRIDGE_COMMAND[command], params)
+        except HwBridgeError as exc:
+            raise AdapterError(exc.code or ("FC_UNREACHABLE" if exc.status is None else "FC_ERROR"), str(exc)) from exc
+        rtt_ms = (time.perf_counter() - t0) * 1000
+        br = out.get("timing") or {}
+        handler = br.get("handler_ms", 0.0)
+        timings = {"http_rtt_ms": round(rtt_ms, 3), "bridge_handler_ms": handler, "http_one_way_est_ms": round(max(0.0, (rtt_ms - handler) / 2), 3)}
+        if "recv_to_send_ms" in br:
+            timings["simhost_recv_to_mavlink_send_ms"] = br["recv_to_send_ms"]
+        if "send_to_ack_ms" in br:
+            timings["fc_ack_ms"] = br["send_to_ack_ms"]  # radio round trip + ArduPilot processing
+        result = out.get("result")
+        return DispatchResult(result in (0, 5), "mavlink_command_ack", result if isinstance(result, int) else None,
+                              f"ArduPilot COMMAND_ACK {MAV_RESULT.get(result, result)}", timings)
 
 
 class LockedHardwareAdapter(CommandAdapter):

@@ -174,6 +174,8 @@ class SimulationTelemetryProvider(TelemetryProvider):
                     Drone.status.notin_(("offline", "maintenance")),
                     # Sprint 5: SITL drones move only from Gazebo/PX4 telemetry.
                     Drone.simulated.is_(False),
+                    # Real aircraft report only through the hardware bridge.
+                    Drone.hardware.is_(False),
                 )
             ).scalars().all()
             for drone in drones:
@@ -186,7 +188,7 @@ class SimulationTelemetryProvider(TelemetryProvider):
         """Build (but do not attach) states for drones -- safe from any thread."""
         db = self._session_factory()
         try:
-            return [self._state_from_drone(d) for d in db.execute(select(Drone).where(Drone.id.in_(list(drone_ids)), Drone.simulated.is_(False))).scalars()]
+            return [self._state_from_drone(d) for d in db.execute(select(Drone).where(Drone.id.in_(list(drone_ids)), Drone.simulated.is_(False), Drone.hardware.is_(False))).scalars()]
         finally:
             db.close()
 
@@ -201,7 +203,7 @@ class SimulationTelemetryProvider(TelemetryProvider):
         if missing:
             db = self._session_factory()
             try:
-                for drone in db.execute(select(Drone).where(Drone.id.in_(missing), Drone.simulated.is_(False))).scalars():
+                for drone in db.execute(select(Drone).where(Drone.id.in_(missing), Drone.simulated.is_(False), Drone.hardware.is_(False))).scalars():
                     state = self._state_from_drone(drone)
                     self._states[state.drone_id] = state
             finally:

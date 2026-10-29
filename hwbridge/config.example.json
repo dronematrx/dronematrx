@@ -1,0 +1,17 @@
+{
+  "nats_url": "nats://127.0.0.1:4222",
+  "http_port": 8110,
+  "token": "change-me-local-bridge-token",
+  "links": [
+    {"endpoint": "serial:COM5", "baud": 57600},
+    {"endpoint": "serial:COM6", "baud": 57600}
+  ],
+  "cameras": {
+    "1": "rtsp://192.168.1.101:8554/live",
+    "2": "rtsp://192.168.1.102:8554/live"
+  },
+  "limits": {
+    "max_alt_m": 30,
+    "max_distance_m": 150
+  }
+}

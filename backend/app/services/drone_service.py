@@ -58,6 +58,7 @@ class DroneService:
             location=location,
             altitude=payload.altitude,
             heading=payload.heading,
+            hardware=payload.hardware,
         )
         return self.repo.create(drone)
 
