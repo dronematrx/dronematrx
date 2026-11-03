@@ -11,7 +11,7 @@ const python = process.platform === 'win32' ? String.raw`venv\Scripts\python` : 
 export default defineConfig({
   testDir: './e2e',
   // Sprint 6 needs the SITL bench + fake camera set up by playwright.sprint6.config.ts.
-  testIgnore: /(sprint6\.|hardware-walkthrough|drone-setup-walkthrough)/,
+  testIgnore: /(sprint6\.|hardware-walkthrough|drone-setup-walkthrough|auto-mission-walkthrough)/,
   timeout: 120_000,
   expect: { timeout: 15_000 },
   fullyParallel: false,

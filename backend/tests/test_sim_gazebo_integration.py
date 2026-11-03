@@ -202,11 +202,12 @@ def test_airborne_crash_falls_and_world_survives(sid):
 
     assert wait(lambda: truth()["z"] < ground_z + 1.0, 30), f"drone did not fall: {truth()}"
     t0 = CLIENT.status(sid)["stats"]["sim_time_s"]
-    time.sleep(10)
+    # Wait for SIMULATED time, not wall time: under load (full suite) Gazebo runs
+    # slower than real time, and a fixed sleep then looked like "stopped stepping".
+    assert wait(lambda: CLIENT.status(sid)["stats"]["sim_time_s"] > t0 + 5, 60), "Gazebo stopped stepping"
     st = CLIENT.status(sid)
     t = st["drones"][uin]["truth"]
     assert st["state"] != "failed", st.get("error")
-    assert st["stats"]["sim_time_s"] > t0 + 5, "Gazebo stopped stepping"
     assert t["z"] < ground_z + 1.0 and math.hypot(t["x"], t["y"]) < 60, f"drone left the crash site: {t}"
     record("airborne_crash", {"ground_z": round(ground_z, 2), "rest": {k: t[k] for k in ("x", "y", "z")},
                               "sim_time_advanced_s": round(st["stats"]["sim_time_s"] - t0, 1)})

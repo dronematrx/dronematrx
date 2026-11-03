@@ -83,9 +83,20 @@ export function safetyValues(v: SetupView, cells: number | null): Record<string,
   return out
 }
 
+/**
+ * ArduPilot has no "RC calibrated" flag, so this checks that each stick's stored
+ * range is a plausible calibration: not the factory 1100/1900, min < trim <= max,
+ * at least 600 us of travel inside 800-2200, and no RC complaint from ArduPilot.
+ */
 export function rcCalibrated(v: SetupView): boolean {
-  // A new flight controller has every RCn_MIN/MAX at the defaults 1100 / 1900.
-  return [1, 2, 3, 4].every((ch) => isSet(p(v, `RC${ch}_MIN`), 1100) || isSet(p(v, `RC${ch}_MAX`), 1900))
+  // "PreArm: RC3_MIN is greater than RC3_TRIM", "PreArm: RC not calibrated", "Throttle below failsafe" ...
+  if (v.prearm_messages.some((m) => /(^|[^A-Z])RC\d*|radio|throttle/i.test(m.replace(/^PreArm:\s*/i, ' ')))) return false
+  return [1, 2, 3, 4].every((ch) => {
+    const min = p(v, `RC${ch}_MIN`), max = p(v, `RC${ch}_MAX`), trim = p(v, `RC${ch}_TRIM`)
+    if (min === null || max === null || trim === null) return false
+    const factory = !isSet(min, 1100) && !isSet(max, 1900)
+    return !factory && min >= 800 && max <= 2200 && max - min >= 600 && min <= trim && trim <= max
+  })
 }
 
 export function stepStatus(id: StepId, v: SetupView, bound: boolean): StepStatus {

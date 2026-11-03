@@ -23,3 +23,9 @@ export function polygonBounds(coords: number[][] | undefined | null): LatLngBoun
     [Math.max(...lats), Math.max(...lngs)],
   ]
 }
+
+/** Close a drawn ring of [lat, lng] points into a GeoJSON polygon ([lng, lat], first point repeated). */
+export function latLngRingToPolygon(points: [number, number][]): { type: 'Polygon'; coordinates: number[][][] } {
+  const ring = points.map(([lat, lng]) => [lng, lat])
+  return { type: 'Polygon', coordinates: [[...ring, ring[0]]] }
+}

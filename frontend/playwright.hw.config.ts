@@ -4,7 +4,7 @@ import { defineConfig, devices } from '@playwright/test'
 // Expects backend, vite (5173), the hardware bridge and practice vehicles to be running already.
 export default defineConfig({
   testDir: './e2e',
-  testMatch: /(hardware-walkthrough|drone-setup-walkthrough)\.spec\.ts/,
+  testMatch: /(hardware-walkthrough|drone-setup-walkthrough|auto-mission-walkthrough)\.spec\.ts/,
   timeout: 15 * 60_000,
   fullyParallel: false,
   workers: 1,

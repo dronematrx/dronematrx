@@ -20,6 +20,7 @@ from app.services.mission_control import MissionControl
 from app.services.mission_control.commands import CommandError
 from app.services.mission_control.detections import DetectionError
 from app.services.mission_control.fc import FcError
+from app.services.auto_mission import AutoMissionError
 from app.services.mission_control.hw_setup import SetupError
 from app.services.mission_control.permissions import FlightPermissionError
 from app.services.mission_control.video import VideoError
@@ -139,6 +140,7 @@ async def simulation_error_handler(request: Request, exc: SimulationError) -> JS
 @app.exception_handler(DetectionError)
 @app.exception_handler(FlightPermissionError)
 @app.exception_handler(SetupError)
+@app.exception_handler(AutoMissionError)
 async def mission_control_error_handler(request: Request, exc: Exception) -> JSONResponse:
     content = {"detail": exc.message, "code": exc.code}
     content.update(jsonable_encoder(getattr(exc, "extra", {}) or {}))

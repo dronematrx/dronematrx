@@ -151,7 +151,7 @@ def release_override(db: Session, user: User, drone_id: uuid.UUID, reason: str) 
 
 
 def upload_mission(db: Session, user: User, drone_id: uuid.UUID, mission_id: uuid.UUID, live, altitude_m: float | None = None,
-                   speed_mps: float | None = None) -> dict:
+                   speed_mps: float | None = None, task_keys: list[str] | None = None) -> dict:
     """Fly this drone's CBBA bundle: build the waypoint mission from the latest
     plan of `mission_id` and upload it to the aircraft. Starting it is a
     separate MISSION_START command that needs the flight permission.
@@ -170,8 +170,16 @@ def upload_mission(db: Session, user: User, drone_id: uuid.UUID, mission_id: uui
     plan = db.execute(select(MissionPlan).where(MissionPlan.mission_id == mission.id).order_by(MissionPlan.created_at.desc())).scalars().first()
     if plan is None:
         raise FlightPermissionError("NO_PLAN", "Run CBBA planning for this mission first")
-    entry = ((plan.diagnostics or {}).get("agent_state") or {}).get(str(drone.id))
-    path = [(k, int(o)) for k, o, _bid in (entry or {}).get("path", [])]
+    agents = (plan.diagnostics or {}).get("agent_state") or {}
+    if task_keys is None:
+        path = [(k, int(o)) for k, o, _bid in (agents.get(str(drone.id)) or {}).get("path", [])]
+    else:
+        # Explicit tasks (Auto Mission replacement drone): keep each lane's planned direction.
+        orientation = {k: int(o) for a in agents.values() for k, o, _bid in (a or {}).get("path", [])}
+        unknown = [k for k in task_keys if k not in orientation]
+        if unknown:
+            raise FlightPermissionError("UNKNOWN_TASKS", f"Tasks not in this mission's plan: {', '.join(unknown)}", 422)
+        path = [(k, orientation[k]) for k in task_keys]
     if not path:
         raise FlightPermissionError("NO_TASKS", f"The CBBA plan assigns no tasks to {drone.name}; include it in the plan")
     if live is None or live.latitude is None:
@@ -190,4 +198,5 @@ def upload_mission(db: Session, user: User, drone_id: uuid.UUID, mission_id: uui
                                     "tasks": built.task_keys, "altitude_m": alt, "speed_mps": speed}))
     db.commit()
     return {"drone_id": str(drone.id), "mission_id": str(mission.id), "plan_id": str(plan.id), "uploaded": out.get("uploaded"),
-            "tasks": built.task_keys, "planned_route": built.planned_route, "altitude_m": alt, "speed_mps": speed}
+            "tasks": built.task_keys, "planned_route": built.planned_route, "altitude_m": alt, "speed_mps": speed,
+            "seq_map": {str(k): v for k, v in built.seq_map.items()}}

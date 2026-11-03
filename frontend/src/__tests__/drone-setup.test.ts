@@ -7,7 +7,8 @@ import {
 const FACTORY: Record<string, number> = {
   SYSID_THISMAV: 1, FRAME_CLASS: 0, FRAME_TYPE: 1, FS_GCS_ENABLE: 0, FS_THR_ENABLE: 1, BATT_MONITOR: 4, BATT_FS_LOW_ACT: 0, FENCE_ENABLE: 0,
   FLTMODE_CH: 5, FLTMODE1: 0, FLTMODE2: 0, FLTMODE3: 0, FLTMODE4: 0, FLTMODE5: 0, FLTMODE6: 0,
-  RC1_MIN: 1100, RC1_MAX: 1900, RC2_MIN: 1100, RC2_MAX: 1900, RC3_MIN: 1100, RC3_MAX: 1900, RC4_MIN: 1100, RC4_MAX: 1900,
+  RC1_MIN: 1100, RC1_MAX: 1900, RC1_TRIM: 1500, RC2_MIN: 1100, RC2_MAX: 1900, RC2_TRIM: 1500,
+  RC3_MIN: 1100, RC3_MAX: 1900, RC3_TRIM: 1500, RC4_MIN: 1100, RC4_MAX: 1900, RC4_TRIM: 1500,
   INS_ACCOFFS_X: 0, INS_ACCOFFS_Y: 0, INS_ACCOFFS_Z: 0, INS_ACCSCAL_X: 1, INS_ACCSCAL_Y: 1, INS_ACCSCAL_Z: 1,
   COMPASS_USE: 1, COMPASS_OFS_X: 0, COMPASS_OFS_Y: 0, COMPASS_OFS_Z: 0,
 }
@@ -37,7 +38,8 @@ describe('drone setup steps', () => {
   it('a fully configured drone is done', () => {
     const v = view({ system_id: 2, other_system_ids: [1], radio_netid: 26, camera_url: 'rtsp://x/live', prearm_messages: [] }, {
       SYSID_THISMAV: 2, FRAME_CLASS: 1, FS_GCS_ENABLE: 1, BATT_FS_LOW_ACT: 2, FENCE_ENABLE: 1, ...RECOMMENDED_MODES,
-      RC1_MIN: 1012, RC2_MIN: 1010, RC3_MIN: 1005, RC4_MIN: 1011, INS_ACCOFFS_X: 0.03, COMPASS_OFS_X: 40,
+      RC1_MIN: 1012, RC1_MAX: 1988, RC2_MIN: 1010, RC2_MAX: 1990, RC3_MIN: 1005, RC3_MAX: 1995, RC3_TRIM: 1005,
+      RC4_MIN: 1011, RC4_MAX: 1989, INS_ACCOFFS_X: 0.03, COMPASS_OFS_X: 40,
     })
     expect(STEPS.map((s) => stepStatus(s.id, v, true)).filter((s) => s === 'todo')).toEqual([])
     expect(progress(v, true)).toEqual({ done: 10, required: 10 })
@@ -59,6 +61,17 @@ describe('drone setup steps', () => {
     expect(stepStatus('accel', v, false)).toBe('todo')
     expect(stepStatus('accel', { ...v, prearm_messages: [] }, false)).toBe('done')
     expect(stepStatus('compass', view({}, { COMPASS_USE: 0 }), false)).toBe('skip')
+  })
+
+  it('RC counts as calibrated only with a plausible stored range', () => {
+    const cal = { RC1_MIN: 1012, RC1_MAX: 1988, RC1_TRIM: 1500, RC2_MIN: 1010, RC2_MAX: 1990, RC2_TRIM: 1500,
+      RC3_MIN: 1005, RC3_MAX: 1995, RC3_TRIM: 1005, RC4_MIN: 1011, RC4_MAX: 1989, RC4_TRIM: 1500 }
+    const ok = view({ prearm_messages: [] }, cal)
+    expect(stepStatus('rc', ok, false)).toBe('done')
+    expect(stepStatus('rc', view({ prearm_messages: [] }), false)).toBe('todo') // factory 1100/1900
+    expect(stepStatus('rc', view({ prearm_messages: [] }, { ...cal, RC2_MAX: 1300 }), false)).toBe('todo') // range too small
+    expect(stepStatus('rc', view({ prearm_messages: [] }, { ...cal, RC4_TRIM: 2100 }), false)).toBe('todo') // trim outside range
+    expect(stepStatus('rc', { ...ok, prearm_messages: ['PreArm: RC3_MIN is greater than RC3_TRIM'] }, false)).toBe('todo')
   })
 
   it('flight modes need a recovery mode and RTL', () => {

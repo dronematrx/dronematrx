@@ -281,6 +281,15 @@ class MissionPlanningService:
         missing = [str(d) for d in step.drone_ids if d not in drones or not drones[d].active]
         if missing:
             raise PlanningError("DRONE_NOT_FOUND", f"Unknown or inactive drone(s): {', '.join(missing)}")
+        # Never mix real aircraft with simulated / demo drones in one plan: tasks
+        # given to a drone that doesn't physically exist would simply never be flown.
+        real = [d.name for d in drones.values() if getattr(d, "hardware", False)]
+        if real and len(real) != len(drones):
+            other = [d.name for d in drones.values() if not getattr(d, "hardware", False)]
+            raise PlanningError("MIXED_FLEET", f"Real aircraft ({', '.join(real)}) cannot share a plan with simulated or demo drones "
+                                f"({', '.join(other)}); choose one kind")
+        if mission.execution_mode == "simulation" and real:
+            raise PlanningError("MIXED_FLEET", f"Simulation missions cannot use real aircraft ({', '.join(real)})")
         payloads = self._functional_payloads(step.drone_ids)
         for drone_key, payload_type in step.payload_assignments.items():
             try:

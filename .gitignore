@@ -46,3 +46,4 @@ hwbridge/config.json
 hwbridge/config.json.tmp
 hwbridge/.bridge_token
 hwbridge/bridge.log
+.dmx-last-ip

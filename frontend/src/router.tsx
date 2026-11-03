@@ -11,6 +11,7 @@ import { MissionWizardPage } from './pages/MissionWizardPage'
 import { SimulationPage } from './pages/SimulationPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { HardwareSetupPage } from './pages/HardwareSetupPage'
+import { AutoMissionPage } from './pages/AutoMissionPage'
 import { StubPage } from './pages/StubPage'
 
 export function AppRouter() {
@@ -40,6 +41,14 @@ export function AppRouter() {
           element={
             <RequireAuth>
               <MissionControlPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/auto-mission"
+          element={
+            <RequireAuth>
+              <AutoMissionPage />
             </RequireAuth>
           }
         />

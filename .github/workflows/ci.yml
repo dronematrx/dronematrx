@@ -1,0 +1,71 @@
+name: CI
+
+# Every push and pull request: backend API tests (real PostGIS + TimescaleDB and
+# NATS JetStream), hardware-bridge tests (practice vehicles, simulated SiK radio),
+# frontend lint, typecheck and unit tests. Gazebo / PX4 and ArduPilot SITL tests
+# skip themselves here (no simulator on the runner); run them locally.
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: "Database (project image with PostGIS + TimescaleDB) and NATS"
+        run: |
+          docker build -t dronematrx/postgres-postgis-timescale:16 ./db
+          docker run -d --name db -p 5433:5432 -e POSTGRES_USER=dronematrx -e POSTGRES_PASSWORD=dronematrx -e POSTGRES_DB=dronematrx \
+            -v "$PWD/db/init:/docker-entrypoint-initdb.d:ro" dronematrx/postgres-postgis-timescale:16 \
+            postgres -c shared_preload_libraries=timescaledb -c timescaledb.telemetry_level=off
+          docker run -d --name nats -p 4222:4222 nats:2.10-alpine -js
+          for i in $(seq 1 60); do docker exec db pg_isready -U dronematrx -d dronematrx && break; sleep 2; done
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Install
+        run: pip install -r backend/requirements.txt
+      - name: Tests
+        working-directory: backend
+        run: python -m pytest -q -p no:cacheprovider
+
+  hwbridge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Install
+        run: pip install -r backend/requirements.txt
+      - name: Tests (practice vehicles; ArduPilot SITL tests skip without the SITL container)
+        run: python -m pytest hwbridge/tests -q -p no:cacheprovider
+
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npx tsc --noEmit -p tsconfig.app.json
+      - run: npm test

@@ -640,6 +640,9 @@ class Vehicle:
             "bound": self.bound, "drone_id": self.drone_id, "uin": self.uin, "mode": s.mode, "armed": s.armed, "closed": False,
             "authorized_until": self.authorized_until if self.authorized_until > now else None, "authorized_by": self.authorized_by,
             "override": self.override, "radio_rssi": s.radio_rssi, "radio_remrssi": s.radio_remrssi,
+            # Mission progress (Auto Mission status): vehicle seq numbers, home placeholder = 0.
+            "mission_count": s.mission_count, "mission_current": s.mission_current,
+            "reached_max": max(s.reached) if s.reached else -1, "landed_state": s.landed_state,
         }
 
     def prearm(self) -> dict:
