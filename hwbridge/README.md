@@ -12,12 +12,20 @@ cameras (RTSP) ─────────────────────�
 
 ## Run
 
+Normally you don't run it by hand: Drone MatrX → **Drone Setup** → **Start service** starts it, and the
+same page connects radios, assigns unique IDs, pairs SiK radios, calibrates (accelerometer, compass, RC),
+sets flight modes and failsafes, tests motors and stores camera URLs (see `documents/sprint6-1/README.md`).
+
+By hand:
+
 ```powershell
-copy hwbridge\config.example.json hwbridge\config.json     # COM ports, camera URLs by SYSID, token, limits
-backend\venv\Scripts\python -m hwbridge.server --config hwbridge\config.json
+backend\venv\Scripts\python -m hwbridge.server        # creates hwbridge\config.json on first start
 ```
 
-Set `HWBRIDGE_TOKEN` in `backend\.env` to the same token. Check http://127.0.0.1:8110/health.
+On first start the bridge creates `hwbridge\config.json` (connections, cameras, radio IDs, limits; edited by
+the Drone Setup page) with a random token, and writes the token to `hwbridge\.bridge_token`, which the
+backend on the same laptop reads automatically. `HWBRIDGE_TOKEN` in `backend\.env` is only needed when the
+bridge runs elsewhere (it then overrides the file). Check http://127.0.0.1:8110/health.
 
 ## Safety model
 

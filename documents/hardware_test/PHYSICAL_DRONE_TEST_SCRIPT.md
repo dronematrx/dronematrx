@@ -29,42 +29,12 @@
 | ☐ | Landowner permission; no people, roads or power lines under the flight area |
 | ☐ | Wind below the aircraft's limit (typically < 8 m/s); no rain |
 
-### 0.2 ArduPilot parameters (each drone, set in Mission Planner **before** coming to the field)
-
-| Parameter | Drone 1 | Drone 2 | Why |
-|---|---|---|---|
-| `SYSID_THISMAV` | **1** | **2** | Must be unique: the bridge tells drones apart by it |
-| `SERIAL1_BAUD` (radio port) | 57 | 57 | Matches the radio's air/serial rate |
-| `FS_GCS_ENABLE` | 1 (RTL) | 1 (RTL) | Laptop/radio lost → return home |
-| `FS_GCS_TIMEOUT` | 5 | 5 | seconds |
-| `FS_THR_ENABLE` | 1 (RTL) | 1 (RTL) | RC transmitter lost → return home |
-| `BATT_FS_LOW_ACT` | 2 (RTL) | 2 (RTL) | Low battery → return home (set `BATT_LOW_VOLT` for your pack) |
-| `FENCE_ENABLE` / `FENCE_TYPE` | 1 / 7 | 1 / 7 | Onboard altitude + circle + polygon fence |
-| `FENCE_ALT_MAX` | 40 | 40 | m |
-| `FENCE_RADIUS` | 150 | 150 | m |
-| `FENCE_ACTION` | 1 (RTL) | 1 (RTL) | |
-| `RTL_ALT` | **1500** (15 m) | **2000** (20 m) | **Different heights**, so two drones returning at once don't meet |
-| RC flight-mode switch | includes **LOITER**, **ALT_HOLD** (or STABILIZE), **RTL** | same | Safety pilot's takeover positions |
-| Motor emergency stop / arming switch on RC | configured | configured | Last-resort kill |
-
-**Radios on one USB hub:**
-- Each drone's radio pair needs its **own `NETID`** (for example 25 and 26), so the pairs don't cross-talk.
-- Each ground radio appears as its own COM port.
-- Check them in Device Manager → Ports, or in PowerShell: `[System.IO.Ports.SerialPort]::GetPortNames()`.
-
-**Cameras:** open each camera's RTSP URL in VLC (Media → Open Network Stream) and confirm live video. Note the URLs.
-
-| Drone | SYSID | COM port | Radio NETID | Camera RTSP URL | Drone MatrX name |
-|---|---|---|---|---|---|
-| 1 | 1 | COM__ | __ | rtsp://__________ | HW-01 |
-| 2 | 2 | COM__ | __ | rtsp://__________ | HW-02 |
-
-### 0.3 Laptop
+### 0.2 Laptop
 
 1. Start **Docker Desktop**, then in a terminal from the project folder:
    ```powershell
    $env:MEDIAMTX_WEBRTC_HOSTS = "<this laptop's Wi-Fi IP>"   # ipconfig → IPv4 Address
-   docker compose -f docker-compose.yml -f docker-compose.sim.yml up -d db nats mediamtx
+   docker compose -f docker-compose.yml -f docker-compose.sim.yml up -d --force-recreate db nats mediamtx
    ```
 2. Backend:
    ```powershell
@@ -73,15 +43,37 @@
    venv\Scripts\python -m uvicorn app.main:app --port 8000
    ```
 3. Frontend (second terminal): `cd frontend; npm run dev`, then open http://localhost:5173/login.
-4. **Close Mission Planner / QGroundControl.** Only one program can open a COM port.
-5. Hardware bridge (third terminal):
-   ```powershell
-   copy hwbridge\config.example.json hwbridge\config.json
-   # edit hwbridge\config.json: COM ports, camera URLs (keyed by SYSID), token, limits (30 m / 150 m)
-   backend\venv\Scripts\python -m hwbridge.server --config hwbridge\config.json
-   ```
-   Put the same token in `backend\.env` as `HWBRIDGE_TOKEN=...` and restart the backend.
-6. Check http://127.0.0.1:8110/health: every link has `"open": true`, `vehicles` lists [1] / [2] once the drones are powered, and `nats.connected` is `true`.
+4. **Close Mission Planner / QGroundControl** if open. Only one program can open a COM port.
+
+**Cameras:** open each camera's RTSP URL in VLC (Media → Open Network Stream) and confirm live video. Note the URLs.
+
+### 0.3 Drone Setup page (each drone, PROPELLERS OFF)
+
+Menu → **Drone Setup**. Full instructions with screenshots: [`documents/sprint6-1/README.md`](../sprint6-1/README.md) sections 4–5.
+
+| # | Step | Expected | Result |
+|---|---|---|---|
+| 0.3.1 | **Start service** | RUNNING; "Connected to Drone MatrX telemetry" | ☐ Pass ☐ Fail |
+| 0.3.2 | Plug in all ground radios, power the drones, **Connect** each COM port | Each row says "1 drone(s) found" | ☐ Pass ☐ Fail |
+| 0.3.3 | Step 1: unique ID for every drone | No "duplicate" warning; IDs written on the drones | ☐ Pass ☐ Fail |
+| 0.3.4 | Step 2: frame type | Done | ☐ Pass ☐ Fail |
+| 0.3.5 | Step 3: radio pairing (different network ID per pair) | Done; drone reconnects after ~5 s | ☐ Pass ☐ Fail |
+| 0.3.6 | Step 4: accelerometer, six positions | "Accelerometer calibration successful" | ☐ Pass ☐ Fail |
+| 0.3.7 | Step 5: compass (outdoors, away from metal) | SUCCESS | ☐ Pass ☐ Fail |
+| 0.3.8 | Step 6: RC calibration | Done; bars follow the sticks | ☐ Pass ☐ Fail |
+| 0.3.9 | Step 7: recommended flight modes; flip the switch through all positions | Down ALT_HOLD, middle LOITER, up RTL | ☐ Pass ☐ Fail |
+| 0.3.10 | Step 8: safety settings (cell count checked) | Done; return heights differ per drone | ☐ Pass ☐ Fail |
+| 0.3.11 | Step 9: motor test, props OFF | Each motor spins, correct order and direction | ☐ Pass ☐ Fail |
+| 0.3.12 | Step 10: camera URL | Done | ☐ Pass ☐ Fail |
+| 0.3.13 | Step 11: restart, outdoors with GPS | "No pre-arm problems" | ☐ Pass ☐ Fail |
+| 0.3.14 | Step 12: Add & link | All required steps ticked | ☐ Pass ☐ Fail |
+| 0.3.15 | Settings: inclusion geofence drawn around the field | Saved | ☐ Pass ☐ Fail |
+| 0.3.16 | RC: motor emergency stop switch configured on each transmitter | Configured | ☐ Pass ☐ Fail |
+
+| Drone | ID | COM port | Radio network ID | Camera RTSP URL | Drone MatrX name |
+|---|---|---|---|---|---|
+| 1 | 1 | COM__ | __ | rtsp://__________ | HW-01 |
+| 2 | 2 | COM__ | __ | rtsp://__________ | HW-02 |
 
 ---
 
@@ -105,7 +97,7 @@ Batteries in, drones on the ground 3 m apart, GPS lock outdoors, RC transmitter 
 | A2.3 | Choose HW-01 → Bind `…/1`; HW-02 → Bind `…/2` | Both BOUND; source label **HARDWARE** | ☐ Pass ☐ Fail |
 | A2.4 | Look at the map | Each marker is where the drone physically stands (±3 m) | ☐ Pass ☐ Fail |
 | A2.5 | Rotate drone 1 by hand 90° | Its heading on the map turns within ~1 s | ☐ Pass ☐ Fail |
-| A2.6 | Compare battery % with the drone's OSD / Mission Planner value | Matches (±2 %) | ☐ Pass ☐ Fail |
+| A2.6 | Compare battery % with the drone's OSD / battery checker | Matches (±2 %) | ☐ Pass ☐ Fail |
 | A2.7 | Unplug drone 1's ground radio from the hub | HW-01 turns **STALE** after ~5 s; the other stays CONNECTED | ☐ Pass ☐ Fail |
 | A2.8 | Plug it back in | CONNECTED again within ~5 s (bridge re-opens the port) | ☐ Pass ☐ Fail |
 | A2.9 | Try binding the real controller to a **demo** drone (DMX-…) | Refused: "not registered as a real aircraft" | ☐ Pass ☐ Fail |
@@ -120,7 +112,7 @@ Select HW-01 in Mission Control and read the **Pre-arm checklist**.
 | A3.2 | Refresh the checklist | All required checks PASS (connected, telemetry, identity, mode, on ground, battery ≥ 50 %, GNSS fix + home, estimator, ArduPilot pre-arm, geofence, failsafes, **RC transmitter**, **no override**). "Flight permission" shows WARNING. | ☐ Pass ☐ Fail |
 | A3.3 | Switch the **RC transmitter OFF**, refresh | "RC transmitter connected" **FAIL**, ARM blocked | ☐ Pass ☐ Fail |
 | A3.4 | Transmitter ON again, refresh | PASS | ☐ Pass ☐ Fail |
-| A3.5 | Note any FAIL text from ArduPilot (e.g. "PreArm: Compass not calibrated") and fix it in Mission Planner before continuing | No ArduPilot pre-arm failures | ☐ Pass ☐ Fail |
+| A3.5 | Note any FAIL text from ArduPilot (e.g. "PreArm: Compass not calibrated") and fix it with Drone Setup step 11 before continuing | No ArduPilot pre-arm failures | ☐ Pass ☐ Fail |
 
 ### A4: Human flight permission and arming (props OFF)
 

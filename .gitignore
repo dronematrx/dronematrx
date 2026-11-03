@@ -43,3 +43,6 @@ frontend/dist-e2e/
 sim/ardupilot_sitl/bin/
 # hardware bridge local config (COM ports, camera URLs, token)
 hwbridge/config.json
+hwbridge/config.json.tmp
+hwbridge/.bridge_token
+hwbridge/bridge.log

@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 
 const NAV_ITEMS: { label: string; path: string }[] = [
   { label: 'Mission Control', path: '/mission-control' },
+  { label: 'Drone Setup', path: '/drone-setup' },
   { label: 'Mission', path: '/missions' },
   { label: 'Flight Plan', path: '/map' },
   { label: 'Analyse', path: '/analytics' },

@@ -20,6 +20,8 @@ from hwbridge.ardupilot import MAV_AUTOPILOT_ARDUPILOTMEGA, MAV_TYPE_GCS, Limits
 
 logger = logging.getLogger("hwbridge.links")
 
+AUTO_BAUDS = (57600, 115200)  # telemetry radios, then USB
+AUTO_BAUD_WINDOW_S = 6.0
 ENDPOINT_RE = re.compile(r"^(serial:(COM\d{1,3}|/dev/tty[A-Za-z0-9]{1,20})|udp:[A-Za-z0-9.\-]{1,63}:\d{2,5}|tcp:[A-Za-z0-9.\-]{1,63}:\d{2,5})$")
 GCS_SYSID, GCS_COMPID = 255, 190
 
@@ -63,7 +65,11 @@ class Link:
             raise ValueError(f"Invalid endpoint {endpoint!r}: use serial:COM5, udp:0.0.0.0:14550 or tcp:127.0.0.1:5760")
         self.endpoint = endpoint
         self.name = link_name(endpoint)
-        self.baud = baud
+        # baud 0 = automatic: try each of AUTO_BAUDS until an autopilot answers.
+        self.auto_baud = baud == 0 and endpoint.startswith("serial:")
+        self.baud = AUTO_BAUDS[0] if baud == 0 else baud
+        self._opened_at = 0.0
+        self.paused = False
         self.limits = limits
         self.on_event = on_event
         self.vehicles: dict[int, Vehicle] = {}
@@ -84,11 +90,28 @@ class Link:
 
     def stop(self) -> None:
         self._stop.set()
+        self._close()
+
+    def _close(self) -> None:
         try:
             if self.conn:
                 self.conn.close()
         except Exception:
             pass
+        self.conn = self.mav = None
+
+    def pause(self) -> None:
+        """Release the port (e.g. to configure the radio with AT commands)."""
+        self.paused = True
+        time.sleep(0.6)  # let the rx loop leave recv_match
+        self._close()
+
+    def resume(self) -> None:
+        self.paused = False
+
+    def forget(self, sysid: int) -> None:
+        """Drop a vehicle entry (after it rebooted with a new system id)."""
+        self.vehicles.pop(sysid, None)
 
     def _open(self) -> bool:
         from pymavlink import mavutil
@@ -100,7 +123,8 @@ class Link:
             for v in self.vehicles.values():
                 v.mav = self.mav
             self.error = None
-            logger.info("link %s open", self.endpoint)
+            self._opened_at = time.time()
+            logger.info("link %s open at %d baud", self.endpoint, self.baud)
             return True
         except Exception as exc:  # port busy (Mission Planner open?), unplugged radio
             self.error = f"{type(exc).__name__}: {exc}"
@@ -109,19 +133,29 @@ class Link:
 
     def _rx_loop(self) -> None:
         while not self._stop.is_set():
+            if self.paused:
+                self._stop.wait(0.3)
+                continue
             if self.conn is None and not self._open():
                 self._stop.wait(2.0)
                 continue
+            if self.auto_baud and not self.vehicles and time.time() - self._opened_at > AUTO_BAUD_WINDOW_S:
+                i = AUTO_BAUDS.index(self.baud) if self.baud in AUTO_BAUDS else -1
+                self.baud = AUTO_BAUDS[(i + 1) % len(AUTO_BAUDS)]
+                logger.info("link %s: no autopilot yet, trying %d baud", self.endpoint, self.baud)
+                self._close()
+                continue
             try:
-                msg = self.conn.recv_match(blocking=True, timeout=0.5)
+                conn = self.conn
+                if conn is None:
+                    continue
+                msg = conn.recv_match(blocking=True, timeout=0.5)
             except Exception as exc:
+                if self.paused:
+                    continue
                 self.error = f"{type(exc).__name__}: {exc}"
                 logger.warning("link %s read failed: %s; reopening", self.endpoint, exc)
-                try:
-                    self.conn.close()
-                except Exception:
-                    pass
-                self.conn = self.mav = None
+                self._close()
                 self._stop.wait(1.0)
                 continue
             if msg is None or msg.get_type() == "BAD_DATA":
@@ -166,5 +200,6 @@ class Link:
             self._stop.wait(1.0)
 
     def status(self) -> dict:
-        return {"endpoint": self.endpoint, "open": self.conn is not None, "error": self.error, "rx_messages": self.rx_count,
-                "vehicles": sorted(self.vehicles), "ignored": self.ignored}
+        return {"endpoint": self.endpoint, "name": self.name, "open": self.conn is not None, "error": self.error,
+                "rx_messages": self.rx_count, "vehicles": sorted(self.vehicles), "ignored": self.ignored, "baud": self.baud,
+                "auto_baud": self.auto_baud, "paused": self.paused}

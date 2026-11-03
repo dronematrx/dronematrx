@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import math
 import queue
+import re
 import threading
 import time
 from collections import deque
@@ -45,6 +46,26 @@ PREARM_CHECK = 0x10000000
 
 FAILSAFE_PARAMS = ("FS_GCS_ENABLE", "FS_THR_ENABLE", "BATT_FS_LOW_ACT", "FENCE_ENABLE", "FENCE_ACTION", "FENCE_ALT_MAX",
                    "FENCE_RADIUS", "RTL_ALT", "SYSID_THISMAV")
+
+# Parameters the guided setup reads to show what is configured
+SETUP_PARAMS = (
+    "SYSID_THISMAV", "FRAME_CLASS", "FRAME_TYPE",
+    "FS_GCS_ENABLE", "FS_GCS_TIMEOUT", "FS_THR_ENABLE", "FS_THR_VALUE",
+    "BATT_MONITOR", "BATT_FS_LOW_ACT", "BATT_FS_CRT_ACT", "BATT_LOW_VOLT", "BATT_CRT_VOLT",
+    "FENCE_ENABLE", "FENCE_TYPE", "FENCE_ACTION", "FENCE_ALT_MAX", "FENCE_RADIUS", "RTL_ALT",
+    "FLTMODE_CH", "FLTMODE1", "FLTMODE2", "FLTMODE3", "FLTMODE4", "FLTMODE5", "FLTMODE6",
+    "RC1_MIN", "RC1_MAX", "RC1_TRIM", "RC2_MIN", "RC2_MAX", "RC2_TRIM", "RC3_MIN", "RC3_MAX", "RC3_TRIM",
+    "RC4_MIN", "RC4_MAX", "RC4_TRIM", "RCMAP_ROLL", "RCMAP_PITCH", "RCMAP_THROTTLE", "RCMAP_YAW",
+    "INS_ACCOFFS_X", "INS_ACCOFFS_Y", "INS_ACCOFFS_Z", "INS_ACCSCAL_X", "INS_ACCSCAL_Y", "INS_ACCSCAL_Z",
+    "COMPASS_USE", "COMPASS_OFS_X", "COMPASS_OFS_Y", "COMPASS_OFS_Z",
+)
+
+# Guided setup (what Mission Planner's setup screens do, over MAVLink)
+ACCELCAL_VEHICLE_POS = 42429
+ACCELCAL_SUCCESS, ACCELCAL_FAILED = 16777215, 16777216
+ACCEL_POSITIONS = {1: "LEVEL", 2: "LEFT", 3: "RIGHT", 4: "NOSE DOWN", 5: "NOSE UP", 6: "BACK"}
+MAG_CAL_STATUS = {0: "NOT_STARTED", 1: "WAITING_TO_START", 2: "RUNNING_STEP_ONE", 3: "RUNNING_STEP_TWO", 4: "SUCCESS",
+                  5: "FAILED", 6: "BAD_ORIENTATION", 7: "BAD_RADIUS"}
 
 MAV_RESULT = {0: "ACCEPTED", 1: "TEMPORARILY_REJECTED", 2: "DENIED", 3: "UNSUPPORTED", 4: "FAILED", 5: "IN_PROGRESS", 6: "CANCELLED"}
 
@@ -101,7 +122,12 @@ class VehicleState:
     last_heartbeat: float = 0.0
     radio_rssi: int | None = None
     radio_remrssi: int | None = None
+    radio_seen: float = 0.0
     statustext: deque = field(default_factory=lambda: deque(maxlen=30))
+    rc_channels: list[int] | None = None
+    # Guided setup: accelerometer / compass calibration progress
+    accelcal: dict = field(default_factory=lambda: {"state": "idle", "position": None, "message": None})
+    magcal: dict = field(default_factory=dict)  # compass_id -> {status, pct, fitness}
 
 
 class Vehicle:
@@ -139,6 +165,7 @@ class Vehicle:
         self.streams_requested = 0.0
         self._params_cache: dict[str, float | None] = {}
         self._params_read_at = 0.0
+        self._setup_params: dict | None = None  # guided-setup parameter cache
 
     # ----------------------------------------------------------- inbound
 
@@ -200,8 +227,24 @@ class Vehicle:
         elif t == "RC_CHANNELS":
             s.rc_rssi = msg.rssi
             s.rc_last = now
+            s.rc_channels = [getattr(msg, f"chan{i}_raw") for i in range(1, max(1, min(msg.chancount, 18)) + 1)]
         elif t == "RADIO_STATUS":
             s.radio_rssi, s.radio_remrssi = msg.rssi, msg.remrssi
+            s.radio_seen = now
+        elif t == "COMMAND_LONG" and msg.command == ACCELCAL_VEHICLE_POS:
+            # ArduPilot asks the ground station to place the vehicle in a position.
+            pos = int(msg.param1)
+            if pos == ACCELCAL_SUCCESS:
+                s.accelcal = {"state": "success", "position": None, "message": "Accelerometer calibration successful"}
+            elif pos == ACCELCAL_FAILED:
+                s.accelcal = {"state": "failed", "position": None, "message": "Accelerometer calibration FAILED: try again, holding each position still"}
+            else:
+                s.accelcal = {"state": "waiting", "position": ACCEL_POSITIONS.get(pos, str(pos)), "position_id": pos, "message": None}
+        elif t == "MAG_CAL_PROGRESS":
+            s.magcal[msg.compass_id] = {"status": MAG_CAL_STATUS.get(msg.cal_status, str(msg.cal_status)), "pct": msg.completion_pct}
+        elif t == "MAG_CAL_REPORT":
+            s.magcal[msg.compass_id] = {"status": MAG_CAL_STATUS.get(msg.cal_status, str(msg.cal_status)), "pct": 100,
+                                        "fitness": round(float(msg.fitness), 2)}
         elif t == "MISSION_CURRENT":
             if msg.seq != s.mission_current:
                 s.mission_current = msg.seq
@@ -441,6 +484,149 @@ class Vehicle:
                     it.get("param1", 0), it.get("param2", 0), it.get("param3", 0), it.get("param4", 0),
                     int(it.get("lat", 0) * 1e7), int(it.get("lon", 0) * 1e7), float(it.get("alt", 0)), 0)
             raise VehicleError("MISSION_TIMEOUT", "Mission upload timed out (radio link?)")
+
+    # ------------------------------------------------------- guided setup
+
+    def _require_setup(self) -> None:
+        if not self.state.last_heartbeat or time.time() - self.state.last_heartbeat > 5:
+            raise VehicleError("NO_HEARTBEAT", "No heartbeat from the flight controller in the last 5 s")
+        if self.state.armed:
+            raise VehicleError("ARMED", "Setup is only allowed while the drone is disarmed on the ground")
+
+    def read_params_batch(self, names, timeout_s: float = 4.0) -> dict[str, float | None]:
+        """Request several parameters at once and wait for the replies (one retry
+        for packets lost on the radio). Missing ones come back as None."""
+        wanted = list(dict.fromkeys(names))
+        for attempt in range(2):
+            missing = [n for n in wanted if attempt == 0 or n not in self.params]
+            if not missing:
+                break
+            for n in missing:
+                self.params.pop(n, None)
+                try:
+                    self.mav.param_request_read_send(self.sysid, self.compid, n.encode(), -1)
+                except Exception:
+                    pass
+                time.sleep(0.005)  # don't burst a slow radio
+            deadline = time.time() + timeout_s / 2
+            while time.time() < deadline and any(n not in self.params for n in missing):
+                self._param_evt.wait(0.1)
+                self._param_evt.clear()
+        return {n: self.params.get(n) for n in wanted}
+
+    def write_params(self, values: dict[str, float], timeout_s: float = 3.0) -> dict[str, float]:
+        """Set parameters and confirm each one from the autopilot's PARAM_VALUE echo."""
+        with self._cmd_lock:
+            self._require_setup()
+            confirmed: dict[str, float] = {}
+            for name, value in values.items():
+                if not re.fullmatch(r"[A-Z0-9_]{1,16}", name):
+                    raise VehicleError("BAD_PARAM", f"Invalid parameter name {name!r}")
+                ok = False
+                for _ in range(3):
+                    self.params.pop(name, None)
+                    self._param_evt.clear()
+                    # ArduPilot converts to the parameter's own type; REAL32 is the wire format.
+                    self.mav.param_set_send(self.sysid, self.compid, name.encode(), float(value), 9)
+                    deadline = time.time() + timeout_s
+                    while time.time() < deadline and name not in self.params:
+                        self._param_evt.wait(0.1)
+                        self._param_evt.clear()
+                    got = self.params.get(name)
+                    if got is not None and abs(got - float(value)) <= max(1e-3, abs(float(value)) * 1e-4):
+                        ok = True
+                        break
+                if not ok:
+                    got = self.params.get(name)
+                    raise VehicleError("PARAM_NOT_SET", f"{name} was not confirmed by the flight controller "
+                                       + ("(no reply: this firmware may not have it, or the radio dropped it)" if got is None else f"(it reports {got:g})")
+                                       + (f"; already set: {', '.join(confirmed)}" if confirmed else ""))
+                confirmed[name] = self.params[name]
+            self._params_read_at = 0.0  # pre-arm checklist re-reads
+            return confirmed
+
+    def reboot(self) -> int:
+        with self._cmd_lock:
+            self._require_setup()
+            r = self._command(246, [1, 0])  # MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN: reboot autopilot
+            if r == 0:
+                self.state.last_heartbeat = 0.0
+                self.state.home = None
+                self.state.statustext.clear()
+                self.on_event("rebooting", {})
+            return r
+
+    def accel_cal_start(self) -> int:
+        with self._cmd_lock:
+            self._require_setup()
+            self.state.accelcal = {"state": "starting", "position": None, "message": None}
+            r = self._command(241, [0, 0, 0, 0, 1, 0, 0], timeout_s=8)  # PREFLIGHT_CALIBRATION, full 3D accel
+            if r != 0:
+                self.state.accelcal = {"state": "failed", "position": None, "message": f"Calibration refused ({MAV_RESULT.get(r, r)})"}
+            return r
+
+    def accel_cal_confirm(self) -> None:
+        cal = self.state.accelcal
+        if cal.get("state") != "waiting" or not cal.get("position_id"):
+            raise VehicleError("NOT_WAITING", "The flight controller is not waiting for a position")
+        # Mark "measuring" BEFORE sending: the autopilot's request for the next
+        # position can arrive (rx thread) before this call returns.
+        self.state.accelcal = {**cal, "state": "measuring"}
+        try:
+            self.mav.command_long_send(self.sysid, self.compid, ACCELCAL_VEHICLE_POS, 0, cal["position_id"], 0, 0, 0, 0, 0, 0)
+        except Exception:
+            self.state.accelcal = cal
+            raise
+
+    def level_cal(self) -> int:
+        with self._cmd_lock:
+            self._require_setup()
+            return self._command(241, [0, 0, 0, 0, 2, 0, 0], timeout_s=10)  # board level (AHRS trim)
+
+    def compass_cal_start(self) -> int:
+        with self._cmd_lock:
+            self._require_setup()
+            self.state.magcal = {}
+            for msg_id in (191, 192):  # MAG_CAL_PROGRESS / MAG_CAL_REPORT at 2 Hz
+                self.mav.command_long_send(self.sysid, self.compid, 511, 0, msg_id, 5e5, 0, 0, 0, 0, 0)
+            # DO_START_MAG_CAL: all compasses, retry on failure, autosave, no delay, no auto reboot
+            return self._command(42424, [0, 1, 1, 0, 0, 0, 0], timeout_s=8)
+
+    def compass_cal_cancel(self) -> int:
+        with self._cmd_lock:
+            self.state.magcal = {}
+            return self._command(42426, [0, 0, 0, 0, 0, 0, 0])
+
+    def motor_test(self, motor: int, throttle_pct: float, seconds: float) -> int:
+        """Spin one motor briefly. PROPELLERS MUST BE OFF (the API demands the acknowledgement)."""
+        if not 1 <= motor <= 12 or not 0 < throttle_pct <= 15 or not 0 < seconds <= 3:
+            raise VehicleError("BAD_MOTOR_TEST", "Motor 1-12, throttle up to 15 %, at most 3 s")
+        with self._cmd_lock:
+            self._require_setup()
+            # MAV_CMD_DO_MOTOR_TEST: motor, throttle type percent, throttle, timeout, motor count 0, order default
+            return self._command(209, [motor, 0, throttle_pct, seconds, 0, 0, 0])
+
+    def rc_fast(self) -> None:
+        """RC_CHANNELS at 10 Hz while the setup screen shows the sticks (restored by the next stream refresh)."""
+        try:
+            self.mav.command_long_send(self.sysid, self.compid, 511, 0, 65, 1e5, 0, 0, 0, 0, 0)
+        except Exception:
+            pass
+
+    def setup_view(self, params: dict) -> dict:
+        s = self.state
+        now = time.time()
+        return {
+            **self.info(),
+            "params": params,
+            "battery_v": s.battery_v, "battery_pct": s.battery_pct, "gps_fix": s.gps_fix, "satellites": s.satellites,
+            "rc_channels": s.rc_channels, "rc_age_s": round(now - s.rc_last, 2) if s.rc_last else None,
+            "telemetry_radio": bool(s.radio_seen and now - s.radio_seen < 15),
+            "accelcal": s.accelcal, "magcal": {str(k): v for k, v in s.magcal.items()},
+            # ArduPilot repeats failing pre-arm checks every 30 s: older ones are already fixed.
+            "prearm_messages": list(dict.fromkeys(txt for t, _, txt in s.statustext if now - t < 35 and txt.lower().startswith("prearm"))),
+            "messages": [{"t": t, "severity": sev, "text": txt} for t, sev, txt in list(s.statustext)[-8:]],
+        }
 
     # ------------------------------------------------------------- views
 

@@ -330,3 +330,101 @@ export const releaseOverride = (droneId: string, reason: string) =>
 export const uploadHardwareMission = (droneId: string, missionId: string, altitudeM: number | null, speedMps: number | null) =>
   apiFetch<{ uploaded: number; tasks: string[]; planned_route: [number, number][]; altitude_m: number; speed_mps: number }>(
     `/mission-control/drones/${droneId}/hardware-mission`, { method: 'POST', body: { mission_id: missionId, altitude_m: altitudeM, speed_mps: speedMps } })
+
+// ------------------------------------------- guided real-drone setup (Drone Setup page)
+
+export interface BridgeStatus {
+  running: boolean
+  started_here: boolean
+  pid: number | null
+  error: string | null
+  can_start: boolean
+  health: { links?: BridgeLink[]; nats?: { connected: boolean; error: string | null; published: number } } | null
+  log_tail: string[]
+}
+export interface BridgeLink {
+  endpoint: string
+  name: string
+  open: boolean
+  error: string | null
+  rx_messages: number
+  vehicles: number[]
+  baud: number
+  auto_baud: boolean
+  paused: boolean
+}
+export interface SerialPort {
+  device: string
+  description: string
+  manufacturer: string | null
+  kind: 'autopilot' | 'radio' | 'unknown'
+  connected: boolean
+  suggested_baud: number
+}
+export interface HwController {
+  fc_id: string
+  identity: string
+  endpoint: string
+  system_id: number
+  firmware: string
+  heartbeat_age_s: number | null
+  bound: boolean
+  drone_id: string | null
+  uin: string | null
+  mode: string
+  armed: boolean
+}
+export interface AccelCal { state: 'idle' | 'starting' | 'waiting' | 'measuring' | 'success' | 'failed'; position: string | null; position_id?: number; message: string | null }
+export interface SetupView extends HwController {
+  params: Record<string, number | null>
+  battery_v: number | null
+  battery_pct: number | null
+  gps_fix: number | null
+  satellites: number | null
+  rc_channels: number[] | null
+  rc_age_s: number | null
+  telemetry_radio: boolean
+  accelcal: AccelCal
+  magcal: Record<string, { status: string; pct: number; fitness?: number }>
+  prearm_messages: string[]
+  messages: { t: number; severity: number; text: string }[]
+  camera_url: string | null
+  link: BridgeLink | null
+  other_system_ids: number[]
+  port: string | null
+  radio_netid: number | null
+}
+export interface RadioInfo {
+  port: string
+  version: string | null
+  local: Record<string, string>
+  remote: Record<string, string> | null
+  remote_reachable: boolean
+  netids_in_use: Record<string, number>
+  suggested_netid: number
+}
+
+const HW = '/mission-control/hardware'
+export const bridgeStatus = () => apiFetch<BridgeStatus>(`${HW}/bridge`)
+export const startBridge = () => apiFetch<BridgeStatus>(`${HW}/bridge/start`, { method: 'POST', timeoutMs: 30_000 })
+export const stopBridge = () => apiFetch<BridgeStatus>(`${HW}/bridge/stop`, { method: 'POST', timeoutMs: 30_000 })
+export const serialPorts = () => apiFetch<{ ports: SerialPort[] }>(`${HW}/ports`)
+export const hwControllers = () => apiFetch<{ controllers: HwController[] }>(`${HW}/controllers`)
+export const connectLink = (endpoint: string, baud = 0) => apiFetch<BridgeLink>(`${HW}/links`, { method: 'POST', body: { endpoint, baud } })
+export const disconnectLink = (name: string) => apiFetch<unknown>(`${HW}/links/${encodeURIComponent(name)}`, { method: 'DELETE' })
+export const setupView = (fcId: string, refresh = false) =>
+  apiFetch<SetupView>(`${HW}/fc/${encodeURIComponent(fcId)}/setup${refresh ? '?refresh=true' : ''}`, { timeoutMs: 30_000 })
+export const writeParams = (fcId: string, values: Record<string, number>) =>
+  apiFetch<{ confirmed: Record<string, number> }>(`${HW}/fc/${encodeURIComponent(fcId)}/params`, { method: 'POST', body: { values }, timeoutMs: 120_000 })
+export const setSystemId = (fcId: string, systemId: number) =>
+  apiFetch<{ previous: number; system_id: number; new_fc_id: string; message: string }>(`${HW}/fc/${encodeURIComponent(fcId)}/sysid`, { method: 'POST', body: { system_id: systemId }, timeoutMs: 40_000 })
+export const rebootFc = (fcId: string) => apiFetch<{ result: string }>(`${HW}/fc/${encodeURIComponent(fcId)}/reboot`, { method: 'POST', timeoutMs: 30_000 })
+export const calibrate = (fcId: string, action: 'accel-start' | 'accel-next' | 'level' | 'compass-start' | 'compass-cancel') =>
+  apiFetch<{ accelcal: AccelCal; magcal: SetupView['magcal'] }>(`${HW}/fc/${encodeURIComponent(fcId)}/calibration/${action}`, { method: 'POST', timeoutMs: 30_000 })
+export const motorTest = (fcId: string, motor: number, throttlePct: number, seconds: number) =>
+  apiFetch<{ result: string }>(`${HW}/fc/${encodeURIComponent(fcId)}/motor-test`, { method: 'POST', body: { motor, throttle_pct: throttlePct, seconds, propellers_removed: true } })
+export const radioInfo = (port: string) => apiFetch<RadioInfo>(`${HW}/radio/${encodeURIComponent(port)}`, { timeoutMs: 40_000 })
+export const setRadioNetid = (port: string, netid: number) =>
+  apiFetch<{ netid: number }>(`${HW}/radio/${encodeURIComponent(port)}/netid`, { method: 'POST', body: { netid }, timeoutMs: 45_000 })
+export const setCamera = (systemId: number, url: string | null) =>
+  apiFetch<{ url: string | null }>(`${HW}/cameras/${systemId}`, { method: 'PUT', body: { url } })

@@ -10,6 +10,7 @@ import { MissionControlPage } from './pages/MissionControlPage'
 import { MissionWizardPage } from './pages/MissionWizardPage'
 import { SimulationPage } from './pages/SimulationPage'
 import { SettingsPage } from './pages/SettingsPage'
+import { HardwareSetupPage } from './pages/HardwareSetupPage'
 import { StubPage } from './pages/StubPage'
 
 export function AppRouter() {
@@ -39,6 +40,14 @@ export function AppRouter() {
           element={
             <RequireAuth>
               <MissionControlPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/drone-setup"
+          element={
+            <RequireAuth>
+              <HardwareSetupPage />
             </RequireAuth>
           }
         />

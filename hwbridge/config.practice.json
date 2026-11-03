@@ -1,0 +1,17 @@
+{
+  "nats_url": "nats://127.0.0.1:4222",
+  "http_port": 8110,
+  "token": "practice-token",
+  "links": [
+    {"endpoint": "tcp:127.0.0.1:5760"},
+    {"endpoint": "tcp:127.0.0.1:5770"}
+  ],
+  "cameras": {
+    "1": "rtsp://dmx-backend:dmx-backend-dev@127.0.0.1:8554/test/01/hi",
+    "2": "rtsp://dmx-backend:dmx-backend-dev@127.0.0.1:8554/test/02/hi"
+  },
+  "limits": {
+    "max_alt_m": 30,
+    "max_distance_m": 150
+  }
+}

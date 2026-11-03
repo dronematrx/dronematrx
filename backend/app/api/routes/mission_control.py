@@ -27,6 +27,7 @@ from app.models.user import User
 from app.services.mission_control import detections as detsvc
 from app.services.mission_control import fc as fcsvc
 from app.services.mission_control import fleet as fleetsvc
+from app.services.mission_control import hw_setup as setupsvc
 from app.services.mission_control import permissions as permsvc
 from app.services.mission_control import qr as qrsvc
 from app.services.mission_control import video as videosvc
@@ -249,6 +250,126 @@ class HardwareMissionIn(BaseModel):
     mission_id: uuid.UUID
     altitude_m: float | None = Field(None, ge=5, le=120)  # per-drone altitude (vertical separation)
     speed_mps: float | None = Field(None, ge=1, le=15)
+
+
+# ------------------------------------------- guided real-drone setup (Drone Setup page)
+
+
+class LinkIn(BaseModel):
+    endpoint: str = Field(..., max_length=80)
+    baud: int = Field(0, ge=0, le=1_500_000)  # 0 = automatic
+
+
+class ParamsIn(BaseModel):
+    values: dict[str, float] = Field(..., max_length=40)
+
+
+class SysidIn(BaseModel):
+    system_id: int = Field(..., ge=1, le=250)
+
+
+class MotorTestIn(BaseModel):
+    motor: int = Field(..., ge=1, le=12)
+    throttle_pct: float = Field(7, gt=0, le=15)
+    seconds: float = Field(2, gt=0, le=3)
+    propellers_removed: Literal[True]
+
+
+class NetidIn(BaseModel):
+    netid: int = Field(..., ge=0, le=499)
+
+
+class CameraIn(BaseModel):
+    url: str | None = Field(None, max_length=300)
+
+
+@router.get("/hardware/bridge")
+async def bridge_status(user: User = Depends(require_any_authenticated)) -> dict:
+    return await asyncio.to_thread(setupsvc.bridge_process.status)
+
+
+@router.post("/hardware/bridge/start")
+async def bridge_start(db: Session = Depends(get_db), user: User = Depends(require_fleet_write)) -> dict:
+    out = await asyncio.to_thread(setupsvc.bridge_process.start)
+    db.add(AuditLog(user_id=user.id, action="hardware_setup.bridge_start", resource="hwbridge", resource_id="local", event_metadata={}))
+    db.commit()
+    return out
+
+
+@router.post("/hardware/bridge/stop")
+async def bridge_stop(db: Session = Depends(get_db), user: User = Depends(require_fleet_write)) -> dict:
+    out = await asyncio.to_thread(setupsvc.bridge_process.stop)
+    db.add(AuditLog(user_id=user.id, action="hardware_setup.bridge_stop", resource="hwbridge", resource_id="local", event_metadata={}))
+    db.commit()
+    return out
+
+
+@router.get("/hardware/controllers")
+async def hardware_controllers(user: User = Depends(require_any_authenticated)) -> dict:
+    return {"controllers": await asyncio.to_thread(setupsvc.controllers)}
+
+
+@router.get("/hardware/ports")
+async def hardware_ports(user: User = Depends(require_fleet_write)) -> dict:
+    return await asyncio.to_thread(setupsvc.ports)
+
+
+@router.post("/hardware/links")
+async def hardware_connect(payload: LinkIn, db: Session = Depends(get_db), user: User = Depends(require_fleet_write)) -> dict:
+    return await asyncio.to_thread(setupsvc.connect, db, user, payload.endpoint, payload.baud)
+
+
+@router.delete("/hardware/links/{name}")
+async def hardware_disconnect(name: str, db: Session = Depends(get_db), user: User = Depends(require_fleet_write)) -> dict:
+    return await asyncio.to_thread(setupsvc.disconnect, db, user, name)
+
+
+@router.get("/hardware/fc/{fc_id}/setup")
+async def hardware_setup_view(fc_id: str, refresh: bool = False, user: User = Depends(require_fleet_write)) -> dict:
+    return await asyncio.to_thread(setupsvc.setup_view, fc_id, refresh)
+
+
+@router.post("/hardware/fc/{fc_id}/params")
+async def hardware_params(fc_id: str, payload: ParamsIn, db: Session = Depends(get_db), user: User = Depends(require_fleet_write)) -> dict:
+    return await asyncio.to_thread(setupsvc.write_params, db, user, fc_id, payload.values)
+
+
+@router.post("/hardware/fc/{fc_id}/sysid")
+async def hardware_sysid(fc_id: str, payload: SysidIn, db: Session = Depends(get_db), user: User = Depends(require_fleet_write)) -> dict:
+    return await asyncio.to_thread(setupsvc.set_sysid, db, user, fc_id, payload.system_id)
+
+
+@router.post("/hardware/fc/{fc_id}/reboot")
+async def hardware_reboot(fc_id: str, db: Session = Depends(get_db), user: User = Depends(require_fleet_write)) -> dict:
+    return await asyncio.to_thread(setupsvc.reboot, db, user, fc_id)
+
+
+@router.post("/hardware/fc/{fc_id}/calibration/{action}")
+async def hardware_calibration(fc_id: str, action: str, db: Session = Depends(get_db), user: User = Depends(require_fleet_write)) -> dict:
+    return await asyncio.to_thread(setupsvc.calibration, db, user, fc_id, action)
+
+
+@router.post("/hardware/fc/{fc_id}/motor-test")
+async def hardware_motor_test(fc_id: str, payload: MotorTestIn, db: Session = Depends(get_db),
+                              user: User = Depends(require_fleet_write)) -> dict:
+    return await asyncio.to_thread(setupsvc.motor_test, db, user, fc_id, payload.motor, payload.throttle_pct, payload.seconds)
+
+
+@router.get("/hardware/radio/{port}")
+async def hardware_radio(port: str, user: User = Depends(require_fleet_write)) -> dict:
+    return await asyncio.to_thread(setupsvc.radio_info, port)
+
+
+@router.post("/hardware/radio/{port}/netid")
+async def hardware_radio_netid(port: str, payload: NetidIn, db: Session = Depends(get_db), user: User = Depends(require_fleet_write)) -> dict:
+    return await asyncio.to_thread(setupsvc.radio_netid, db, user, port, payload.netid)
+
+
+@router.put("/hardware/cameras/{sysid}")
+async def hardware_camera(sysid: int, payload: CameraIn, db: Session = Depends(get_db), user: User = Depends(require_fleet_write)) -> dict:
+    if not 1 <= sysid <= 254:
+        raise HTTPException(status_code=422, detail="System id must be 1-254")
+    return await asyncio.to_thread(setupsvc.set_camera, db, user, sysid, payload.url)
 
 
 @router.get("/hardware/status")

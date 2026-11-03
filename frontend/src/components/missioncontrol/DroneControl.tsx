@@ -57,6 +57,15 @@ export function DroneControl({ drone, canWrite, gotoTarget, gotoPicking, setGoto
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reload when the binding changes
   }, [drone.binding?.state])
 
+  // Real aircraft: re-check every 5 s so a pilot/autopilot override, a lost RC
+  // link or an ArduPilot pre-arm message shows up without a manual refresh.
+  useEffect(() => {
+    if (!hw || drone.binding?.state !== 'bound') return
+    const t = window.setInterval(() => void fetchPrearm(), 5000)
+    return () => window.clearInterval(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- per drone, per binding
+  }, [hw, drone.binding?.state])
+
   // Authoritative command state from the backend: on open, after a WebSocket
   // reconnect, and every 2 s while a command is still in flight (a missed
   // push must never leave a stale ACCEPTED on screen).
