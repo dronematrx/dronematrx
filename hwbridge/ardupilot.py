@@ -166,6 +166,14 @@ class Vehicle:
         self._params_cache: dict[str, float | None] = {}
         self._params_read_at = 0.0
         self._setup_params: dict | None = None  # guided-setup parameter cache
+        # Where Drone MatrX is sending the aircraft (ORCA's preferred velocity)
+        self.mission_items: list[dict] = []   # as uploaded, index = vehicle seq (0 = home placeholder)
+        self.mission_speed: float | None = None
+        self.guided_target: tuple[float, float, float] | None = None  # last GOTO (lat, lon, rel alt)
+        # ORCA collision avoidance (hwbridge/avoidance.py) currently steering this aircraft
+        self.orca_engaged = False
+        self.orca_resume: str | None = None   # "AUTO" (mission) or "GOTO"
+        self.orca_clear_since: float | None = None
 
     # ----------------------------------------------------------- inbound
 
@@ -274,7 +282,8 @@ class Vehicle:
 
     def request_streams(self) -> None:
         """Message rates kept modest: several aircraft may share one radio."""
-        rates = ((33, 4), (1, 2), (24, 1), (74, 2), (245, 1), (147, 1), (42, 1), (65, 1), (242, 0.2))
+        # GLOBAL_POSITION_INT at 10 Hz: ORCA avoidance runs at 10 Hz on these positions.
+        rates = ((33, 10), (1, 2), (24, 1), (74, 2), (245, 1), (147, 1), (42, 1), (65, 1), (242, 0.2))
         for msg_id, hz in rates:
             try:  # MAV_CMD_SET_MESSAGE_INTERVAL
                 self.mav.command_long_send(self.sysid, self.compid, 511, 0, msg_id, 1e6 / hz, 0, 0, 0, 0, 0)
@@ -401,17 +410,17 @@ class Vehicle:
                     if r != 0:
                         return r
                 return self._command(22, [0, 0, 0, 0, 0, 0, alt])  # ArduCopter: param7 = altitude above home
-            if command == "hold":
-                return self.set_mode("LOITER")
-            if command == "rtl":
-                return self.set_mode("RTL")
-            if command == "land":
-                return self.set_mode("LAND")
+            if command in ("hold", "rtl", "land"):
+                # An operator decision always ends ORCA steering of this aircraft.
+                self.orca_engaged, self.guided_target = False, None
+                return self.set_mode({"hold": "LOITER", "rtl": "RTL", "land": "LAND"}[command])
             if command == "goto":
                 self._require_authorized()
                 lat, lon, alt = float(params["latitude"]), float(params["longitude"]), float(params.get("altitude_m", 20))
                 self._check_point(lat, lon, alt)
                 self._command_mode("GUIDED")
+                self.guided_target = (lat, lon, alt)
+                self.orca_engaged = False
                 # MAV_CMD_DO_REPOSITION, frame GLOBAL_RELATIVE_ALT_INT, flag "change mode" -> GUIDED (ArduCopter 4.1+)
                 r = self._command_int(192, 6, [-1, 1, 0, float("nan")], int(lat * 1e7), int(lon * 1e7), alt)
                 if r == 3:  # older firmware: GUIDED + position target (no acknowledgement)
@@ -434,6 +443,8 @@ class Vehicle:
                     if r != 0:
                         return r
                 self._command_mode("AUTO")
+                self.guided_target = None
+                self.orca_engaged = False
                 return self._command(300, [0, 0])  # MAV_CMD_MISSION_START: AUTO from the first item (takeoff)
             raise VehicleError("UNSUPPORTED_COMMAND", f"Unsupported command {command}")
 
@@ -470,6 +481,9 @@ class Vehicle:
                 last_activity = time.time()
                 if msg.get_type() == "MISSION_ACK":
                     if msg.type == 0:
+                        self.mission_items = full
+                        speeds = [float(i.get("param2") or 0) for i in full if i["command"] == 178 and i.get("param2")]
+                        self.mission_speed = speeds[0] if speeds else None
                         self.state.mission_count = len(full)
                         self.state.reached.clear()
                         self.state.mission_current = -1
@@ -484,6 +498,73 @@ class Vehicle:
                     it.get("param1", 0), it.get("param2", 0), it.get("param3", 0), it.get("param4", 0),
                     int(it.get("lat", 0) * 1e7), int(it.get("lon", 0) * 1e7), float(it.get("alt", 0)), 0)
             raise VehicleError("MISSION_TIMEOUT", "Mission upload timed out (radio link?)")
+
+    # ----------------------------------------------- ORCA collision avoidance
+
+    def orca_target(self) -> tuple[float, float] | None:
+        """Where Drone MatrX wants this aircraft to go right now (lat, lon)."""
+        if self.orca_resume == "GOTO" or (not self.orca_engaged and self.state.mode == "GUIDED"):
+            return self.guided_target[:2] if self.guided_target else None
+        seq = self.state.mission_current
+        if 0 <= seq < len(self.mission_items):
+            it = self.mission_items[seq]
+            if it["command"] == 16 and (it.get("lat") or it.get("lon")):
+                return (it["lat"], it["lon"])
+            if it["command"] == 20 and self.state.home:  # RTL item: back to launch
+                return self.state.home[:2]
+        return None
+
+    def orca_controllable(self) -> bool:
+        """Only aircraft Drone MatrX is flying (mission or go-to), with a valid flight
+        permission, no pilot/autopilot override, a live link and clear of the ground."""
+        s = self.state
+        if not (self.bound and s.armed and self.override is None and time.time() < self.authorized_until):
+            return False
+        if not s.last_heartbeat or time.time() - s.last_heartbeat > 3 or s.rel_alt < 3.0:
+            return False
+        return s.mode == "AUTO" or (s.mode == "GUIDED" and (self.orca_engaged or self.guided_target is not None))
+
+    def orca_engage(self, resume: str) -> bool:
+        """Take over with GUIDED velocity control (recorded as commanded: no override)."""
+        if not self._cmd_lock.acquire(timeout=0.05):  # an operator command is in progress
+            return False
+        try:
+            if self.state.mode != "GUIDED":
+                if self.set_mode("GUIDED") != 0:
+                    return False
+            self.orca_engaged, self.orca_resume, self.orca_clear_since = True, resume, None
+            self.on_event("orca_engaged", {"resume": resume})
+            return True
+        except VehicleError:
+            return False
+        finally:
+            self._cmd_lock.release()
+
+    def orca_velocity(self, v_north: float, v_east: float) -> None:
+        """Velocity setpoint, altitude held (ArduCopter stops by itself ~3 s after the last one)."""
+        mask = 0b110111000111  # use vx, vy, vz only; ignore position, acceleration, yaw
+        self.mav.set_position_target_global_int_send(0, self.sysid, self.compid, 6, mask, 0, 0, 0,
+                                                     float(v_north), float(v_east), 0.0, 0, 0, 0, 0, 0)
+
+    def orca_release(self) -> bool:
+        """Conflict cleared: continue the mission (AUTO resumes the current waypoint) or the go-to."""
+        if not self._cmd_lock.acquire(timeout=0.05):
+            return False
+        try:
+            if self.orca_resume == "GOTO" and self.guided_target:
+                lat, lon, alt = self.guided_target
+                self._command_mode("GUIDED")
+                r = self._command_int(192, 6, [-1, 1, 0, float("nan")], int(lat * 1e7), int(lon * 1e7), alt)
+            else:
+                r = self.set_mode("AUTO")
+            if r == 0:
+                self.on_event("orca_released", {"resumed": self.orca_resume})
+                self.orca_engaged, self.orca_resume, self.orca_clear_since = False, None, None
+            return r == 0
+        except VehicleError:
+            return False
+        finally:
+            self._cmd_lock.release()
 
     # ------------------------------------------------------- guided setup
 
@@ -643,6 +724,7 @@ class Vehicle:
             # Mission progress (Auto Mission status): vehicle seq numbers, home placeholder = 0.
             "mission_count": s.mission_count, "mission_current": s.mission_current,
             "reached_max": max(s.reached) if s.reached else -1, "landed_state": s.landed_state,
+            "orca_engaged": self.orca_engaged,
         }
 
     def prearm(self) -> dict:

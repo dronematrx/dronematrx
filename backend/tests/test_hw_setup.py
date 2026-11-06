@@ -194,3 +194,41 @@ def test_bridge_is_only_started_on_this_laptop(client, op, monkeypatch):
     assert r.status_code == 409 and r.json()["code"] == "CANNOT_START"
     assert client.post(f"{BASE}/bridge/stop", headers=op).json()["code"] == "NOT_STARTED_HERE"
     assert hw_setup.bridge_process.proc is None
+
+
+# ------------------------------------------------------------- ORCA on real aircraft
+
+
+class OrcaBridge(FakeSetupBridge):
+    def __init__(self):
+        super().__init__()
+        self.orca_enabled = True
+
+    def orca(self):
+        return {"enabled": self.orca_enabled, "rate_hz": 10.0, "deadlock_detours": 0, "aircraft": [], "predictions": []}
+
+    def set_orca(self, enabled):
+        self.calls.append(("orca", enabled))
+        self.orca_enabled = enabled
+        return self.orca()
+
+
+def test_orca_status_toggle_needs_operator_and_reason(client, observer_user, op, db, monkeypatch):
+    fake = OrcaBridge()
+    monkeypatch.setattr(fcsvc, "_hw", fake)
+    obs = auth_headers(client, observer_user.email)
+    assert client.get("/mission-control/hardware/orca", headers=obs).json()["enabled"] is True  # anyone may look
+    assert client.post("/mission-control/hardware/orca", headers=obs, json={"enabled": False, "reason": "test"}).status_code == 403
+    assert client.post("/mission-control/hardware/orca", headers=op, json={"enabled": False}).status_code == 422  # reason required
+    r = client.post("/mission-control/hardware/orca", headers=op, json={"enabled": False, "reason": "bench test, props off"})
+    assert r.status_code == 200 and r.json()["enabled"] is False and ("orca", False) in fake.calls
+    row = db.scalars(select(AuditLog).where(AuditLog.action == "orca_disabled")).first()
+    assert row is not None and row.event_metadata["reason"] == "bench test, props off"
+
+
+def test_orca_status_when_bridge_down(client, op, monkeypatch):
+    class Down(OrcaBridge):
+        def orca(self):
+            raise HwBridgeError("Hardware bridge unreachable")
+    monkeypatch.setattr(fcsvc, "_hw", Down())
+    assert client.get("/mission-control/hardware/orca", headers=op).json() == {"available": False, "error": "Hardware bridge unreachable"}

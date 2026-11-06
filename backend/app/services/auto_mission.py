@@ -436,6 +436,7 @@ def status(db: Session, user: User, mission_id: uuid.UUID, live_by_id: dict[str,
             entry["drop_reason"] = "pilot took control" if override else f"left the mission ({mode})"
         entry["status"] = state
         out.append({"drone_id": did, "name": entry["name"], "state": state, "mode": mode, "armed": armed, "altitude_m": entry["altitude_m"],
+                    "orca_avoiding": bool((fc or {}).get("orca_engaged")),
                     "tasks_total": len(entry.get("tasks", [])), "tasks_done": len(prog["done"]), "remaining": prog["remaining"],
                     "drop_reason": entry.get("drop_reason") if state == "dropped" else None, "reassigned_to": entry.get("reassigned_to")})
     states = {d["state"] for d in out}

@@ -163,6 +163,45 @@ def test_mission_upload_accepted_by_ardupilot(bridge):
     assert r.status_code == 409 and r.json()["detail"]["code"] == "DISTANCE_LIMIT"
 
 
+def test_orca_guided_velocity_and_auto_resume(bridge):
+    """The MAVLink ORCA uses on real aircraft: GUIDED velocity setpoints while
+    avoiding, then AUTO resuming the same mission, without the bridge mistaking
+    its own mode changes for a pilot takeover."""
+    fc_id = "tcp5770-2"
+    bridge.post("/orca", json={"enabled": False})  # steer by hand here; the loop is tested with practice vehicles
+    assert bridge.post(f"/fc/{fc_id}/bind", json={"drone_id": str(uuid.uuid4()), "uin": "SITL-2", "name": "SITL-2"}).status_code == 200
+    bridge.post(f"/fc/{fc_id}/override/release", json={"by": "sitl-test"})
+    pre = wait_for(lambda: (p := bridge.get(f"/fc/{fc_id}/prearm").json()) and p["home_set"] and p, 120)
+    lat, lon = pre["home"][0], pre["home"][1]
+    items = [{"command": 22, "alt": 10, "frame": 3}, {"command": 178, "param1": 1, "param2": 3, "frame": 2},
+             {"command": 16, "lat": lat + 0.0005, "lon": lon, "alt": 10, "frame": 3},
+             {"command": 16, "lat": lat, "lon": lon, "alt": 10, "frame": 3}]
+    assert bridge.post(f"/fc/{fc_id}/mission", json={"items": items}).status_code == 200
+    bridge.post(f"/fc/{fc_id}/authorize", json={"until_epoch": time.time() + 600, "by": "sitl-test"})
+    wait_for(lambda: bridge.post(f"/fc/{fc_id}/command", json={"command": "mission_start"}).json().get("result") == 0, 90, step=3)
+    v = server.vehicles()[fc_id]
+    wait_for(lambda: v.state.mode == "AUTO" and v.state.rel_alt > 8 and v.state.mission_current >= 3, 90)
+    assert v.orca_controllable()
+
+    assert v.orca_engage("AUTO") and v.state.mode in ("GUIDED", "AUTO")
+    end = time.time() + 5
+    while time.time() < end:  # sidestep east at 3 m/s, as ORCA would
+        v.orca_velocity(0.0, 3.0)
+        time.sleep(0.1)
+    assert v.state.mode == "GUIDED" and v.state.vy > 1.5, (v.state.mode, v.state.vy)
+    assert v.override is None  # our own GUIDED switch is not a "pilot takeover"
+    seq_before = v.state.mission_current
+    assert v.orca_release()
+    wait_for(lambda: v.state.mode == "AUTO", 10)
+    wait_for(lambda: v.state.mission_current > seq_before or 3 in v.state.reached, 120)  # the mission carried on
+    assert v.override is None
+    bridge.post(f"/fc/{fc_id}/command", json={"command": "rtl"})
+    wait_for(lambda: not v.state.armed, 180, step=2)
+    bridge.post(f"/fc/{fc_id}/override/release", json={"by": "sitl-test"})
+    bridge.post(f"/fc/{fc_id}/unbind")
+    bridge.post("/orca", json={"enabled": True})
+
+
 def test_system_id_change_survives_reboot(bridge):
     r = bridge.post("/fc/tcp5770-2/sysid", json={"system_id": 7})
     assert r.status_code == 200, r.text

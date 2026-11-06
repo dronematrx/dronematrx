@@ -88,6 +88,7 @@ def load_config(path: str | None) -> dict:
     cfg.setdefault("cameras", {})
     cfg.setdefault("limits", {"max_alt_m": 30, "max_distance_m": 150})
     cfg.setdefault("radios", {})
+    cfg.setdefault("avoidance", {"enabled": True, "rate_hz": 10.0})
     if not cfg.get("token"):
         cfg["token"] = secrets.token_urlsafe(24)
     state["config_path"] = p
@@ -194,11 +195,17 @@ async def lifespan(app: FastAPI):
             logger.error("skipping link: %s", exc)
     # In the background: with NATS down the bridge still serves the setup API
     # (nats-py keeps retrying the first connection when reconnects are unlimited).
+    from hwbridge.avoidance import HardwareOrca
+
+    av = CONFIG.get("avoidance") or {}
+    state["orca"] = HardwareOrca(vehicles, rate_hz=float(av.get("rate_hz", 10.0)), on_event=_on_event, enabled=bool(av.get("enabled", True)))
+    state["orca"].start()
     state["nats_error"] = "connecting"
     tasks = [asyncio.create_task(_nats_connect()), asyncio.create_task(_telemetry_loop())]
     yield
     for task in tasks:
         task.cancel()
+    state["orca"].stop()
     for link in state["links"]:
         link.stop()
     if state.get("nc"):
@@ -602,6 +609,30 @@ def radio_netid(port: str, body: NetidIn, x_bridge_token: str | None = Header(de
     CONFIG["radios"][port] = body.netid
     save_config()
     return result
+
+
+# ------------------------------------------------- ORCA collision avoidance
+
+
+class OrcaIn(BaseModel):
+    enabled: bool
+
+
+@app.get("/orca")
+def orca_status(x_bridge_token: str | None = Header(default=None)) -> dict:
+    """The simulator's ORCA, running on the real aircraft (hwbridge/avoidance.py)."""
+    _check_token(x_bridge_token)
+    return state["orca"].status()
+
+
+@app.post("/orca")
+def orca_toggle(body: OrcaIn, x_bridge_token: str | None = Header(default=None)) -> dict:
+    _check_token(x_bridge_token)
+    state["orca"].set_enabled(body.enabled)
+    CONFIG["avoidance"] = {**(CONFIG.get("avoidance") or {}), "enabled": body.enabled}
+    save_config()
+    logger.warning("ORCA collision avoidance %s", "ENABLED" if body.enabled else "DISABLED")
+    return state["orca"].status()
 
 
 def main() -> None:

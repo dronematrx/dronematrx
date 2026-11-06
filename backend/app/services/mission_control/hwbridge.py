@@ -118,6 +118,12 @@ class HwBridgeClient:
     def video_sources(self) -> dict:
         return self._call("GET", "/video/sources", timeout_s=4)
 
+    def orca(self) -> dict:
+        return self._call("GET", "/orca", timeout_s=4)
+
+    def set_orca(self, enabled: bool) -> dict:
+        return self._call("POST", "/orca", {"enabled": enabled}, timeout_s=10)
+
     # ------------------------------------------------ guided setup (Drone Setup page)
 
     def ports(self) -> dict:

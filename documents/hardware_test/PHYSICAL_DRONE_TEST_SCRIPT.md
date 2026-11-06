@@ -271,7 +271,7 @@ Launch points at least **5 m apart**. Uploaded altitudes **10 m (HW-01) and 15 m
 
 ## What this session cannot test (known limits)
 
-- **Collision avoidance (Sprint 4 ORCA) does not command real drones.** Separation is by different altitudes, areas and RTL heights. Never fly two drones at the same altitude on crossing lanes.
+- **ORCA collision avoidance on real drones is new (Sprint 6.2) and not yet flight-proven.** It was tested with practice vehicles and (when you run it) ArduPilot SITL. Keep separation by different altitudes, areas and RTL heights, and never fly two drones at the same altitude on crossing lanes until ORCA has been demonstrated on the bench and in a supervised flight.
 - **Object detection** runs on the simulator's camera only; real camera frames aren't analysed yet.
 - **Wi-Fi / LTE / LoRa failover** (Sprint 4) is a simulated link model, not the real radios.
 - The bridge supports **ArduCopter only** (not ArduPlane or Rover).

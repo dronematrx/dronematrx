@@ -304,6 +304,32 @@ async def bridge_stop(db: Session = Depends(get_db), user: User = Depends(requir
     return out
 
 
+class OrcaToggleIn(BaseModel):
+    enabled: bool
+    reason: str = Field(..., min_length=3, max_length=200)
+
+
+@router.get("/hardware/orca")
+async def hardware_orca(user: User = Depends(require_any_authenticated)) -> dict:
+    """ORCA collision avoidance on the real aircraft (the simulator's engine, run by the bridge)."""
+    try:
+        return {"available": True, **await asyncio.to_thread(fcsvc.hw_client().orca)}
+    except HwBridgeError as exc:
+        return {"available": False, "error": str(exc)}
+
+
+@router.post("/hardware/orca")
+async def hardware_orca_toggle(payload: OrcaToggleIn, db: Session = Depends(get_db), user: User = Depends(require_fleet_write)) -> dict:
+    try:
+        out = await asyncio.to_thread(fcsvc.hw_client().set_orca, payload.enabled)
+    except HwBridgeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    db.add(AuditLog(user_id=user.id, action="orca_enabled" if payload.enabled else "orca_disabled", resource="hwbridge", resource_id="local",
+                    event_metadata={"reason": payload.reason}))
+    db.commit()
+    return {"available": True, **out}
+
+
 @router.get("/hardware/controllers")
 async def hardware_controllers(user: User = Depends(require_any_authenticated)) -> dict:
     return {"controllers": await asyncio.to_thread(setupsvc.controllers)}

@@ -23,6 +23,7 @@ export interface AutoDroneStatus {
   remaining: string[]
   drop_reason: string | null
   reassigned_to: string | null
+  orca_avoiding?: boolean
 }
 
 export interface AutoMission {
@@ -53,3 +54,19 @@ export const reassignAuto = (missionId: string, fromDroneId: string, acknowledge
   apiFetch<{ from: string; to: string; tasks: string[] }>(`/auto-missions/${missionId}/reassign`, {
     method: 'POST', body: { from_drone_id: fromDroneId, acknowledgements }, timeoutMs: 60_000,
   })
+
+export interface OrcaStatus {
+  available: boolean
+  error?: string
+  enabled?: boolean
+  rate_hz?: number
+  cycles?: number
+  deadlock_detours?: number
+  cycle_ms_avg?: number | null
+  aircraft?: { fc_id: string; uin: string | null; steered_by_orca: boolean; eligible: boolean; mode: string; neighbors: string[]; collision_predicted: boolean }[]
+  predictions?: { a: string; b: string; ttc_s: number; distance_m: number }[]
+}
+
+export const orcaStatus = () => apiFetch<OrcaStatus>('/mission-control/hardware/orca')
+export const setOrca = (enabled: boolean, reason: string) =>
+  apiFetch<OrcaStatus>('/mission-control/hardware/orca', { method: 'POST', body: { enabled, reason } })

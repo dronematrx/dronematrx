@@ -2,9 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { LatLngTuple } from 'leaflet'
 import { Polygon } from 'react-leaflet'
-import { Plane, Rocket, ShieldCheck, Wand2 } from 'lucide-react'
+import { Plane, Radar, Rocket, ShieldCheck, Wand2 } from 'lucide-react'
 import * as autoApi from '../api/autoMission'
-import type { AutoAvailability, AutoMission, AutoMode } from '../api/autoMission'
+import type { AutoAvailability, AutoMission, AutoMode, OrcaStatus } from '../api/autoMission'
 import { ApiError } from '../api/client'
 import * as geofencesApi from '../api/geofences'
 import * as mc from '../api/missionControl'
@@ -60,6 +60,8 @@ export function AutoMissionPage() {
   const [ackText, setAckText] = useState<Record<string, string>>({})
   const [acks, setAcks] = useState<Record<string, boolean>>({})
   const [minutes, setMinutes] = useState(20)
+  const [orca, setOrca] = useState<OrcaStatus | null>(null)
+  const [orcaReason, setOrcaReason] = useState('')
 
   useEffect(() => {
     void listTemplates().then(setTemplates).catch(() => undefined)
@@ -68,7 +70,10 @@ export function AutoMissionPage() {
     void fetchDrones()
   }, [fetchDrones])
 
-  const loadAvailability = useCallback(() => void autoApi.availability().then(setAvail).catch(() => undefined), [])
+  const loadAvailability = useCallback(() => {
+    void autoApi.availability().then(setAvail).catch(() => undefined)
+    void autoApi.orcaStatus().then(setOrca).catch(() => undefined)
+  }, [])
   useEffect(() => {
     loadAvailability()
     const t = window.setInterval(loadAvailability, 5000)
@@ -181,6 +186,24 @@ export function AutoMissionPage() {
                 <div style={{ opacity: 0.75 }}>Real drones fly below {avail?.limits.max_alt_m ?? 30} m, each at its own height.</div>
               </div>
             )}
+            {mode === 'hardware' && orca && (
+              <div style={{ fontSize: '.75rem', display: 'grid', gap: '.3rem', borderTop: '1px solid rgb(255 255 255 / .1)', paddingTop: '.4rem' }} data-testid="auto-orca">
+                <div><Radar size={12} /> Collision avoidance (ORCA, same as the simulator):{' '}
+                  {!orca.available ? <span>connection service not running</span>
+                    : <strong data-testid="auto-orca-state" style={{ color: orca.enabled ? '#69F0AE' : '#FF8A80' }}>{orca.enabled ? `ON at ${orca.rate_hz} Hz` : 'OFF'}</strong>}
+                  {orca.available && orca.enabled && <span> &middot; {orca.predictions?.length ?? 0} conflict(s) predicted now &middot; {orca.deadlock_detours ?? 0} deadlock detour(s)</span>}
+                </div>
+                {orca.available && canWrite && (
+                  <div style={{ display: 'flex', gap: '.4rem' }}>
+                    <input className="dm-input" placeholder="Reason (required)" value={orcaReason} onChange={(e) => setOrcaReason(e.target.value)} style={{ flex: 1, fontSize: '.75rem' }} />
+                    <button type="button" className="dm-btn dm-btn--ghost" disabled={orcaReason.trim().length < 3 || !!busy} data-testid="auto-orca-toggle"
+                      onClick={() => run('orca', async () => { setOrca(await autoApi.setOrca(!orca.enabled, orcaReason.trim())); setOrcaReason('') })}>
+                      {orca.enabled ? 'Turn off' : 'Turn on'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </section>
 
           {canWrite && !result?.launch?.status && (
@@ -212,6 +235,7 @@ export function AutoMissionPage() {
                       <td>{d.altitude_m ? `${d.altitude_m} m` : ''}</td>
                       <td>{d.state ? `${d.tasks_done}/${d.tasks_total} lanes` : `${d.tasks_total} lanes`}</td>
                       <td>{d.state && <span className={STATE_LABEL[d.state]?.cls} style={{ fontSize: '.65rem', padding: '.1rem .35rem' }} data-testid={`auto-state-${d.name}`}>{STATE_LABEL[d.state]?.text ?? d.state}</span>}
+                        {(d as { orca_avoiding?: boolean }).orca_avoiding && <span className="dm-banner dm-banner--amber" style={{ fontSize: '.6rem', padding: '.1rem .3rem', marginLeft: 4 }} data-testid={`auto-avoiding-${d.name}`}>Avoiding</span>}
                         {d.drop_reason && <div style={{ fontSize: '.65rem' }}>{d.drop_reason}</div>}
                         {d.reassigned_to && <div style={{ fontSize: '.65rem' }}>tasks sent to {d.reassigned_to}</div>}
                       </td>

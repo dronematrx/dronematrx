@@ -23,7 +23,7 @@ Press **Plan mission with N drones**. Everything else is automatic:
 | Done automatically | How |
 |---|---|
 | **Choose the drones** | The N ready drones with the fullest batteries. **Real and simulated drones are never mixed** (also enforced in the manual wizard). A real drone is "ready" only if it is linked to its flight controller, has live telemetry, is disarmed, has no pilot-override lock, is not in RTL/LAND, has ≥ 50 % battery and carries the sensor the mission type needs. |
-| **Altitude** | Simulation: the template altitude. Real drones: below the 30 m hard limit, **each drone at its own height** (for example 20 m and 25 m), because collision avoidance doesn't steer real drones. Speed capped at 8 m/s. |
+| **Altitude** | Simulation: the template altitude. Real drones: below the 30 m hard limit, **each drone at its own height** (for example 20 m and 25 m) as the first layer of separation; ORCA avoidance is the second (section 1b). Speed capped at 8 m/s. |
 | **Geofence** | Real drones: an inclusion geofence = the area + 30 m, created automatically (the pre-arm checklist needs one). |
 | **Task limits** | Sized for the area: a lower altitude means more lanes, and CBBA's real limit is each drone's energy. |
 | **Plan + checks** | CBBA lanes, coverage, ETA, and every wizard validation check (NFZ, geofence, battery, readiness). |
@@ -67,6 +67,36 @@ Emergencies are unchanged: RC transmitters always win; **RTL ALL / LAND ALL** in
 
 ---
 
+## 1b. ORCA collision avoidance on real drones
+
+The **same ORCA** that steers the simulator's drones now steers the real ones. The bridge imports the simulator's engine (`backend/app/services/orca`) instead of a copy, with the same parameters (1 m radius + 2 m margin, 5 s horizon, 10 Hz, 8 m vertical band), the same priorities (drones returning home or flown by the pilot are given way to) and the same deadlock rule (turn 60° right for 3 s when stuck).
+
+| | Simulator | Real drones |
+|---|---|---|
+| Where it runs | demo simulator's 10 Hz motion loop | hardware bridge, 10 Hz (positions requested at 10 Hz) |
+| Preferred velocity | towards the drone's goal | towards the current mission waypoint or go-to target, at mission speed |
+| How the safe velocity is flown | integrated by the simulator | ArduPilot GUIDED velocity setpoints; when clear for 2 s the drone **resumes AUTO** at the same waypoint (or its go-to) |
+| Who is steered | every flying drone | only drones Drone MatrX is flying (AUTO mission or go-to) with a valid flight permission, no pilot override, above 3 m. Every other aircraft is still avoided. |
+
+**Safety on real drones:**
+- The RC pilot still wins: a mode switch flip locks Drone MatrX (and ORCA) out of that drone. ORCA's own GUIDED/AUTO switches are recorded as commanded, so they never count as a takeover.
+- If the bridge stops, ArduPilot stops by itself when velocity setpoints stop (~3 s) and the GCS failsafe returns home.
+
+**See it and control it:** Auto Mission → Real drones shows *Collision avoidance (ORCA): ON at 10 Hz*, conflicts predicted now and deadlock detours. A drone being steered shows an **Avoiding** badge. Operators can turn ORCA off or on with a written reason (audited). Auto Mission still gives each real drone its own altitude: ORCA is a second layer, not a replacement.
+
+**Evidence** (`hwbridge/tests/test_avoidance.py`, practice vehicles over the bridge's real MAVLink path):
+
+| Test | Result |
+|---|---|
+| Head-on, same altitude, ORCA **off** | fly through each other (< 1 m) |
+| Head-on, ORCA **on** | min separation 6.0 m (the envelope); both resume AUTO and finish |
+| Pilot hovers a drone exactly on the path | avoided (deadlock detour), never steered |
+| Flight permission revoked before they meet | not steered |
+
+`test_orca_guided_velocity_and_auto_resume` checks the same GUIDED-velocity → AUTO-resume sequence against **real ArduPilot** (SITL; see section 4). The Sprint 6.1 browser walkthrough also passes with ORCA on: during its two-drone CBBA mission ORCA predicted and resolved conflicts, with 0 errors in 3,882 cycles.
+
+---
+
 ## 2. Start everything with one command
 
 ```powershell
@@ -95,7 +125,7 @@ It finds the laptop's network address by itself (the video wall needs it; a wron
 | Q4 | Work uncommitted, no CI | **Fixed** | Sprint 6.1 committed; `.github/workflows/ci.yml` runs backend (PostGIS + TimescaleDB + NATS), bridge and frontend tests on every push |
 | Q5 | `pymavlink` / `pyserial` missing from `requirements.txt` | **Fixed** | Found while writing CI: a fresh install could not run the bridge |
 | 5 | Finalized perception and search stack (YOLOv8n/HIT-UAV, ByteTrack, SegFormer-B0, HSI, OpenVINS, TFMini, A* routing, team orienteering, SQLite offline, store-and-forward, adaptive coverage search) | **Not started** | Needs real camera frames, trained models and onboard compute: a separate track |
-| — | ORCA collision avoidance on real drones | **Not started** | Real drones are separated by altitude only |
+| — | ORCA collision avoidance on real drones | **Fixed** | Same engine as the simulator, run by the bridge (section 1b, `hwbridge/tests/test_avoidance.py`) |
 
 Bugs found and fixed during this work (each found by a new test):
 

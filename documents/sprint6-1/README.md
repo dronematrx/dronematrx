@@ -411,7 +411,7 @@ In this practice run the tiles show labelled TEST PATTERNS in place of real came
 
 2. **Upload:** Mission Control → select HW-01 → in the safety box pick the mission, set **Alt 10 m** → **Upload to aircraft**. Select HW-02 → set **Alt 15 m** → Upload.
 
-   **Give every drone its own altitude.** Collision avoidance doesn't steer real drones, so different heights keep crossing lanes apart.
+   **Give every drone its own altitude.** ORCA collision avoidance now also steers real drones (Sprint 6.2), but different heights remain the first layer of separation.
 
    ![Mission uploaded with per-drone altitude](screenshots/16_mission_uploaded_per_drone_altitude.png)
 
@@ -505,7 +505,7 @@ The screenshots in this folder were produced this way, by `frontend/e2e/drone-se
 
 ## 13. What is not supported yet
 
-- **Collision avoidance (Sprint 4 ORCA) doesn't steer real drones.** Keep drones apart with different altitudes, separate areas and different `RTL_ALT`.
+- **Collision avoidance:** since Sprint 6.2 the simulator's ORCA also steers real drones that Drone MatrX is flying (see `documents/sprint6-2/README.md` section 1b). Still keep drones apart with different altitudes, areas and `RTL_ALT`: ORCA is a second layer.
 - **Object detection** works on the simulator's camera only; real camera frames aren't analysed yet.
 - **Wi-Fi / LTE / LoRa failover** (Sprint 4) is a simulated link model, not your radios.
 - **ArduCopter only** (no ArduPlane, Rover or PX4 hardware yet).

@@ -99,9 +99,12 @@ export function FleetCommandDialog({ command, onClose }: { command: FleetCommand
             <table className="dm-data-table" data-testid="mc-fleet-results"><thead><tr><th>Drone</th><th>Result</th><th>Detail</th></tr></thead><tbody>
               {result.results.map((r, i) => {
                 const c = live(r.id) ?? r
+                // A live update can arrive before its name is filled in: fall back to the
+                // targets this dialog already showed, never to a raw database id.
+                const name = c.drone_name ?? r.drone_name ?? preview?.targets.find((t) => t.drone_id === r.drone_id)?.name ?? r.drone_id
                 return (
-                  <tr key={r.id ?? i} data-testid={`mc-fleet-result-${c.drone_name ?? r.drone_id}`}>
-                    <td>{c.drone_name ?? r.drone_id}</td>
+                  <tr key={r.id ?? i} data-testid={`mc-fleet-result-${name}`}>
+                    <td>{name}</td>
                     <td>{c.state ? <CommandStateTag c={c} /> : '—'}</td>
                     <td style={{ fontSize: '.7rem' }}>{c.failure_reason ?? (c.state === 'confirmed' ? 'confirmed by telemetry' : c.state === 'accepted' ? 'acknowledged by PX4; awaiting telemetry' : c.state === 'dispatched' ? 'on the command bus; awaiting telemetry' : '')}</td>
                   </tr>

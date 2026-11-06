@@ -62,6 +62,9 @@ class PracticeCopter:
         self.battery = 98.0
         self.rc_on = True
         self.target: tuple[float, float, float] | None = None
+        self.vel_cmd: tuple[float, float] | None = None  # GUIDED velocity setpoint (north, east) m/s
+        self.vel_cmd_at = 0.0
+        self.vn = self.ve = 0.0  # measured velocity, reported in GLOBAL_POSITION_INT
         self.mission: list = []
         self.mission_seq = 0
         self.params = dict(FACTORY) if fresh else {**CONFIGURED, "SYSID_THISMAV": sysid, "RTL_ALT": 1500 + 500 * (sysid - 1)}
@@ -94,12 +97,27 @@ class PracticeCopter:
         return d <= 1.0 and abs(alt - self.alt) < 0.5
 
     def step(self, dt: float) -> None:
+        lat0, lon0 = self.lat, self.lon
+        self._step(dt)
+        if dt > 0:
+            self.vn = (self.lat - lat0) * M_PER_DEG / dt
+            self.ve = (self.lon - lon0) * M_PER_DEG * math.cos(math.radians(self.lat)) / dt
+
+    def _step(self, dt: float) -> None:
         with self.lock:
             if self.armed:
                 self.battery = max(0.0, self.battery - 0.02 * dt)
             if not self.armed:
                 return
-            if self.mode == "GUIDED" and self.target:
+            if self.mode == "GUIDED" and self.vel_cmd is not None:
+                # ArduCopter: velocity setpoints older than ~3 s are dropped and the copter stops.
+                if time.time() - self.vel_cmd_at <= 3.0:
+                    vn, ve = self.vel_cmd
+                    self.lat += vn * dt / M_PER_DEG
+                    self.lon += ve * dt / (M_PER_DEG * math.cos(math.radians(self.lat)))
+                    if math.hypot(vn, ve) > 0.1:
+                        self.heading = (math.degrees(math.atan2(ve, vn)) + 360) % 360
+            elif self.mode == "GUIDED" and self.target:
                 self._move_to(*self.target, dt)
             elif self.mode == "RTL":
                 rtl_alt = self.params["RTL_ALT"] / 100.0
@@ -153,9 +171,15 @@ class PracticeCopter:
         t = m.get_type()
         if t == "COMMAND_LONG":
             self.command(m.command, [m.param1, m.param2, m.param3, m.param4, m.param5, m.param6, m.param7])
+        elif t == "SET_POSITION_TARGET_GLOBAL_INT":
+            with self.lock:
+                if self.mode == "GUIDED" and (m.type_mask & 0b111) == 0b111:  # velocity only
+                    self.vel_cmd, self.vel_cmd_at, self.target = (m.vx, m.vy), time.time(), None
+                elif self.mode == "GUIDED":
+                    self.vel_cmd, self.target = None, (m.lat_int / 1e7, m.lon_int / 1e7, m.alt)
         elif t == "COMMAND_INT":
             if m.command == 192:  # DO_REPOSITION
-                self.mode, self.target = "GUIDED", (m.x / 1e7, m.y / 1e7, m.z)
+                self.mode, self.target, self.vel_cmd = "GUIDED", (m.x / 1e7, m.y / 1e7, m.z), None
                 self.ack(192, 0)
             else:
                 self.ack(m.command, 3)
@@ -189,6 +213,7 @@ class PracticeCopter:
                 if name is None:
                     return self.ack(cmd, 4)
                 self.mode = name
+                self.vel_cmd = None
                 if name == "LOITER":
                     self.target = (self.lat, self.lon, self.alt)
                 return self.ack(cmd, 0)
@@ -315,13 +340,14 @@ class PracticeCopter:
         base = mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED | (mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED if self.armed else 0)
         mav.heartbeat_send(2, 3, base, MODES[self.mode], 4 if self.armed else 3)
         mav.global_position_int_send(int(time.time() * 1000) & 0xFFFFFFFF, int(self.lat * 1e7), int(self.lon * 1e7),
-                                     int((self.home[2] + self.alt) * 1000), int(self.alt * 1000), 0, 0, 0, int(self.heading * 100))
+                                     int((self.home[2] + self.alt) * 1000), int(self.alt * 1000), int(self.vn * 100), int(self.ve * 100), 0,
+                                     int(self.heading * 100))
         present = AHRS | GPS | RC | PREARM
         health = AHRS | GPS | (0 if self.prearm_failures() else PREARM) | (RC if self.rc_on else 0)
         mav.sys_status_send(present, present, health, 300, int((14.8 + self.battery / 100 * 2.0) * 1000), -1, int(self.battery), 0, 0, 0, 0, 0, 0)
         mav.gps_raw_int_send(0, 3, int(self.lat * 1e7), int(self.lon * 1e7), 0, 80, 120, 0, 0, 14)
         mav.extended_sys_state_send(0, 1 if self.landed() else 2)
-        mav.vfr_hud_send(self.speed if self.armed and not self.landed() else 0.0, 0.0, int(self.heading), 0, self.alt, 0.0)
+        mav.vfr_hud_send(math.hypot(self.vn, self.ve), 0.0, int(self.heading), 0, self.alt, 0.0)
         flt = {0: 1100, 1: 1500, 2: 1900}[int(time.time() / 4) % 3] if self.sticks == "sweep" else 1100
         mav.rc_channels_send(0, 8, *self.rc_values(), flt, 1500, 1500, 1500, *([0] * 10), 200 if self.rc_on else 0)
 
