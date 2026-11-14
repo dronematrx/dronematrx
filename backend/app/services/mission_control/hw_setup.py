@@ -230,3 +230,31 @@ def ports() -> dict:
 
 def controllers() -> list[dict]:
     return _bridge(hw_client().controllers)
+
+
+# One-click fixes from the Mission Control pre-arm checklist (same values as
+# Drone Setup step 8, minus the per-drone RTL height and battery voltages).
+SAFETY_FIXES: dict[str, dict[str, float]] = {
+    "failsafes": {"FS_GCS_ENABLE": 1, "FS_GCS_TIMEOUT": 5, "FS_THR_ENABLE": 1, "BATT_FS_LOW_ACT": 2, "BATT_FS_CRT_ACT": 1},
+    "fence": {"FENCE_ENABLE": 1, "FENCE_TYPE": 7, "FENCE_ACTION": 1, "FENCE_ALT_MAX": 40, "FENCE_RADIUS": 150},
+}
+
+
+def fix_drone_safety(db: Session, user: User, drone_id, kind: str) -> dict:
+    from app.models.drone import Drone
+    from app.services.mission_control.hwbridge import parse_identity
+
+    if kind not in SAFETY_FIXES:
+        raise SetupError("BAD_FIX", "Unknown fix", 422)
+    drone = db.get(Drone, drone_id)
+    if drone is None or drone.organization_id != user.organization_id or not drone.active:
+        raise SetupError("DRONE_NOT_FOUND", "Drone not found", 404)
+    if not drone.hardware:
+        raise SetupError("NOT_HARDWARE", f"{drone.name} is not a real aircraft")
+    from app.services.mission_control import fc as fcsvc_mod
+
+    b = fcsvc_mod.active_binding(db, drone.id)
+    hw = parse_identity(b.endpoint) if b is not None and b.state == "bound" else None
+    if hw is None:
+        raise SetupError("NOT_BOUND", f"{drone.name} has no bound flight controller")
+    return {"drone_id": str(drone.id), "kind": kind, **write_params(db, user, hw["fc_id"], SAFETY_FIXES[kind])}

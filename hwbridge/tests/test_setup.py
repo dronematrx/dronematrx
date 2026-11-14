@@ -221,3 +221,50 @@ def test_radio_unreachable_air_radio_changes_nothing(fake_radio):
     assert r.local["NETID"] == "25" and not any(c.startswith("ATS3=") for c in r.log)
     with pytest.raises(radio.RadioError):
         radio.set_netid("COM5", 900)
+
+
+# ------------------------------------------------- ArduPilot 4.7 and SiK radio status
+
+
+def test_sysid_change_on_ardupilot_47_uses_mav_sysid(tmp_path):
+    """ArduPilot 4.7 renamed SYSID_THISMAV to MAV_SYSID: the change must still work."""
+    v = PracticeCopter(71, 23.26, 72.66, fresh=True, ap47=True)  # tcp 6460, starts with id 1
+    threading.Thread(target=v.run, daemon=True).start()
+    cfg = tmp_path / "config.json"
+    server.CONFIG.clear()
+    server.CONFIG.update(server.load_config(str(cfg)))
+    server.CONFIG["nats_url"] = "nats://127.0.0.1:1"
+    server.state["links"] = []
+    with TestClient(server.app) as client:
+        client.headers["X-Bridge-Token"] = server.CONFIG["token"]
+        client.post("/links", json={"endpoint": "tcp:127.0.0.1:6460"})
+        wait_for(lambda: "tcp6460-1" in controllers(client))
+        view = client.get("/fc/tcp6460-1/setup", params={"refresh": True}).json()
+        assert view["params"]["MAV_SYSID"] == 1 and view["params"]["SYSID_THISMAV"] is None
+        r = client.post("/fc/tcp6460-1/sysid", json={"system_id": 4})
+        assert r.status_code == 200, r.text
+        wait_for(lambda: "tcp6460-4" in controllers(client), 20)
+        assert v.params["MAV_SYSID"] == 4 and "SYSID_THISMAV" not in v.params
+        assert client.post("/fc/tcp6460-4/params", json={"values": {"MAV_SYSID": 9}}).status_code == 422
+    server.state["links"] = []
+
+
+def test_sik_radio_status_under_its_own_id_reaches_the_drone():
+    """SiK radios send RADIO_STATUS as system 51: it must mark the drone's link as a telemetry radio."""
+    from pymavlink.dialects.v20 import ardupilotmega as mavlink2
+
+    from hwbridge.ardupilot import Limits
+    from hwbridge.links import Link
+
+    link = Link("serial:COM99", 57600, Limits(), lambda *a: None)
+
+    def packet(src, msg):
+        raw = msg.pack(mavlink2.MAVLink(None, srcSystem=src, srcComponent=68 if src == 51 else 1))
+        return mavlink2.MAVLink(None).parse_buffer(raw)[0]
+
+    link._route(packet(2, mavlink2.MAVLink_heartbeat_message(2, 3, 0, 0, 3, 3)))
+    assert 2 in link.vehicles
+    link._route(packet(51, mavlink2.MAVLink_radio_status_message(180, 170, 90, 30, 25, 0, 0)))
+    v = link.vehicles[2]
+    assert v.state.radio_rssi == 180 and v.state.radio_remrssi == 170 and v.state.radio_seen > 0
+    assert 51 not in link.vehicles  # the radio never becomes a "drone"

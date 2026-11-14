@@ -30,6 +30,7 @@ export function DroneControl({ drone, canWrite, gotoTarget, gotoPicking, setGoto
   const resyncVersion = useMissionControlStore((s) => s.resyncVersion)
   const [prearm, setPrearm] = useState<Prearm | null>(null)
   const [prearmErr, setPrearmErr] = useState<string | null>(null)
+  const [fixing, setFixing] = useState<string | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [confirm, setConfirm] = useState<null | { command: CommandName; params: Record<string, unknown> }>(null)
@@ -156,7 +157,24 @@ export function DroneControl({ drone, canWrite, gotoTarget, gotoPicking, setGoto
           {prearm?.checks.map((c) => (
             <div key={c.id} className="dm-check-row" data-testid={`prearm-${c.id}`} data-status={c.status}>
               <span className={`dm-check-status dm-check-status--${c.status}`}>{c.status}{c.required ? '' : '*'}</span>
-              <span><strong>{c.label}</strong> <span style={{ opacity: 0.75 }}>{c.detail}</span></span>
+              <span><strong>{c.label}</strong> <span style={{ opacity: 0.75 }}>{c.detail}</span>
+                {hw && canWrite && c.status !== 'PASS' && (c.id === 'failsafes' || c.id === 'fc_geofence') && (
+                  <button type="button" className="dm-btn" style={{ marginLeft: 6, padding: '.05rem .4rem', fontSize: '.62rem' }} disabled={!!fixing}
+                    data-testid={`prearm-fix-${c.id}`}
+                    title={c.id === 'failsafes' ? 'Return home on lost link / RC / low battery, land on critical battery' : 'Onboard fence: 40 m high, 150 m radius, return home on breach'}
+                    onClick={async () => {
+                      setFixing(c.id)
+                      try {
+                        await mc.fixSafety(drone.id, c.id === 'failsafes' ? 'failsafes' : 'fence')
+                        await fetchPrearm()
+                      } catch (err) {
+                        setPrearmErr(err instanceof Error ? err.message : String(err))
+                      } finally {
+                        setFixing(null)
+                      }
+                    }}>{fixing === c.id ? 'Fixing...' : 'Fix'}</button>
+                )}
+              </span>
             </div>
           ))}
         </div>

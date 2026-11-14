@@ -232,3 +232,32 @@ def test_orca_status_when_bridge_down(client, op, monkeypatch):
             raise HwBridgeError("Hardware bridge unreachable")
     monkeypatch.setattr(fcsvc, "_hw", Down())
     assert client.get("/mission-control/hardware/orca", headers=op).json() == {"available": False, "error": "Hardware bridge unreachable"}
+
+
+# ------------------------------------------- one-click fixes from the pre-arm checklist
+
+
+def test_fix_failsafes_and_fence_from_mission_control(client, op, observer_user, bridge, db, organization, monkeypatch):
+    import uuid as _uuid
+    from types import SimpleNamespace
+
+    from app.models.drone import Drone
+
+    d = Drone(organization_id=organization.id, name="HW-FIX", uin=f"HW-FIX-{_uuid.uuid4().hex[:6]}", model="Quad", firmware="ArduPilot",
+              status="online", hardware=True, active=True)
+    demo = Drone(organization_id=organization.id, name="DEMO-FIX", uin=f"DEMO-FIX-{_uuid.uuid4().hex[:6]}", model="x", firmware="x",
+                 status="online", active=True)
+    db.add_all([d, demo])
+    db.commit()
+    monkeypatch.setattr(fcsvc, "active_binding", lambda _db, _id: SimpleNamespace(endpoint="serial:COM8/2", state="bound"))
+    url = f"/mission-control/drones/{d.id}/fix-safety"
+    assert client.post(url, headers=auth_headers(client, observer_user.email), json={"kind": "failsafes"}).status_code == 403
+    r = client.post(url, headers=op, json={"kind": "failsafes"})
+    assert r.status_code == 200, r.text
+    assert ("params", "COM8-2", {"FS_GCS_ENABLE": 1, "FS_GCS_TIMEOUT": 5, "FS_THR_ENABLE": 1, "BATT_FS_LOW_ACT": 2, "BATT_FS_CRT_ACT": 1}) in bridge.calls
+    assert client.post(url, headers=op, json={"kind": "fence"}).json()["confirmed"]["FENCE_ENABLE"] == 1
+    assert client.post(url, headers=op, json={"kind": "anything"}).status_code == 422
+    assert client.post(f"/mission-control/drones/{demo.id}/fix-safety", headers=op, json={"kind": "failsafes"}).json()["code"] == "NOT_HARDWARE"
+    assert audits(db, "params")
+    bridge.armed = True
+    assert client.post(url, headers=op, json={"kind": "failsafes"}).json()["code"] == "ARMED"

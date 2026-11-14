@@ -103,7 +103,12 @@ def head_on(client, copters, ids, orca: bool) -> dict:
         if done:
             break
         time.sleep(0.05)
-    return {"min_sep": min_sep, "modes": modes, "done": done,
+    fcs = {c["fc_id"]: {k: c[k] for k in ("mode", "armed", "override", "authorized_until", "heartbeat_age_s", "mission_current", "orca_engaged")}
+           for c in client.get("/fc").json()["controllers"]}
+    orca = {x["fc_id"]: {k: x[k] for k in ("steered_by_orca", "eligible", "preferred_velocity", "safe_velocity", "resume")}
+            for x in client.get("/orca").json()["aircraft"]}
+    return {"min_sep": min_sep, "modes": modes, "done": done, "fc": fcs, "orca": orca,
+            "practice": [(c.mode, round(c.alt, 1), c.mission_seq, c.vel_cmd) for c in copters],
             "end_dist": [abs((a.lon - (LON + GAP_DEG)) * M_PER_DEG * math.cos(math.radians(LAT))), abs((b.lon - LON) * M_PER_DEG * math.cos(math.radians(LAT)))]}
 
 
@@ -118,6 +123,7 @@ def test_without_orca_they_fly_through_each_other(rig):
 def test_with_orca_they_keep_their_distance_and_finish(rig):
     client, copters, ids = rig
     out = head_on(client, copters, ids, orca=True)
+    print("DIAG " + __import__("json").dumps(out, default=str))
     # The engine's avoidance envelope is 2 x (1 m radius + 2 m margin) = 6 m.
     assert out["min_sep"] > 4.0, out
     assert out["done"], out  # both resumed AUTO and reached their destination

@@ -458,7 +458,7 @@ def setup_view(fc_id: str, refresh: bool = False, x_bridge_token: str | None = H
     v = _vehicle(fc_id)
     v.rc_fast()
     cached = v._setup_params
-    if refresh or cached is None or any(cached.get(n) is None for n in ("SYSID_THISMAV", "FS_GCS_ENABLE")):
+    if refresh or cached is None or cached.get("FS_GCS_ENABLE") is None:
         cached = v.read_params_batch(SETUP_PARAMS, timeout_s=6.0)
         v._setup_params = cached
     view = v.setup_view(dict(cached))
@@ -479,7 +479,7 @@ class ParamsIn(BaseModel):
 def set_params(fc_id: str, body: ParamsIn, x_bridge_token: str | None = Header(default=None)) -> dict:
     _check_token(x_bridge_token)
     v = _vehicle(fc_id)
-    if "SYSID_THISMAV" in body.values:
+    if any(n in body.values for n in ("SYSID_THISMAV", "MAV_SYSID")):
         raise HTTPException(422, "Change the system id with POST /fc/{fc_id}/sysid")
     confirmed = _setup_call(lambda: v.write_params(body.values))
     cached = v._setup_params
@@ -511,7 +511,8 @@ def set_sysid(fc_id: str, body: SysidIn, x_bridge_token: str | None = Header(def
         raise HTTPException(409, {"code": "SYSID_IN_USE", "message": f"Another connected drone already uses system id {body.system_id}"})
     old = v.sysid
     if body.system_id != old:
-        _setup_call(lambda: v.write_params({"SYSID_THISMAV": body.system_id}))
+        name = _setup_call(v.sysid_param)
+        _setup_call(lambda: v.write_params({name: body.system_id}))
         _setup_call(v.reboot)
         if str(old) in CONFIG["cameras"] and str(body.system_id) not in CONFIG["cameras"]:
             CONFIG["cameras"][str(body.system_id)] = CONFIG["cameras"].pop(str(old))

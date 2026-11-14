@@ -45,11 +45,13 @@ RC_RECEIVER = 0x10000
 PREARM_CHECK = 0x10000000
 
 FAILSAFE_PARAMS = ("FS_GCS_ENABLE", "FS_THR_ENABLE", "BATT_FS_LOW_ACT", "FENCE_ENABLE", "FENCE_ACTION", "FENCE_ALT_MAX",
-                   "FENCE_RADIUS", "RTL_ALT", "SYSID_THISMAV")
+                   "FENCE_RADIUS", "RTL_ALT")
+# The aircraft's own MAVLink id: renamed SYSID_THISMAV -> MAV_SYSID in ArduPilot 4.7.
+SYSID_PARAMS = ("MAV_SYSID", "SYSID_THISMAV")
 
 # Parameters the guided setup reads to show what is configured
 SETUP_PARAMS = (
-    "SYSID_THISMAV", "FRAME_CLASS", "FRAME_TYPE",
+    "MAV_SYSID", "SYSID_THISMAV", "FRAME_CLASS", "FRAME_TYPE",
     "FS_GCS_ENABLE", "FS_GCS_TIMEOUT", "FS_THR_ENABLE", "FS_THR_VALUE",
     "BATT_MONITOR", "BATT_FS_LOW_ACT", "BATT_FS_CRT_ACT", "BATT_LOW_VOLT", "BATT_CRT_VOLT",
     "FENCE_ENABLE", "FENCE_TYPE", "FENCE_ACTION", "FENCE_ALT_MAX", "FENCE_RADIUS", "RTL_ALT",
@@ -174,6 +176,7 @@ class Vehicle:
         self.orca_engaged = False
         self.orca_resume: str | None = None   # "AUTO" (mission) or "GOTO"
         self.orca_clear_since: float | None = None
+        self.orca_engaged_at = 0.0
 
     # ----------------------------------------------------------- inbound
 
@@ -533,6 +536,7 @@ class Vehicle:
                 if self.set_mode("GUIDED") != 0:
                     return False
             self.orca_engaged, self.orca_resume, self.orca_clear_since = True, resume, None
+            self.orca_engaged_at = time.time()
             self.on_event("orca_engaged", {"resume": resume})
             return True
         except VehicleError:
@@ -625,6 +629,14 @@ class Vehicle:
                 confirmed[name] = self.params[name]
             self._params_read_at = 0.0  # pre-arm checklist re-reads
             return confirmed
+
+    def sysid_param(self) -> str:
+        """The name this firmware uses for its MAVLink id (MAV_SYSID on 4.7+)."""
+        found = self.read_params_batch(SYSID_PARAMS, timeout_s=4.0)
+        for name in SYSID_PARAMS:
+            if found.get(name) is not None:
+                return name
+        raise VehicleError("PARAM_NOT_SET", "The flight controller did not report MAV_SYSID or SYSID_THISMAV (radio link?)")
 
     def reboot(self) -> int:
         with self._cmd_lock:
@@ -731,7 +743,10 @@ class Vehicle:
         s = self.state
         now = time.time()
         # Parameters change rarely and the radio is slow: re-read at most every 30 s.
-        if now - self._params_read_at > 30 or any(v is None for v in self._params_cache.values()):
+        # Re-read every 30 s, or sooner when a core failsafe value is still missing (radio
+        # loss); optional ones (fence) may not exist on every firmware and must not force it.
+        core = ("FS_GCS_ENABLE", "FS_THR_ENABLE", "BATT_FS_LOW_ACT")
+        if now - self._params_read_at > 30 or any(self._params_cache.get(n) is None for n in core):
             self._params_cache = self.read_params()
             self._params_read_at = time.time()
         params = dict(self._params_cache)

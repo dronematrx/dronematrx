@@ -330,6 +330,16 @@ async def hardware_orca_toggle(payload: OrcaToggleIn, db: Session = Depends(get_
     return {"available": True, **out}
 
 
+class SafetyFixIn(BaseModel):
+    kind: Literal["failsafes", "fence"]
+
+
+@router.post("/drones/{drone_id}/fix-safety")
+async def fix_safety(drone_id: uuid.UUID, payload: SafetyFixIn, db: Session = Depends(get_db), user: User = Depends(require_fleet_write)) -> dict:
+    """One-click fix for a failing pre-arm row (writes and confirms the parameters; disarmed only)."""
+    return await asyncio.to_thread(setupsvc.fix_drone_safety, db, user, drone_id, payload.kind)
+
+
 @router.get("/hardware/controllers")
 async def hardware_controllers(user: User = Depends(require_any_authenticated)) -> dict:
     return {"controllers": await asyncio.to_thread(setupsvc.controllers)}

@@ -3,7 +3,7 @@
 One link can carry several aircraft (radios on one network, or a hub that
 multiplexes them): every ArduPilot autopilot that sends a HEARTBEAT on the
 link becomes a Vehicle, keyed by its MAVLink system id. Every aircraft must
-therefore have a unique SYSID_THISMAV.
+therefore have a unique id (MAV_SYSID; SYSID_THISMAV before ArduPilot 4.7).
 
 The link sends a 1 Hz ground-station heartbeat so ArduPilot's GCS failsafe
 (FS_GCS_ENABLE) triggers if this laptop or the radio link is lost.
@@ -168,6 +168,12 @@ class Link:
         if sysid == GCS_SYSID:
             return
         v = self.vehicles.get(sysid)
+        if v is None and msg.get_type() == "RADIO_STATUS":
+            # SiK radios report link quality under their own id (51), not the drone's:
+            # on a radio link it describes the drone(s) behind this radio.
+            for veh in self.vehicles.values():
+                veh.handle(msg)
+            return
         if v is None:
             if msg.get_type() != "HEARTBEAT" or msg.type == MAV_TYPE_GCS or compid != 1:
                 return

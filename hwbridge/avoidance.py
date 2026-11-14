@@ -53,6 +53,7 @@ logger = logging.getLogger("hwbridge.avoidance")
 ENGAGE_MPS = 0.5          # take over when the safe velocity departs this much from the preferred one
 CLEAR_HOLD_S = 2.0        # ...and give back after this long without deviation
 DEFAULT_SPEED_MPS = 5.0   # when the mission did not set one
+MODE_CONFIRM_S = 3.0      # wait this long for a commanded mode to appear in the heartbeat
 NOT_FLOWN_BY_US = ("RTL", "LAND", "SMART_RTL", "BRAKE", "LOITER", "ALT_HOLD", "STABILIZE", "POSHOLD")
 
 
@@ -158,7 +159,10 @@ class HardwareOrca:
         fleet = {fc: v for fc, v in self.vehicles().items()
                  if v.state.lat is not None and v.state.last_heartbeat and time.time() - v.state.last_heartbeat < 5}
         for v in self.vehicles().values():  # someone else took the aircraft: stop considering it ours
-            if v.orca_engaged and (v.state.mode != "GUIDED" or v.override is not None or not v.state.armed):
+            # The new mode only shows in the next HEARTBEAT (1 Hz on ArduPilot): right after our own
+            # switch to GUIDED the reported mode is still AUTO, which is not someone else taking over.
+            switching = time.time() - v.orca_engaged_at < MODE_CONFIRM_S
+            if v.orca_engaged and (v.override is not None or not v.state.armed or (v.state.mode != "GUIDED" and not switching)):
                 v.orca_engaged, v.orca_resume = False, None
         if not fleet:
             return

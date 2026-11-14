@@ -155,6 +155,7 @@ export function explainPrearm(msg: string): string {
     [/GPS|home|fix/i, 'Go outdoors with a clear view of the sky and wait for the GPS.'],
     [/battery|voltage/i, 'Charge or replace the battery; check step 8.'],
     [/fence/i, 'Wait for a GPS fix: the fence needs a home position.'],
+    [/safety switch/i, 'Press and hold the safety button (usually on the GPS mast) until its light stays solid; the motors stay off until it is pressed.'],
     [/gyro|INS|EKF|AHRS/i, 'Keep the drone still for a minute after power-on; restart if it persists.'],
   ]
   const hint = hints.find(([re]) => re.test(m))?.[1]

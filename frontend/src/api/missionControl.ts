@@ -428,3 +428,7 @@ export const setRadioNetid = (port: string, netid: number) =>
   apiFetch<{ netid: number }>(`${HW}/radio/${encodeURIComponent(port)}/netid`, { method: 'POST', body: { netid }, timeoutMs: 45_000 })
 export const setCamera = (systemId: number, url: string | null) =>
   apiFetch<{ url: string | null }>(`${HW}/cameras/${systemId}`, { method: 'PUT', body: { url } })
+
+/** One-click fix for a failing pre-arm row on a real aircraft (writes + confirms parameters, disarmed only). */
+export const fixSafety = (droneId: string, kind: 'failsafes' | 'fence') =>
+  apiFetch<{ confirmed: Record<string, number> }>(`/mission-control/drones/${droneId}/fix-safety`, { method: 'POST', body: { kind }, timeoutMs: 60_000 })

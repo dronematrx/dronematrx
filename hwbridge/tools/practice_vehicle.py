@@ -51,7 +51,7 @@ M_PER_DEG = 111_320.0
 
 
 class PracticeCopter:
-    def __init__(self, sysid: int, lat: float, lon: float, fresh: bool = False):
+    def __init__(self, sysid: int, lat: float, lon: float, fresh: bool = False, ap47: bool = False):
         self.sysid = 1 if fresh else sysid
         self.port = 5760 + 10 * (sysid - 1)
         self.home = (lat, lon, 50.0)
@@ -65,9 +65,14 @@ class PracticeCopter:
         self.vel_cmd: tuple[float, float] | None = None  # GUIDED velocity setpoint (north, east) m/s
         self.vel_cmd_at = 0.0
         self.vn = self.ve = 0.0  # measured velocity, reported in GLOBAL_POSITION_INT
+        self._last_hb = 0.0
         self.mission: list = []
         self.mission_seq = 0
         self.params = dict(FACTORY) if fresh else {**CONFIGURED, "SYSID_THISMAV": sysid, "RTL_ALT": 1500 + 500 * (sysid - 1)}
+        # ArduPilot 4.7 renamed SYSID_THISMAV to MAV_SYSID
+        self.sysid_key = "MAV_SYSID" if ap47 else "SYSID_THISMAV"
+        if ap47:
+            self.params["MAV_SYSID"] = self.params.pop("SYSID_THISMAV")
         self.sticks = "center"
         self.accel_pos = 0          # accelerometer calibration: position the vehicle waits for (0 = idle)
         self.magcal_pct: float | None = None
@@ -270,10 +275,10 @@ class PracticeCopter:
     def setup_command(self, cmd: int, p: list[float]) -> None:
         if self.armed and cmd != 42429:
             return self.ack(cmd, 4)
-        if cmd == 246:  # reboot: the new SYSID_THISMAV takes effect
+        if cmd == 246:  # reboot: the new MAV_SYSID / SYSID_THISMAV takes effect
             self.ack(cmd, 0)
             self.rebooting_until = time.time() + 3.0
-            self.sysid = int(self.params["SYSID_THISMAV"])
+            self.sysid = int(self.params[self.sysid_key])
             self.conn.mav.srcSystem = self.sysid
             self.mode, self.accel_pos, self.magcal_pct = "STABILIZE", 0, None
             return None
@@ -338,7 +343,10 @@ class PracticeCopter:
             return
         mav = self.conn.mav
         base = mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED | (mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED if self.armed else 0)
-        mav.heartbeat_send(2, 3, base, MODES[self.mode], 4 if self.armed else 3)
+        # HEARTBEAT at 1 Hz like ArduPilot: mode changes reach the ground station up to 1 s late.
+        if time.time() - self._last_hb >= 1.0:
+            mav.heartbeat_send(2, 3, base, MODES[self.mode], 4 if self.armed else 3)
+            self._last_hb = time.time()
         mav.global_position_int_send(int(time.time() * 1000) & 0xFFFFFFFF, int(self.lat * 1e7), int(self.lon * 1e7),
                                      int((self.home[2] + self.alt) * 1000), int(self.alt * 1000), int(self.vn * 100), int(self.ve * 100), 0,
                                      int(self.heading * 100))
