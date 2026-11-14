@@ -268,3 +268,29 @@ def test_hardware_camera_registered_for_the_bound_drone(client, db, organization
     assert v.path == "hw/sys1" and v.low_path is None and v.drone_id == d.id and v.label == f"Camera - {d.name}"
     assert posted[0][0].endswith("/v3/config/paths/add/hw/sys1") and posted[0][1]["source"] == "rtsp://192.168.1.101:8554/live"
     assert out["synced"] >= 1
+
+
+def test_removing_a_drone_releases_its_flight_controller(client, db, organization, mc, op, hw):  # noqa: F811
+    d, runtime = ready(client, db, organization, mc, op, hw)
+    assert FC_ID in hw.bound
+    d.armed = True
+    db.commit()
+    r = client.delete(f"/drones/{d.id}", headers=op)
+    assert r.status_code == 409 and "armed" in r.json()["detail"]  # never while it can be flying
+    assert FC_ID in hw.bound
+    d.armed = False
+    db.commit()
+    assert client.delete(f"/drones/{d.id}", headers=op).status_code == 204
+    assert FC_ID not in hw.bound  # the bridge no longer shows it "linked" to the removed drone
+    assert fcsvc.active_binding(db, d.id) is None
+
+
+def test_a_removed_drone_is_never_relinked_after_a_bridge_restart(client, db, organization, mc, op, hw):  # noqa: F811
+    d, runtime = ready(client, db, organization, mc, op, hw)
+    # Removed while its binding stayed "bound" (before releases on removal existed), then the bridge restarts.
+    d.active = False
+    db.commit()
+    hw.bound.clear()
+    fcsvc._reconcile_hardware(db, {"failed": 0, "rebound": 0})
+    assert FC_ID not in hw.bound
+    assert fcsvc.active_binding(db, d.id) is None

@@ -268,3 +268,26 @@ def test_sik_radio_status_under_its_own_id_reaches_the_drone():
     v = link.vehicles[2]
     assert v.state.radio_rssi == 180 and v.state.radio_remrssi == 170 and v.state.radio_seen > 0
     assert 51 not in link.vehicles  # the radio never becomes a "drone"
+
+
+class StreamingSik(FakeSik):
+    """Like a real ground radio: the drone's telemetry keeps arriving between replies."""
+
+    NOISE = bytes([0xFD, 0x09, 0x00, 0x00, 0x2A, 0x02, 0x01, 0x00, 0x00, 0x00]) * 4
+
+    def read(self, n):
+        if self.out:
+            return super().read(n)
+        return self.NOISE[:n]
+
+
+def test_radio_read_finishes_while_telemetry_streams(fake_radio):
+    """A ground radio never goes quiet: reading it must still finish (it used to hang
+    forever, leaving the drone's link paused and the drone 'not responding')."""
+    fake_radio["radio"] = r = StreamingSik()
+    started = time.time()
+    info = radio.read_info("COM5")
+    assert time.time() - started < 20
+    assert info["local"]["NETID"] == "25" and info["remote_reachable"]
+    out = radio.set_netid("COM5", 27)
+    assert out["netid"] == 27 and r.local["NETID"] == "27" and r.remote["NETID"] == "27"

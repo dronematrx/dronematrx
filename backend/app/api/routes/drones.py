@@ -104,6 +104,21 @@ def deactivate_drone(
 ) -> None:
     """Soft-delete: marks the drone inactive/offline rather than removing the row,
     so mission history and audit trails stay intact."""
+    # Release its flight-controller link first (database and hardware bridge): a removed drone
+    # must not stay "linked" to a real flight controller. Refused while it is armed.
+    from app.services.mission_control import fc as fcsvc
+    from app.services.simulation.simhost import SimhostClient
+
+    try:
+        drone = DroneService(db).get_drone(drone_id, current_user.organization_id)
+    except DroneNotFoundError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Drone not found")
+    binding = fcsvc.active_binding(db, drone.id)
+    if binding is not None:
+        try:
+            fcsvc.unbind(db, current_user, binding.id, SimhostClient())
+        except fcsvc.FcError as exc:
+            raise HTTPException(status_code=exc.status, detail=exc.message) from exc
     try:
         DroneService(db).deactivate_drone(drone_id, current_user.organization_id)
     except DroneNotFoundError:

@@ -398,6 +398,12 @@ def _reconcile_hardware(db: Session, changed: dict) -> None:
     except HwBridgeError:
         return
     for b in rows:
+        drone = db.get(Drone, b.drone_id)
+        if drone is None or not drone.active:
+            # A removed drone must never be re-linked to a real flight controller.
+            b.state, b.unbound_at, b.error = "unbound", now_utc(), "drone removed from the fleet"
+            changed["failed"] += 1
+            continue
         c = live.get(b.endpoint)
         if c is None:
             b.state, b.error = "connection_failed", "controller not heard on any hardware-bridge link"

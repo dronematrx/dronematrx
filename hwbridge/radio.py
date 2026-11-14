@@ -26,14 +26,24 @@ class RadioError(Exception):
     pass
 
 
-def _read(ser, timeout_s: float) -> str:
-    deadline = time.time() + timeout_s
+MAX_READ_S = 4.0  # hard cap for one reply
+
+
+def _read(ser, timeout_s: float, until: tuple[str, ...] = ("OK", "ERROR")) -> str:
+    """Read a reply. A ground radio in data mode relays the drone's telemetry
+    without pause, so "read while data flows" would never end: stop at the
+    expected answer, at the timeout, and never later than MAX_READ_S."""
+    start = time.time()
+    deadline = start + timeout_s
+    hard = start + max(timeout_s, MAX_READ_S)
     buf = b""
-    while time.time() < deadline:
+    while time.time() < min(deadline, hard):
         chunk = ser.read(256)
         if chunk:
             buf += chunk
-            deadline = max(deadline, time.time() + 0.15)  # keep reading while data flows
+            text = buf.decode("ascii", errors="replace")
+            if any(u in text for u in until):
+                deadline = min(deadline, time.time() + 0.15)  # let the rest of the reply arrive
         elif buf:
             break
     return buf.decode("ascii", errors="replace")

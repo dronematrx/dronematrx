@@ -118,7 +118,10 @@ class Link:
 
         try:
             self.conn = mavutil.mavlink_connection(connection_string(self.endpoint), baud=self.baud, source_system=GCS_SYSID,
-                                                   source_component=GCS_COMPID, autoreconnect=True)
+                                                   source_component=GCS_COMPID, autoreconnect=False)
+            # Not pymavlink's autoreconnect: when a USB radio drops out ("Device COM8 is dead")
+            # it reopens the port itself while this loop does too, and Windows then refuses
+            # the second open (PermissionError) for good. This loop alone closes and reopens.
             self.mav = _LockedMav(self.conn.mav, self._send_lock)
             for v in self.vehicles.values():
                 v.mav = self.mav
@@ -198,7 +201,7 @@ class Link:
 
     def _heartbeat_loop(self) -> None:
         while not self._stop.is_set():
-            if self.mav is not None:
+            if self.mav is not None and not self.paused:  # never write to a port being released
                 try:
                     self.mav.heartbeat_send(MAV_TYPE_GCS, 8, 0, 0, 4)  # MAV_AUTOPILOT_INVALID, MAV_STATE_ACTIVE
                 except Exception:

@@ -141,6 +141,9 @@ class FakeRuntime:
     simulator: object = None
     telemetry_manager: object = None
 
+    def remove_drone(self, drone_id):
+        self.sent.append((drone_id, "removed"))
+
     async def send_command(self, drone_id, command, issued_by):
         self.sent.append((drone_id, command))
         return {"command": command}
@@ -174,6 +177,12 @@ def mc(client, db, organization, monkeypatch):
     old_mc, old_rt = getattr(client.app.state, "mc", None), getattr(client.app.state, "runtime", None)
     client.app.state.mc, client.app.state.runtime = m, runtime
     monkeypatch.setattr(get_settings(), "FC_HARDWARE_ENDPOINTS", "udp:192.168.1.50:14550")
+    # Never reach a REAL hardware bridge (one may be running on this laptop with real
+    # drones): tests that need one install their own fake (fixture `hw`).
+    from app.services.mission_control import fc as _fcsvc
+    from app.services.mission_control.hwbridge import HwBridgeClient
+
+    monkeypatch.setattr(_fcsvc, "_hw", HwBridgeClient(base_url="http://127.0.0.1:9", token="test"))
     # The bench operating area, as start_bench would register it.
     k = 0.003
     db.add(Geofence(organization_id=organization.id, name="Bench field", type="inclusion",
