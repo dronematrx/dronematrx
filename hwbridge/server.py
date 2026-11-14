@@ -295,6 +295,7 @@ def command(fc_id: str, body: CommandIn, x_bridge_token: str | None = Header(def
     if not v.bound:
         raise HTTPException(409, "Controller is not bound to a Drone MatrX drone")
     v.last_command_timing = {}
+    sent_at = time.time()
     try:
         result = v.execute(body.command, body.params)
     except VehicleError as exc:
@@ -307,7 +308,22 @@ def command(fc_id: str, body: CommandIn, x_bridge_token: str | None = Header(def
         if t.get("ack"):
             timing["send_to_ack_ms"] = round((t["ack"] - t["sent"]) * 1000, 3)
     return {"fc_id": fc_id, "command": body.command, "result": result, "result_text": MAV_RESULT.get(result, str(result)),
+            "reason": _refusal_reason(v, sent_at) if result not in (0, 5) else None,
             "timing": timing, "mode": v.state.mode, "armed": v.state.armed}
+
+
+def _refusal_reason(v: Vehicle, since: float, wait_s: float = 1.0) -> str | None:
+    """ArduPilot explains a refused command in a STATUSTEXT ("Arm: High GPS HDOP",
+    "PreArm: ..."), sent just before or after the COMMAND_ACK: return it."""
+    deadline = time.time() + wait_s
+    while True:
+        texts = [txt for t, sev, txt in list(v.state.statustext) if t >= since - 0.5 and sev <= 4]
+        preferred = [x for x in texts if x.lower().startswith(("arm", "prearm", "disarm", "mode", "mission", "fence"))]
+        if preferred or texts:
+            return "; ".join(dict.fromkeys(preferred or texts))
+        if time.time() >= deadline:
+            return None
+        time.sleep(0.05)
 
 
 @app.post("/fc/{fc_id}/authorize")

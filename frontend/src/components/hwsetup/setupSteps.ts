@@ -148,6 +148,9 @@ export function progress(v: SetupView, bound: boolean): { done: number; required
 export function explainPrearm(msg: string): string {
   const m = msg.replace(/^PreArm:\s*/i, '')
   const hints: [RegExp, string][] = [
+    [/not neutral/i, 'The safety pilot centres the throttle stick before arming (Drone MatrX arms in GUIDED, where the stick sets the climb rate).'],
+    [/HDOP/i, 'GPS position not precise enough yet: open sky, away from buildings, wait for more satellites.'],
+    [/requires reboot/i, 'Do step 11 (restart the flight controller).'],
     [/accel/i, 'Do step 4 (accelerometer calibration).'],
     [/compass|mag/i, 'Do step 5 (compass calibration), then restart.'],
     [/RC|radio|throttle/i, 'Check the transmitter is on, then do step 6 (RC calibration).'],

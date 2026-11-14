@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import threading
 import time
+import uuid
 
 import pytest
 from fastapi.testclient import TestClient
@@ -136,6 +137,26 @@ def test_setup_refused_while_armed(bridge):
     finally:
         with v.lock:
             v.armed = False
+
+
+def test_refused_arm_reports_ardupilots_reason(bridge):
+    """The operator sees WHY ArduPilot refused, not just COMMAND_ACK FAILED."""
+    client, vehicles, _ = bridge
+    v = vehicles[0]
+    client.post("/fc/tcp6160-1/bind", json={"drone_id": str(uuid.uuid4()), "uin": "R-1", "name": "R-1"})
+    client.post("/fc/tcp6160-1/override/release", json={"by": "test"})
+    client.post("/fc/tcp6160-1/authorize", json={"until_epoch": time.time() + 120, "by": "test"})
+    with v.lock:
+        v.rc_on = False
+    try:
+        r = client.post("/fc/tcp6160-1/command", json={"command": "arm"})
+        assert r.status_code == 200, r.text
+        out = r.json()
+        assert out["result"] == 4 and "RC not found" in (out["reason"] or ""), out
+    finally:
+        with v.lock:
+            v.rc_on = True
+        client.post("/fc/tcp6160-1/unbind")
 
 
 def test_cameras_and_links(bridge):

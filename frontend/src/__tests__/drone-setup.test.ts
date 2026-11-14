@@ -97,5 +97,7 @@ describe('drone setup steps', () => {
     expect(explainPrearm('PreArm: Compass not calibrated')).toMatch(/step 5/)
     expect(explainPrearm('PreArm: Need 3D Fix')).toMatch(/outdoors/)
     expect(explainPrearm('PreArm: Something new')).toBe('Something new')
+    expect(explainPrearm('Arm: Throttle (RC3) is not neutral')).toMatch(/centres the throttle/)  // not "do RC calibration"
+    expect(explainPrearm('PreArm: High GPS HDOP')).toMatch(/open sky/)
   })
 })

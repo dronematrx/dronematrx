@@ -138,8 +138,10 @@ class HardwareMavlinkAdapter(CommandAdapter):
         if "send_to_ack_ms" in br:
             timings["fc_ack_ms"] = br["send_to_ack_ms"]  # radio round trip + ArduPilot processing
         result = out.get("result")
-        return DispatchResult(result in (0, 5), "mavlink_command_ack", result if isinstance(result, int) else None,
-                              f"ArduPilot COMMAND_ACK {MAV_RESULT.get(result, result)}", timings)
+        detail = f"ArduPilot COMMAND_ACK {MAV_RESULT.get(result, result)}"
+        if out.get("reason"):  # ArduPilot's own explanation, e.g. "Arm: Throttle (RC3) is not neutral"
+            detail = f"ArduPilot refused: {out['reason']}"
+        return DispatchResult(result in (0, 5), "mavlink_command_ack", result if isinstance(result, int) else None, detail, timings)
 
 
 class LockedHardwareAdapter(CommandAdapter):
