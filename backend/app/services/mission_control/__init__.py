@@ -1,5 +1,5 @@
 """Sprint 6 mission control: fleet view, flight-controller binding, pre-arm,
-commands, video wall and detection feed. See docs/sprint6/IMPLEMENTATION_PLAN.md."""
+commands, video wall and detection feed. See documents/sprint6/IMPLEMENTATION_PLAN.md."""
 from __future__ import annotations
 
 import asyncio

@@ -4,7 +4,7 @@ import { login } from './helpers'
 /** Visual capture for review/docs. Skipped unless SCREENSHOTS=1. */
 test.skip(!process.env.SCREENSHOTS, 'set SCREENSHOTS=1 to capture UI screenshots')
 
-const OUT = process.env.SCREENSHOT_DIR ?? '../documents/screenshots/sprint3'
+const OUT = process.env.SCREENSHOT_DIR ?? '../documents/sprint3'
 
 test('capture sprint 3 screens', async ({ page }) => {
   await login(page)

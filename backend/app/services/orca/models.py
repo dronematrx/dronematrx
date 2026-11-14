@@ -15,7 +15,7 @@ class InvalidAgentStateError(ValueError):
 
 @dataclass(frozen=True)
 class OrcaParams:
-    """Tunable ORCA parameters (defaults documented in docs/sprint4)."""
+    """Tunable ORCA parameters (defaults documented in documents/sprint4)."""
 
     agent_radius_m: float = 1.0  # physical half-size of a multirotor incl. props
     safety_margin_m: float = 2.0  # added to the radius for avoidance (envelope)

@@ -11,17 +11,17 @@ Leaflet frontend.
 - Sprint 3 (CBBA engine & mission wizard):
   [`documents/SPRINT3_CBBA_MISSION_PLANNING.md`](documents/SPRINT3_CBBA_MISSION_PLANNING.md)
 - Sprint 4 (ORCA engine & communication stack):
-  [`docs/sprint4/SPRINT4_ORCA_COMMS.md`](docs/sprint4/SPRINT4_ORCA_COMMS.md);
+  [`documents/sprint4/SPRINT4_ORCA_COMMS.md`](documents/sprint4/SPRINT4_ORCA_COMMS.md);
   test report with measured results and screenshots:
-  [`docs/sprint4/SPRINT_4_TEST_REPORT.md`](docs/sprint4/SPRINT_4_TEST_REPORT.md)
+  [`documents/sprint4/SPRINT_4_TEST_REPORT.md`](documents/sprint4/SPRINT_4_TEST_REPORT.md)
 - Sprint 5 (Gazebo + PX4 SITL mission simulation):
-  [`docs/sprint5/SIMULATION.md`](docs/sprint5/SIMULATION.md); test report:
-  [`docs/sprint5/SPRINT_5_TEST_REPORT.md`](docs/sprint5/SPRINT_5_TEST_REPORT.md);
+  [`documents/sprint5/SIMULATION.md`](documents/sprint5/SIMULATION.md); test report:
+  [`documents/sprint5/SPRINT_5_TEST_REPORT.md`](documents/sprint5/SPRINT_5_TEST_REPORT.md);
   screenshots and recordings: [`documents/sprint5/`](documents/sprint5/)
 - Sprint 6 (live mission control):
-  [`docs/sprint6/MISSION_CONTROL.md`](docs/sprint6/MISSION_CONTROL.md); test report:
-  [`docs/sprint6/SPRINT_6_TEST_REPORT.md`](docs/sprint6/SPRINT_6_TEST_REPORT.md);
-  performance: [`docs/sprint6/PERFORMANCE_RESULTS.md`](docs/sprint6/PERFORMANCE_RESULTS.md);
+  [`documents/sprint6/MISSION_CONTROL.md`](documents/sprint6/MISSION_CONTROL.md); test report:
+  [`documents/sprint6/SPRINT_6_TEST_REPORT.md`](documents/sprint6/SPRINT_6_TEST_REPORT.md);
+  performance: [`documents/sprint6/PERFORMANCE_RESULTS.md`](documents/sprint6/PERFORMANCE_RESULTS.md);
   screenshots and recordings: [`documents/sprint6/`](documents/sprint6/)
 
 ## Stack
@@ -85,7 +85,7 @@ pytest -q
 ```
 
 Run the Sprint 4 benchmarks (ORCA, NATS, comms fallback, TimescaleDB; needs
-Docker; writes `docs/sprint4/performance/*.json` and exits non-zero if an
+Docker; writes `documents/sprint4/performance/*.json` and exits non-zero if an
 acceptance target is missed), then rebuild the test report from them:
 
 ```bash
@@ -125,7 +125,7 @@ npm test              # Vitest unit tests (planning logic)
 npm run build
 npx playwright install chromium   # once
 npm run test:e2e      # Playwright E2E; needs the DB migrated + seeded; starts backend + vite if not running
-npx playwright test e2e/sprint4.spec.ts   # Sprint 4 TEST 1-10; screenshots -> docs/sprint4/evidence/
+npx playwright test e2e/sprint4.spec.ts   # Sprint 4 TEST 1-10; screenshots -> documents/sprint4/evidence/
 npx playwright test e2e/sprint5.spec.ts   # Sprint 5 AOI -> Gazebo -> map -> report; needs simhost (below)
 ```
 
@@ -147,10 +147,10 @@ SITL drones over a Gazebo world generated from the AOI's DEM. Tests:
 ```bash
 cd backend
 pytest -q -m gazebo -s tests/test_sim_gazebo_integration.py   # real Gazebo + PX4
-python scripts/generate_sprint5_report.py                     # rebuild docs/sprint5/SPRINT_5_TEST_REPORT.md
+python scripts/generate_sprint5_report.py                     # rebuild documents/sprint5/SPRINT_5_TEST_REPORT.md
 ```
 
-Details, architecture and limitations: [`docs/sprint5/SIMULATION.md`](docs/sprint5/SIMULATION.md).
+Details, architecture and limitations: [`documents/sprint5/SIMULATION.md`](documents/sprint5/SIMULATION.md).
 
 ## 5. Mission control (Sprint 6)
 
@@ -179,7 +179,7 @@ cd ../backend && python scripts/generate_sprint6_report.py      # SPRINT_6_TEST_
 ```
 
 Hardware flight controllers and real cameras are not tested (none available):
-see [`docs/sprint6/performance/limitations.md`](docs/sprint6/performance/limitations.md).
+see [`documents/sprint6/performance/limitations.md`](documents/sprint6/performance/limitations.md).
 
 ## What's implemented
 
@@ -240,10 +240,10 @@ backend/    FastAPI app, Alembic migrations, seed script, pytest suite
 frontend/   React app (Vite)
 db/         PostGIS + TimescaleDB Docker image build context
 documents/  Product/design reference docs + Sprint 3 technical reference
-docs/sprint4/  Sprint 4 technical reference, test report, evidence/ screenshots, performance/ JSON
-docs/sprint5/  Sprint 5 simulation reference, test report, performance/ JSON + JUnit
+documents/sprint4/  Sprint 4 technical reference, test report, evidence/ screenshots, performance/ JSON
+documents/sprint5/  Sprint 5 simulation reference, test report, performance/ JSON + JUnit
 documents/sprint5/  Sprint 5 screenshots/ and recordings/
-docs/sprint6/  Sprint 6 mission-control reference, plan, test + performance reports, evidence/, performance/
+documents/sprint6/  Sprint 6 mission-control reference, plan, test + performance reports, evidence/, performance/
 documents/sprint6/  Sprint 6 screenshots/ and recordings/
 sim/        simulation host image: Gazebo + PX4 SITL, simhost service (FastAPI + pymavlink), PX4 patch
 ```

@@ -14,7 +14,7 @@ Three safety rules are enforced in code:
 
 > **About the screenshots.** They come from the real Drone MatrX software (bridge, backend and browser) connected to **practice vehicles** (`hwbridge/tools/practice_vehicle.py`). These are small programs that answer like an ArduCopter so the workflow can be shown without aircraft. **They are not real drones or real flights.** The video tiles show labelled TEST PATTERNS instead of real cameras.
 
-**Field checklist:** [`documents/hardware_test/PHYSICAL_DRONE_TEST_SCRIPT.md`](../hardware_test/PHYSICAL_DRONE_TEST_SCRIPT.md) has every test with pass/fail boxes. Print it.
+**Field checklist:** [`documents/sprint6/hardware_test/PHYSICAL_DRONE_TEST_SCRIPT.md`](../hardware_test/PHYSICAL_DRONE_TEST_SCRIPT.md) has every test with pass/fail boxes. Print it.
 
 ---
 
@@ -505,7 +505,7 @@ The screenshots in this folder were produced this way, by `frontend/e2e/drone-se
 
 ## 13. What is not supported yet
 
-- **Collision avoidance:** since Sprint 6.2 the simulator's ORCA also steers real drones that Drone MatrX is flying (see `documents/sprint6-2/README.md` section 1b). Still keep drones apart with different altitudes, areas and `RTL_ALT`: ORCA is a second layer.
+- **Collision avoidance:** since Sprint 6.2 the simulator's ORCA also steers real drones that Drone MatrX is flying (see `documents/sprint6/sprint6-2/README.md` section 1b). Still keep drones apart with different altitudes, areas and `RTL_ALT`: ORCA is a second layer.
 - **Object detection** works on the simulator's camera only; real camera frames aren't analysed yet.
 - **Wi-Fi / LTE / LoRa failover** (Sprint 4) is a simulated link model, not your radios.
 - **ArduCopter only** (no ArduPlane, Rover or PX4 hardware yet).

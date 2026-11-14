@@ -1,4 +1,4 @@
-"""Sprint 4 benchmark suite -> docs/sprint4/performance/*.json
+"""Sprint 4 benchmark suite -> documents/sprint4/performance/*.json
 
 Measures the REAL systems (no mocks): the ORCA engine, the NATS JetStream
 server, the communication manager's 2 Hz loop, and TimescaleDB.

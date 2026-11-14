@@ -1,14 +1,14 @@
-"""Build docs/sprint6/SPRINT_6_TEST_REPORT.md and PERFORMANCE_RESULTS.md from
+"""Build documents/sprint6/SPRINT_6_TEST_REPORT.md and PERFORMANCE_RESULTS.md from
 measured artefacts only (no result is typed by hand):
 
-    docs/sprint6/performance/junit_backend.xml   pytest (whole backend suite, -m "not gazebo")
-    docs/sprint6/performance/junit_sitl.xml      pytest -m gazebo tests/test_mc_sitl_integration.py
-    docs/sprint6/performance/junit_simhost.xml   pytest in the simhost container
-    docs/sprint6/performance/junit_e2e.xml       Playwright (playwright.sprint6.config.ts)
-    docs/sprint6/performance/junit_regression_sprint5.xml     pytest -m gazebo tests/test_sim_gazebo_integration.py (optional)
-    docs/sprint6/performance/junit_regression_playwright.xml  Playwright default config, earlier sprints (optional)
-    docs/sprint6/performance/sitl_integration.json, e2e_results.json, environment.json
-Hand-written: docs/sprint6/performance/limitations.md (appended verbatim).
+    documents/sprint6/performance/junit_backend.xml   pytest (whole backend suite, -m "not gazebo")
+    documents/sprint6/performance/junit_sitl.xml      pytest -m gazebo tests/test_mc_sitl_integration.py
+    documents/sprint6/performance/junit_simhost.xml   pytest in the simhost container
+    documents/sprint6/performance/junit_e2e.xml       Playwright (playwright.sprint6.config.ts)
+    documents/sprint6/performance/junit_regression_sprint5.xml     pytest -m gazebo tests/test_sim_gazebo_integration.py (optional)
+    documents/sprint6/performance/junit_regression_playwright.xml  Playwright default config, earlier sprints (optional)
+    documents/sprint6/performance/sitl_integration.json, e2e_results.json, environment.json
+Hand-written: documents/sprint6/performance/limitations.md (appended verbatim).
 """
 from __future__ import annotations
 
@@ -149,9 +149,9 @@ def main() -> None:
     w = L.append
     w("# Sprint 6 — Test Report: Mission Control\n")
     w(f"Generated {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')} by `backend/scripts/generate_sprint6_report.py` from JUnit XML and "
-      "measurement JSON in `docs/sprint6/performance/`. No test result in this file is typed by hand; only the Limitations section is "
+      "measurement JSON in `documents/sprint6/performance/`. No test result in this file is typed by hand; only the Limitations section is "
       "(`performance/limitations.md`).\n")
-    w("Evidence: [`docs/sprint6/evidence/`](evidence/) (also in [`documents/sprint6/`](../../documents/sprint6/)) · "
+    w("Evidence: [`documents/sprint6/evidence/`](evidence/) (also in [`documents/sprint6/`](../../documents/sprint6/)) · "
       "reference: [`MISSION_CONTROL.md`](MISSION_CONTROL.md) · performance: [`PERFORMANCE_RESULTS.md`](PERFORMANCE_RESULTS.md)\n")
     w("## Environment\n")
     w("| Item | Value |\n|---|---|")
@@ -238,7 +238,7 @@ def main() -> None:
     P: list[str] = []
     p = P.append
     p("# Sprint 6 — Performance results\n")
-    p(f"Generated {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')} from `docs/sprint6/performance/*.json` "
+    p(f"Generated {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')} from `documents/sprint6/performance/*.json` "
       "(Playwright E2E + SITL integration). Pass/fail is computed from the numbers below.\n")
     p("## Environment\n")
     p("| Item | Value |\n|---|---|")

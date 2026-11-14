@@ -145,7 +145,7 @@ Bugs found and fixed during this work (each found by a new test):
    docker rm -f dronematrx_ardupilot_sitl
    ```
    These 8 tests replace "the practice vehicle agrees with my code" with "ArduPilot agrees". Report any failure: it means an assumption about ArduPilot was wrong, which is exactly what we want to find before a field day.
-2. **Bench test (props off)** with the real drone, following `documents/hardware_test/PHYSICAL_DRONE_TEST_SCRIPT.md`, then an Auto Mission with one real drone over a small area.
+2. **Bench test (props off)** with the real drone, following `documents/sprint6/hardware_test/PHYSICAL_DRONE_TEST_SCRIPT.md`, then an Auto Mission with one real drone over a small area.
 3. **Push** the branch so CI runs (`git push`). The first run tells us whether the CI database image builds on GitHub.
 
 ---

@@ -1,6 +1,6 @@
 # Sprint 5 — Test Report: Gazebo Simulation Integration
 
-Generated 2026-10-22 04:37 UTC by `backend/scripts/generate_sprint5_report.py` from JUnit XML and measurement JSON in `docs/sprint5/performance/`. No test result in this file is typed by hand; only the Limitations section is written by hand (`performance/limitations.md`).
+Generated 2026-10-22 04:37 UTC by `backend/scripts/generate_sprint5_report.py` from JUnit XML and measurement JSON in `documents/sprint5/performance/`. No test result in this file is typed by hand; only the Limitations section is written by hand (`performance/limitations.md`).
 
 Evidence: [`documents/sprint5/screenshots/`](../../documents/sprint5/screenshots/) · [`documents/sprint5/recordings/`](../../documents/sprint5/recordings/) · technical reference: [`SIMULATION.md`](SIMULATION.md)
 

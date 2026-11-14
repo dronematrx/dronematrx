@@ -8,7 +8,7 @@
                                                    failure responses (matrix below), controls
                                                    finish -> mission COMPLETED/ABORTED -> report
 
-Failure-response matrix (docs/sprint5/SIMULATION.md, section "Failure responses"):
+Failure-response matrix (documents/sprint5/SIMULATION.md, section "Failure responses"):
 
     event                 detection                              response                                   outcome
     -------------------   ------------------------------------   ----------------------------------------   ---------

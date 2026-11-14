@@ -12,7 +12,7 @@ import { expect, test, type APIRequestContext, type Page } from '@playwright/tes
 import path from 'node:path'
 import { API, login, PASSWORD } from './helpers'
 
-const SHOTS = path.resolve(process.cwd(), '../documents/sprint6-1/screenshots')
+const SHOTS = path.resolve(process.cwd(), '../documents/sprint6/sprint6-1/screenshots')
 const PILOT = 'http://127.0.0.1:5799'
 const HOME: [number, number] = [23.24, 72.65]
 

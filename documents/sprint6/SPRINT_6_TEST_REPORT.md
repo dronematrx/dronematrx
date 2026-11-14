@@ -1,8 +1,8 @@
 # Sprint 6 — Test Report: Mission Control
 
-Generated 2026-10-27 13:30 UTC by `backend/scripts/generate_sprint6_report.py` from JUnit XML and measurement JSON in `docs/sprint6/performance/`. No test result in this file is typed by hand; only the Limitations section is (`performance/limitations.md`).
+Generated 2026-10-27 13:30 UTC by `backend/scripts/generate_sprint6_report.py` from JUnit XML and measurement JSON in `documents/sprint6/performance/`. No test result in this file is typed by hand; only the Limitations section is (`performance/limitations.md`).
 
-Evidence: [`docs/sprint6/evidence/`](evidence/) (also in [`documents/sprint6/`](../../documents/sprint6/)) · reference: [`MISSION_CONTROL.md`](MISSION_CONTROL.md) · performance: [`PERFORMANCE_RESULTS.md`](PERFORMANCE_RESULTS.md)
+Evidence: [`documents/sprint6/evidence/`](evidence/) (also in [`documents/sprint6/`](../../documents/sprint6/)) · reference: [`MISSION_CONTROL.md`](MISSION_CONTROL.md) · performance: [`PERFORMANCE_RESULTS.md`](PERFORMANCE_RESULTS.md)
 
 ## Environment
 

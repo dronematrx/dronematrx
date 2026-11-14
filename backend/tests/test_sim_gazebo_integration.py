@@ -6,7 +6,7 @@ PX4 SITL in the `simhost` container). No mocks.
 
 When the simulator is unreachable every test here is SKIPPED with the reason
 "NOT RUN: ..." -- never reported as passed. Results (timings, errors) are
-appended to docs/sprint5/performance/gazebo_integration.json.
+appended to documents/sprint5/performance/gazebo_integration.json.
 """
 from __future__ import annotations
 

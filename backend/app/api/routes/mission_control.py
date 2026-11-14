@@ -1,7 +1,7 @@
 """Sprint 6 mission-control API: fleet view, SITL bench, flight-controller
 discovery/binding, pre-arm checklist, commands, video wall, detections.
 
-RBAC (backend-enforced; see docs/sprint6/IMPLEMENTATION_PLAN.md §6):
+RBAC (backend-enforced; see documents/sprint6/IMPLEMENTATION_PLAN.md §6):
 view = any role; bind/bench/commands/recordings = ADMIN, OPERATOR;
 detection review = ADMIN, OPERATOR, ANALYST; test fixtures = ADMIN (test mode).
 """

@@ -8,7 +8,7 @@
  *
  * Evidence:  documents/sprint5/screenshots/*.png
  *            documents/sprint5/recordings/*.webm (browser video)
- * Results:   docs/sprint5/performance/e2e_results.json
+ * Results:   documents/sprint5/performance/e2e_results.json
  */
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test'
 import * as fs from 'node:fs'
@@ -18,7 +18,7 @@ import { API, login } from './helpers'
 const DOCS = path.resolve(process.cwd(), '../documents/sprint5')
 const SHOTS = path.join(DOCS, 'screenshots')
 const RECORDINGS = path.join(DOCS, 'recordings')
-const PERF = path.resolve(process.cwd(), '../docs/sprint5/performance')
+const PERF = path.resolve(process.cwd(), '../documents/sprint5/performance')
 const SIMHOST = 'http://localhost:8100'
 const results: Record<string, unknown> = {}
 

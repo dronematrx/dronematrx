@@ -1,13 +1,13 @@
-"""Build docs/sprint5/SPRINT_5_TEST_REPORT.md from actual test output.
+"""Build documents/sprint5/SPRINT_5_TEST_REPORT.md from actual test output.
 
-Inputs (written by the test runs, see docs/sprint5/SIMULATION.md section 11):
-    docs/sprint5/performance/junit_backend.xml      pytest (all backend tests incl. Sprint 5)
-    docs/sprint5/performance/junit_gazebo.xml       pytest -m gazebo (real Gazebo + PX4)
-    docs/sprint5/performance/junit_simhost.xml      pytest inside the simhost container
-    docs/sprint5/performance/junit_e2e.xml          Playwright sprint5.spec.ts
-    docs/sprint5/performance/gazebo_integration.json measurements from the Gazebo tests
-    docs/sprint5/performance/e2e_results.json        measurements from the E2E run
-    docs/sprint5/performance/environment.json        versions (collected by this script)
+Inputs (written by the test runs, see documents/sprint5/SIMULATION.md section 11):
+    documents/sprint5/performance/junit_backend.xml      pytest (all backend tests incl. Sprint 5)
+    documents/sprint5/performance/junit_gazebo.xml       pytest -m gazebo (real Gazebo + PX4)
+    documents/sprint5/performance/junit_simhost.xml      pytest inside the simhost container
+    documents/sprint5/performance/junit_e2e.xml          Playwright sprint5.spec.ts
+    documents/sprint5/performance/gazebo_integration.json measurements from the Gazebo tests
+    documents/sprint5/performance/e2e_results.json        measurements from the E2E run
+    documents/sprint5/performance/environment.json        versions (collected by this script)
 
 Nothing is marked PASS by hand: every status below is read from JUnit.
 """
@@ -110,7 +110,7 @@ def main() -> None:
     w = L.append
     w("# Sprint 5 — Test Report: Gazebo Simulation Integration\n")
     w(f"Generated {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')} by `backend/scripts/generate_sprint5_report.py` "
-      "from JUnit XML and measurement JSON in `docs/sprint5/performance/`. No test result in this file is typed by hand; "
+      "from JUnit XML and measurement JSON in `documents/sprint5/performance/`. No test result in this file is typed by hand; "
       "only the Limitations section is written by hand (`performance/limitations.md`).\n")
     w("Evidence: [`documents/sprint5/screenshots/`](../../documents/sprint5/screenshots/) · "
       "[`documents/sprint5/recordings/`](../../documents/sprint5/recordings/) · technical reference: [`SIMULATION.md`](SIMULATION.md)\n")

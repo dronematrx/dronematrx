@@ -1,7 +1,7 @@
 """One simulation session inside the simhost: Gazebo world + N PX4 SITL
 instances + N MAVLink bridges, with telemetry/events pushed to NATS.
 
-FPS guardrail (documented in docs/sprint5/SIMULATION.md):
+FPS guardrail (documented in documents/sprint5/SIMULATION.md):
     sim_fps = 30 * achieved_real_time_factor / requested_speed
 i.e. a nominal 30 frames of simulated motion per second of wall time at the
 requested speed. If sim_fps < 10 (the world advances at less than a third

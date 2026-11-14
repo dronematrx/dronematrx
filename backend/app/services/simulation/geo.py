@@ -3,7 +3,7 @@
 Leaflet speaks WGS84 latitude/longitude; Gazebo speaks metres in a local
 Cartesian world frame. Lat/lon are never used directly as Gazebo X/Y.
 
-Frame (documented in docs/sprint5/SIMULATION.md):
+Frame (documented in documents/sprint5/SIMULATION.md):
 
     origin   AOI centroid (lat0, lon0) at h0 = terrain elevation there (m, WGS84
              ellipsoid height as reported by the DEM; Gazebo z = 0 at the origin)

@@ -3,16 +3,16 @@
  * TimescaleDB, React UI). Runs serially because tests 2/4/7/10 observe one
  * live run of the deterministic 8-drone demo scenario.
  *
- * Evidence screenshots  -> docs/sprint4/evidence/*.png
- * Measured E2E values   -> docs/sprint4/performance/e2e_results.json
+ * Evidence screenshots  -> documents/sprint4/evidence/*.png
+ * Measured E2E values   -> documents/sprint4/performance/e2e_results.json
  */
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { API, login, resetFleet } from './helpers'
 
-const EVIDENCE = path.resolve(process.cwd(), '../docs/sprint4/evidence') // cwd = frontend/
-const PERF = path.resolve(process.cwd(), '../docs/sprint4/performance')
+const EVIDENCE = path.resolve(process.cwd(), '../documents/sprint4/evidence') // cwd = frontend/
+const PERF = path.resolve(process.cwd(), '../documents/sprint4/performance')
 const results: Record<string, unknown> = {}
 let token = ''
 let demoStartedAt = 0

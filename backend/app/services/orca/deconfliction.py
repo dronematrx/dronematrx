@@ -102,7 +102,7 @@ RTH_REASON_RANK = {
 
 @dataclass(frozen=True)
 class RTHPolicy:
-    """Priority rules (documented in docs/sprint4):
+    """Priority rules (documented in documents/sprint4):
 
     1. critical battery (SOC <= critical_battery_pct)  -- most urgent
     2. emergency / fault state

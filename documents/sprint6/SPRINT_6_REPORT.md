@@ -7,7 +7,7 @@
 | **Code** | branch `sprint-6`, merged into `main` (commit `26592f7`) |
 | **Status** | Implemented and tested end to end on simulated drones (PX4 SITL). Real hardware was not tested because no aircraft was available. |
 | **Evidence** | 22 screenshots in [`screenshots/`](screenshots/), 2 recordings in [`recordings/`](recordings/) |
-| **Technical reports** | [`docs/sprint6/SPRINT_6_TEST_REPORT.md`](../../docs/sprint6/SPRINT_6_TEST_REPORT.md), [`docs/sprint6/PERFORMANCE_RESULTS.md`](../../docs/sprint6/PERFORMANCE_RESULTS.md), [`docs/sprint6/MISSION_CONTROL.md`](../../docs/sprint6/MISSION_CONTROL.md) |
+| **Technical reports** | [`documents/sprint6/SPRINT_6_TEST_REPORT.md`](SPRINT_6_TEST_REPORT.md), [`documents/sprint6/PERFORMANCE_RESULTS.md`](PERFORMANCE_RESULTS.md), [`documents/sprint6/MISSION_CONTROL.md`](MISSION_CONTROL.md) |
 
 This report explains **what** Sprint 6 added to Drone MatrX and **how each part works**, from the moment an operator opens the page to the moment a command reaches a flight controller. It also covers how it was tested, the results, and what is still open.
 
@@ -370,7 +370,7 @@ Measured in the final E2E run on this laptop (Ryzen 5 5600H, Windows 11, Docker 
 - **Link-loss warning.** The 3.2 s includes the relay noticing the source is gone plus the browser's 1.5 s frozen-frame rule.
 - **Frame rate.** Measured in a headless (no-GPU) browser while decoding 4 live videos and drawing the map.
 
-Full numbers with every stage of the command path: [`docs/sprint6/PERFORMANCE_RESULTS.md`](../../docs/sprint6/PERFORMANCE_RESULTS.md).
+Full numbers with every stage of the command path: [`documents/sprint6/PERFORMANCE_RESULTS.md`](PERFORMANCE_RESULTS.md).
 
 ---
 

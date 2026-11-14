@@ -14,7 +14,7 @@ cameras (RTSP) ─────────────────────�
 
 Normally you don't run it by hand: Drone MatrX → **Drone Setup** → **Start service** starts it, and the
 same page connects radios, assigns unique IDs, pairs SiK radios, calibrates (accelerometer, compass, RC),
-sets flight modes and failsafes, tests motors and stores camera URLs (see `documents/sprint6-1/README.md`).
+sets flight modes and failsafes, tests motors and stores camera URLs (see `documents/sprint6/sprint6-1/README.md`).
 
 By hand:
 
@@ -46,4 +46,4 @@ cd backend; venv\Scripts\python -m pytest tests\test_hardware_flight.py -q
 Without aircraft, `sim\ardupilot_sitl\start.ps1` runs two ArduCopter SITL instances on TCP 5760/5770.
 Use `"links": [{"endpoint": "tcp:127.0.0.1:5760"}, {"endpoint": "tcp:127.0.0.1:5770"}]` to point the bridge at them.
 
-The field procedure is in [`documents/hardware_test/PHYSICAL_DRONE_TEST_SCRIPT.md`](../documents/hardware_test/PHYSICAL_DRONE_TEST_SCRIPT.md).
+The field procedure is in [`documents/sprint6/hardware_test/PHYSICAL_DRONE_TEST_SCRIPT.md`](../documents/sprint6/hardware_test/PHYSICAL_DRONE_TEST_SCRIPT.md).

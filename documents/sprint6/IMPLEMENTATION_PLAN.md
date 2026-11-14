@@ -129,8 +129,8 @@ UI -> POST /mission-control/commands {drone_id, command, params, idempotency_key
 - **Backend API + DB integration**: all endpoints with RBAC, PostGIS geometry, transactions, audit.
 - **Simhost (container)**: bench binding, prearm health, command timing, detector geolocation maths.
 - **SITL integration** (`-m gazebo`): discovery within 5 s, bind, arm with a confirmed state, HOLD/RTL/GoTo with `COMMAND_ACK` and telemetry, camera frames reach MediaMTX, detector event.
-- **Browser E2E** (Playwright, SITL bench + test patterns + fixtures): the 59-step workflow, 22 screenshots in `docs/sprint6/evidence/`.
-- **Performance**: dashboard load, telemetry intervals, rAF frame rate, discovery time, video latency, detection latency, command latency per boundary. Written to `docs/sprint6/PERFORMANCE_RESULTS.md`.
+- **Browser E2E** (Playwright, SITL bench + test patterns + fixtures): the 59-step workflow, 22 screenshots in `documents/sprint6/evidence/`.
+- **Performance**: dashboard load, telemetry intervals, rAF frame rate, discovery time, video latency, detection latency, command latency per boundary. Written to `documents/sprint6/PERFORMANCE_RESULTS.md`.
 - **Regression**: all earlier suites rerun.
 
 ## 9. Expected blocked / limited items (to be confirmed by measurement)

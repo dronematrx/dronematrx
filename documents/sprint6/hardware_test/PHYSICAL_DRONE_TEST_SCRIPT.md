@@ -49,7 +49,7 @@
 
 ### 0.3 Drone Setup page (each drone, PROPELLERS OFF)
 
-Menu → **Drone Setup**. Full instructions with screenshots: [`documents/sprint6-1/README.md`](../sprint6-1/README.md) sections 4–5.
+Menu → **Drone Setup**. Full instructions with screenshots: [`documents/sprint6/sprint6-1/README.md`](../sprint6-1/README.md) sections 4–5.
 
 | # | Step | Expected | Result |
 |---|---|---|---|

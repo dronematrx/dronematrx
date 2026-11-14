@@ -1,6 +1,6 @@
 # Sprint 6 — Performance results
 
-Generated 2026-10-27 13:30 UTC from `docs/sprint6/performance/*.json` (Playwright E2E + SITL integration). Pass/fail is computed from the numbers below.
+Generated 2026-10-27 13:30 UTC from `documents/sprint6/performance/*.json` (Playwright E2E + SITL integration). Pass/fail is computed from the numbers below.
 
 ## Environment
 

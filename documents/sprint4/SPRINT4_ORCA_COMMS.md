@@ -246,12 +246,12 @@ python scripts/seed.py
 uvicorn app.main:app --port 8000
 
 pytest -q                                   # 277 tests (needs Docker DB + NATS)
-python scripts/benchmark_sprint4.py         # ORCA / NATS / fallback / TimescaleDB -> docs/sprint4/performance/*.json
+python scripts/benchmark_sprint4.py         # ORCA / NATS / fallback / TimescaleDB -> documents/sprint4/performance/*.json
 python scripts/benchmark_sprint4.py orca    # one section only (orca | nats | fallback | timescale)
 python scripts/generate_sprint4_report.py   # rebuilds SPRINT_4_TEST_REPORT.md from the JSON files
 
 cd ../frontend
-npx playwright test e2e/sprint4.spec.ts     # TEST 1-10, screenshots -> docs/sprint4/evidence/
+npx playwright test e2e/sprint4.spec.ts     # TEST 1-10, screenshots -> documents/sprint4/evidence/
 ```
 
 Existing installations must rebuild the database image once

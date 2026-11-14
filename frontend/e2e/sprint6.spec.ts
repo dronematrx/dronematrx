@@ -3,9 +3,9 @@
  * backend + PostGIS + NATS, PX4 SITL bench in Gazebo (simhost), MediaMTX WebRTC.
  * No real aircraft: every flight controller here is PX4 SITL; the hardware adapter is locked.
  *
- * Evidence: docs/sprint6/evidence/NN_*.png (copied to documents/sprint6/screenshots/),
+ * Evidence: documents/sprint6/evidence/NN_*.png (copied to documents/sprint6/screenshots/),
  *           documents/sprint6/recordings/ (browser video, Gazebo bench recording),
- *           docs/sprint6/performance/e2e_results.json (every measurement).
+ *           documents/sprint6/performance/e2e_results.json (every measurement).
  */
 import fs from 'node:fs'
 import path from 'node:path'
@@ -14,9 +14,9 @@ import { STATE_FILE, login } from './sprint6.setup'
 
 const API = 'http://localhost:8000'
 const SIMHOST = 'http://localhost:8100'
-const EVIDENCE = path.resolve(process.cwd(), '../docs/sprint6/evidence')
+const EVIDENCE = path.resolve(process.cwd(), '../documents/sprint6/evidence')
 const DOCS = path.resolve(process.cwd(), '../documents/sprint6')
-const PERF = path.resolve(process.cwd(), '../docs/sprint6/performance')
+const PERF = path.resolve(process.cwd(), '../documents/sprint6/performance')
 const results: Record<string, unknown> = { steps: {} as Record<string, string> }
 const steps = results.steps as Record<string, string>
 
