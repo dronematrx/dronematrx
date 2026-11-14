@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import os
 import re
+import signal
 import subprocess
 import sys
 import threading
@@ -38,6 +39,39 @@ WRITABLE_PARAM_RE = re.compile(
     r"|RCMAP_(ROLL|PITCH|THROTTLE|YAW))$")
 CALIBRATIONS = ("accel-start", "accel-next", "level", "compass-start", "compass-cancel")
 BRIDGE_LOG = REPO_ROOT / "hwbridge" / "bridge.log"
+BRIDGE_PID = REPO_ROOT / "hwbridge" / "bridge.pid"
+BRIDGE_START_TIMEOUT_S = 90.0  # imports can take ~35 s on a laptop with on-access antivirus
+
+
+def _pid_alive(pid: int) -> bool:
+    if pid <= 0:
+        return False
+    if sys.platform == "win32":
+        import ctypes
+
+        k32 = ctypes.windll.kernel32
+        handle = k32.OpenProcess(0x1000, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+        if not handle:
+            return False
+        code = ctypes.c_ulong()
+        try:
+            return bool(k32.GetExitCodeProcess(handle, ctypes.byref(code))) and code.value == 259  # STILL_ACTIVE
+        finally:
+            k32.CloseHandle(handle)
+    try:
+        os.kill(pid, 0)
+        return True
+    except OSError:
+        return False
+
+
+def bridge_pid() -> int | None:
+    """PID of a bridge process that is alive (running or still starting), from hwbridge/bridge.pid."""
+    try:
+        pid = int(BRIDGE_PID.read_text(encoding="utf-8").strip())
+    except (OSError, ValueError):
+        return None
+    return pid if _pid_alive(pid) else None
 
 
 class SetupError(Exception):
@@ -86,7 +120,9 @@ class BridgeProcess:
         except HwBridgeError as exc:
             health, running, error = None, False, str(exc)
         ours = self.proc is not None and self.proc.poll() is None
-        return {"running": running, "started_here": ours, "pid": self.proc.pid if ours else None, "error": error,
+        pid = bridge_pid()
+        return {"running": running, "starting": not running and pid is not None, "started_here": ours or pid is not None,
+                "pid": pid or (self.proc.pid if ours else None), "error": error,
                 "can_start": self._local() and not os.path.exists("/.dockerenv"), "health": health, "log_tail": self.log_tail()}
 
     def log_tail(self, lines: int = 25) -> list[str]:
@@ -99,8 +135,8 @@ class BridgeProcess:
     def start(self) -> dict:
         with self._lock:
             st = self.status()
-            if st["running"]:
-                return st
+            if st["running"] or st["starting"]:
+                return st  # never a second copy: two bridges fight over the COM ports
             if not st["can_start"]:
                 raise SetupError("CANNOT_START", "The bridge must run on the laptop the radios are plugged into. Start it there with "
                                  "'python -m hwbridge.server'.", 409)
@@ -112,19 +148,22 @@ class BridgeProcess:
             self.proc = subprocess.Popen([sys.executable, "-m", "hwbridge.server"], cwd=str(REPO_ROOT), stdout=log,
                                          stderr=subprocess.STDOUT, creationflags=flags)
             self.started_at = time.time()
-            deadline = time.time() + 15
+            deadline = time.time() + BRIDGE_START_TIMEOUT_S
             while time.time() < deadline:
                 if self.proc.poll() is not None:
                     raise SetupError("BRIDGE_EXITED", "The bridge stopped right after starting: " + " | ".join(self.log_tail(6)), 409)
                 st = self.status()
                 if st["running"]:
                     return st
-                time.sleep(0.4)
-            raise SetupError("BRIDGE_TIMEOUT", "The bridge did not answer within 15 s: " + " | ".join(self.log_tail(6)), 409)
+                time.sleep(0.5)
+            # Still alive but slow: report "starting" (the page keeps polling) instead of
+            # an error that invites a second start.
+            return self.status()
 
     def stop(self) -> dict:
         with self._lock:
-            if self.proc is None or self.proc.poll() is not None:
+            pid = bridge_pid()
+            if (self.proc is None or self.proc.poll() is not None) and pid is None:
                 raise SetupError("NOT_STARTED_HERE", "This bridge was not started from Drone MatrX; close its window to stop it", 409)
             try:
                 c = hw_client().controllers()
@@ -132,11 +171,21 @@ class BridgeProcess:
                     raise SetupError("ARMED", "A drone is armed; land and disarm before stopping the bridge", 409)
             except HwBridgeError:
                 pass
-            self.proc.terminate()
+            if self.proc is not None and self.proc.poll() is None:
+                self.proc.terminate()
+                try:
+                    self.proc.wait(10)
+                except subprocess.TimeoutExpired:
+                    self.proc.kill()
+            if pid is not None and _pid_alive(pid):  # started by an earlier backend run
+                os.kill(pid, signal.SIGTERM)
+                deadline = time.time() + 10
+                while time.time() < deadline and _pid_alive(pid):
+                    time.sleep(0.2)
             try:
-                self.proc.wait(10)
-            except subprocess.TimeoutExpired:
-                self.proc.kill()
+                BRIDGE_PID.unlink()
+            except OSError:
+                pass
             self.proc = None
             return self.status()
 

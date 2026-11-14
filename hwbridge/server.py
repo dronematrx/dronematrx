@@ -43,6 +43,16 @@ platform (map, fleet, mission control, TimescaleDB) consumes them unchanged.
 """
 from __future__ import annotations
 
+# Written BEFORE the heavy imports below (FastAPI, pymavlink, ORCA: up to ~30 s on a
+# laptop with on-access antivirus), so Drone MatrX can tell "starting" from
+# "not running" and never starts a second copy that would fight over the COM ports.
+if __name__ == "__main__":
+    import os as _os
+    from pathlib import Path as _Path
+
+    PID_FILE = _Path(__file__).resolve().parent / "bridge.pid"
+    PID_FILE.write_text(str(_os.getpid()), encoding="utf-8")
+
 import argparse
 import asyncio
 import json
@@ -643,7 +653,15 @@ def main() -> None:
     ap.add_argument("--config", default=None, help="path to config.json (default hwbridge/config.json)")
     args = ap.parse_args()
     CONFIG.update(load_config(args.config))
-    uvicorn.run(app, host="127.0.0.1", port=int(CONFIG["http_port"]), log_level="info")
+    pid_file = Path(__file__).resolve().parent / "bridge.pid"
+    try:
+        uvicorn.run(app, host="127.0.0.1", port=int(CONFIG["http_port"]), log_level="info")
+    finally:
+        try:
+            if pid_file.read_text(encoding="utf-8").strip() == str(os.getpid()):
+                pid_file.unlink()
+        except OSError:
+            pass
 
 
 if __name__ == "__main__":

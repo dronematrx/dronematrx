@@ -335,6 +335,8 @@ export const uploadHardwareMission = (droneId: string, missionId: string, altitu
 
 export interface BridgeStatus {
   running: boolean
+  /** Process alive but not answering yet (imports can take ~30 s): never start a second copy. */
+  starting?: boolean
   started_here: boolean
   pid: number | null
   error: string | null
@@ -406,7 +408,7 @@ export interface RadioInfo {
 
 const HW = '/mission-control/hardware'
 export const bridgeStatus = () => apiFetch<BridgeStatus>(`${HW}/bridge`)
-export const startBridge = () => apiFetch<BridgeStatus>(`${HW}/bridge/start`, { method: 'POST', timeoutMs: 30_000 })
+export const startBridge = () => apiFetch<BridgeStatus>(`${HW}/bridge/start`, { method: 'POST', timeoutMs: 120_000 })
 export const stopBridge = () => apiFetch<BridgeStatus>(`${HW}/bridge/stop`, { method: 'POST', timeoutMs: 30_000 })
 export const serialPorts = () => apiFetch<{ ports: SerialPort[] }>(`${HW}/ports`)
 export const hwControllers = () => apiFetch<{ controllers: HwController[] }>(`${HW}/controllers`)

@@ -182,7 +182,8 @@ def test_token_is_read_from_the_bridge_token_file(tmp_path, monkeypatch):
     assert HwBridgeClient().token == "fixed"
 
 
-def test_bridge_is_only_started_on_this_laptop(client, op, monkeypatch):
+def test_bridge_is_only_started_on_this_laptop(client, op, monkeypatch, tmp_path):
+    monkeypatch.setattr(hw_setup, "BRIDGE_PID", tmp_path / "bridge.pid")  # independent of a real bridge on this laptop
     monkeypatch.setattr(get_settings(), "HWBRIDGE_URL", "http://10.0.0.9:8110")
 
     class Down(FakeSetupBridge):
@@ -261,3 +262,27 @@ def test_fix_failsafes_and_fence_from_mission_control(client, op, observer_user,
     assert audits(db, "params")
     bridge.armed = True
     assert client.post(url, headers=op, json={"kind": "failsafes"}).json()["code"] == "ARMED"
+
+
+
+def test_a_starting_bridge_is_never_started_twice(client, op, monkeypatch, tmp_path):
+    """Imports can take ~35 s: a second Start while the first copy is still starting must
+    not launch another bridge (two copies fight over the COM ports)."""
+    import os
+
+    class Down(FakeSetupBridge):
+        def health(self):
+            raise HwBridgeError("unreachable")
+    monkeypatch.setattr(fcsvc, "_hw", Down())
+    pid_file = tmp_path / "bridge.pid"
+    pid_file.write_text(str(os.getpid()))  # a live process: "starting"
+    monkeypatch.setattr(hw_setup, "BRIDGE_PID", pid_file)
+    spawned = []
+    monkeypatch.setattr(hw_setup.subprocess, "Popen", lambda *a, **k: spawned.append(a))
+    st = client.get(f"{BASE}/bridge", headers=op).json()
+    assert st["starting"] is True and st["running"] is False
+    r = client.post(f"{BASE}/bridge/start", headers=op)
+    assert r.status_code == 200 and r.json()["starting"] is True
+    assert spawned == []
+    pid_file.write_text("999999")  # stale file from a crashed bridge: not alive
+    assert client.get(f"{BASE}/bridge", headers=op).json()["starting"] is False

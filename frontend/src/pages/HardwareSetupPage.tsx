@@ -101,8 +101,10 @@ export function HardwareSetupPage() {
           ) : (
             <div style={{ display: 'grid', gap: '.5rem' }}>
               <div style={{ display: 'flex', gap: '.8rem', alignItems: 'center' }}>
-                <span className="dm-banner dm-banner--bad" style={{ fontSize: '.8rem' }}>NOT RUNNING</span>
-                {bridge.can_start && canWrite && (
+                {bridge.starting
+                  ? <span className="dm-banner dm-banner--amber" style={{ fontSize: '.8rem' }} data-testid="hw-bridge-starting">STARTING... (can take up to a minute)</span>
+                  : <span className="dm-banner dm-banner--bad" style={{ fontSize: '.8rem' }}>NOT RUNNING</span>}
+                {bridge.can_start && canWrite && !bridge.starting && (
                   <button type="button" className="dm-btn dm-btn--primary" disabled={!!busy} data-testid="hw-bridge-start" onClick={() => run('start', mc.startBridge)}>
                     {busy === 'start' ? 'Starting...' : 'Start service'}
                   </button>
