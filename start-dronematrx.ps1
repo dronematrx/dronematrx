@@ -75,7 +75,9 @@ if (-not (Wait-Http "http://127.0.0.1:8000/health" 1)) {
 Step "Starting the website (window 'Drone MatrX website')"
 if (-not (Wait-Http "http://localhost:5173" 1)) {
     Start-Process powershell -WorkingDirectory (Join-Path $root "frontend") -ArgumentList @(
-        "-NoExit", "-Command", "`$Host.UI.RawUI.WindowTitle='Drone MatrX website'; npm run dev -- --port 5173")
+        # No "-- --port": inside -Command PowerShell eats the "--", npm then takes --port and
+        # passes "5173" to vite as the folder to serve (every page 404). 5173 is vite's default.
+        "-NoExit", "-Command", "`$Host.UI.RawUI.WindowTitle='Drone MatrX website'; npm run dev")
 }
 
 if (-not (Wait-Http "http://127.0.0.1:8000/health" 90)) { throw "The backend did not start: look at the 'Drone MatrX backend' window." }
