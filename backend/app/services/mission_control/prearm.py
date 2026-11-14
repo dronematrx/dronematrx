@@ -140,7 +140,7 @@ def checklist(db: Session, drone: Drone, binding: FlightControllerBinding | None
         ok = bool(health & PREARM_CHECK)
         fw = "ArduPilot" if ardupilot else "PX4"
         checks.append(_check("firmware_prearm", "Firmware pre-arm checks", PASS if ok else FAIL,
-                             f"{fw} pre-arm checks pass" if ok else (f"{fw}: " + "; ".join(fails[-3:]) if fails else f"{fw} reports pre-arm checks failing")))
+                             f"{fw} pre-arm checks pass" if ok else (f"{fw}: " + "; ".join(list(dict.fromkeys(fails))[-3:]) if fails else f"{fw} reports pre-arm checks failing")))
 
     # 10. Operating area: geofences and no-fly zones at the drone's position
     lat = live.latitude if live is not None else None

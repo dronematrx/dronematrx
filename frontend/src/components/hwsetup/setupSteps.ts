@@ -148,7 +148,9 @@ export function progress(v: SetupView, bound: boolean): { done: number; required
 export function explainPrearm(msg: string): string {
   const m = msg.replace(/^PreArm:\s*/i, '')
   const hints: [RegExp, string][] = [
-    [/not neutral/i, 'The safety pilot centres the throttle stick before arming (Drone MatrX arms in GUIDED, where the stick sets the climb rate).'],
+    [/internal error/i, 'The flight controller latched an internal error; it clears only with a restart (step 11). If it comes back right after the restart, update the firmware and send the flight log.'],
+    [/throttle.*not neutral/i, 'Throttle stick fully DOWN when arming (and roll, pitch, yaw centred). If it is already down, redo step 6 (RC calibration).'],
+    [/not neutral/i, 'Centre this stick when arming; if it is centred, redo step 6 (RC calibration).'],
     [/HDOP/i, 'GPS position not precise enough yet: open sky, away from buildings, wait for more satellites.'],
     [/requires reboot/i, 'Do step 11 (restart the flight controller).'],
     [/accel/i, 'Do step 4 (accelerometer calibration).'],
