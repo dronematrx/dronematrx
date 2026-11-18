@@ -256,9 +256,9 @@ def main() -> None:
     try:
         org = get_or_create_org(db)
 
-        admin = get_or_create_user(db, org, "admin@dronematrx.com", "Lithika Saravanakumar", "ADMIN")
+        admin = get_or_create_user(db, org, "admin@dronematrx.com", "Meet Savlani", "ADMIN")
         operator = get_or_create_user(db, org, "operator@dronematrx.com", "Rudra Patel", "OPERATOR")
-        get_or_create_user(db, org, "observer@dronematrx.com", "Meet Savlani", "OBSERVER")
+        get_or_create_user(db, org, "observer@dronematrx.com", "Lithika Saravanakumar", "OBSERVER")
         get_or_create_user(db, org, "analyst@dronematrx.com", "Animesh Kumar Aggarwal", "ANALYST")
 
         seed_drones(db, org)
